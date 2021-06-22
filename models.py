@@ -4,7 +4,6 @@ import torch
 import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
-import LRNet as my
 from torch.nn import functional as F
 import torch.nn as nn
 import utils as utils
