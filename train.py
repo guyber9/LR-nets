@@ -14,6 +14,7 @@ import argparse
 
 from models import *
 from utils import progress_bar
+from utils import find_sigm_weights
 
 # TODO
 # lr 0.1 or 0.01
@@ -42,6 +43,8 @@ parser.add_argument('--num-workers', type=int, default=4, metavar='N', help='num
 parser.add_argument('--num', type=int, default=4, metavar='N',  help='how many batches to wait before logging training status')
 parser.add_argument('--wd', type=int, default=4, metavar='N', help='wd is 10**((-1)*wd)')
 parser.add_argument('--pd', type=int, default=11, metavar='N', help='pd is 10**((-1)*pd)')
+parser.add_argument('--binary-mode', action='store_true', default=False, help='binary mode bit')
+
 parser.add_argument('--adam', action='store_true', default=False, help='run with adam')
 
 parser.add_argument('--save', action='store', default='tmp_models/cifar10', help='name of saved model')
@@ -123,6 +126,17 @@ elif args.mnist:
     else:
         print ("Training LR-Net for MNIST")
         net = LRNet().to(device)
+
+        if args.load_pre_trained:
+            test_model = FPNet().to(device)
+            test_model.load_state_dict(torch.load('saved_models/mnist_full_prec.pt'))
+            # test_model.eval()
+
+            alpha1, betta1 = find_sigm_weights(test_model.conv1.weight, False, args.binary_mode)
+            alpha2, betta2 = find_sigm_weights(test_model.conv2.weight, False, args.binary_mode)
+
+            net.conv1.initialize_weights(alpha1, betta1)
+            net.conv2.initialize_weights(alpha2, betta2)
 
 net = net.to(device)
 
@@ -209,8 +223,13 @@ def test(epoch):
         torch.save(state, './checkpoint/ckpt.pth')
         best_acc = acc
 
+        dataset_name = 'mnist' if args.mnist else 'cifar10'
+        net_type = '_fp' if args.full_prec else '_lrnet'
+        isbinary = '_binary' if args.binary_mode else ''
+        print("--> best accuracy is: " + str(best_acc))
+        torch.save(net.state_dict(), "saved_models/" + str(dataset_name) + str(net_type) + str(isbinary) + ".pt")
 
-for epoch in range(start_epoch, start_epoch+200):
+for epoch in range(start_epoch, start_epoch+args.epochs):
     train(epoch)
     test(epoch)
     scheduler.step()
