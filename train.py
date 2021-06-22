@@ -101,7 +101,9 @@ elif args.mnist:
     trainloader = torch.utils.data.DataLoader(trainset, **train_kwargs)
     testloader = torch.utils.data.DataLoader(testset, **test_kwargs)
 else:
-    print("no data set was chosen")
+    print("############################")
+    print("## no data set was chosen ##")
+    print("############################")
     exit(1)
 
 
@@ -109,16 +111,18 @@ else:
 print('==> Building model..')
 if args.cifar10:
     if args.full_prec:
+        print ("Training FP-Net for CIFAR10")
         net = FPNet_CIFAR10()
     else:
+        print ("Training LR-Net for CIFAR10")
         net = LRNet_CIFAR10()
 elif args.mnist:
     if args.full_prec:
-        print ("Training Net")
-        model = FPNet().to(device)
+        print ("Training FP-Net for MNIST")
+        net = FPNet().to(device)
     else:
-        print ("Training LRNet")
-        model = LRNet().to(device)
+        print ("Training LR-Net for MNIST")
+        net = LRNet().to(device)
 
 net = net.to(device)
 
