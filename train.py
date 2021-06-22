@@ -129,7 +129,7 @@ elif args.mnist:
 
         if args.load_pre_trained:
             test_model = FPNet().to(device)
-            test_model.load_state_dict(torch.load('saved_models/mnist_full_prec.pt'))
+            test_model.load_state_dict(torch.load('saved_models/mnist_fp.pt'))
             # test_model.eval()
 
             alpha1, betta1 = find_sigm_weights(test_model.conv1.weight, False, args.binary_mode)
