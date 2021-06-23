@@ -154,21 +154,21 @@ def main_test():
             net.conv1.test_mode_switch()
             net.conv2.test_mode_switch()
 
-    num_of_options = 30
-    print ("###################################")
-    print ("Ternary Model")
-    print ("###################################")
-    print ("test Data Set")
-    for idx in range(0, num_of_options):
-        print("iteration: " + str(idx))
-        test(net, criterion, 0, device, testloader, args, 0, None, True)
-        net.conv1.cntr = net.conv1.cntr + 1
-        net.conv2.cntr = net.conv2.cntr + 1
-    net.conv1.cntr = 0
-    net.conv2.cntr = 0
-    print ("train Data Set")
-    # test(net, trainloader)
-    test(net, criterion, 0, device, trainloader, args, 0, None, True)
+        num_of_options = 30
+        print ("###################################")
+        print ("Ternary Model")
+        print ("###################################")
+        print ("test Data Set")
+        for idx in range(0, num_of_options):
+            print("iteration: " + str(idx))
+            test(net, criterion, 0, device, testloader, args, 0, None, True)
+            net.conv1.cntr = net.conv1.cntr + 1
+            net.conv2.cntr = net.conv2.cntr + 1
+        net.conv1.cntr = 0
+        net.conv2.cntr = 0
+        print ("train Data Set")
+        # test(net, trainloader)
+        test(net, criterion, 0, device, trainloader, args, 0, None, True)
 
 if __name__ == '__main__':
     main_test()

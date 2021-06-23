@@ -123,6 +123,7 @@ def main_train():
             net = LRNet_CIFAR10()
 
             if args.load_pre_trained:
+                print("Loading Parameters for CIFAR10")
                 test_model = FPNet_CIFAR10().to(device)
                 test_model.load_state_dict(torch.load('saved_models/cifar10_fp.pt'))
                 # test_model.eval()
@@ -149,6 +150,7 @@ def main_train():
             net = LRNet().to(device)
 
             if args.load_pre_trained:
+                print("Loading Parameters for MNIST")
                 test_model = FPNet().to(device)
                 test_model.load_state_dict(torch.load('saved_models/mnist_fp.pt'))
                 # test_model.eval()
@@ -161,9 +163,9 @@ def main_train():
 
     net = net.to(device)
 
-    # if device == 'cuda':
+    if device == 'cuda':
     # TODO    net = torch.nn.DataParallel(net)
-    #     cudnn.benchmark = True
+        cudnn.benchmark = True
 
     if args.resume:
         # Load checkpoint.
