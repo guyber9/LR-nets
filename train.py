@@ -127,12 +127,12 @@ def main_train():
                 test_model.load_state_dict(torch.load('saved_models/cifar10_fp.pt'))
                 # test_model.eval()
 
-                alpha1, betta1 = find_sigm_weights(test_model.conv1.weight, False)
-                alpha2, betta2 = find_sigm_weights(test_model.conv2.weight, False)
-                alpha3, betta3 = find_sigm_weights(test_model.conv3.weight, False)
-                alpha4, betta4 = find_sigm_weights(test_model.conv4.weight, False)
-                alpha5, betta5 = find_sigm_weights(test_model.conv5.weight, False)
-                alpha6, betta6 = find_sigm_weights(test_model.conv6.weight, False)
+                alpha1, betta1 = find_sigm_weights(test_model.conv1.weight, False, args.binary_mode)
+                alpha2, betta2 = find_sigm_weights(test_model.conv2.weight, False, args.binary_mode)
+                alpha3, betta3 = find_sigm_weights(test_model.conv3.weight, False, args.binary_mode)
+                alpha4, betta4 = find_sigm_weights(test_model.conv4.weight, False, args.binary_mode)
+                alpha5, betta5 = find_sigm_weights(test_model.conv5.weight, False, args.binary_mode)
+                alpha6, betta6 = find_sigm_weights(test_model.conv6.weight, False, args.binary_mode)
 
                 net.conv1.initialize_weights(alpha1, betta1)
                 net.conv2.initialize_weights(alpha2, betta2)
