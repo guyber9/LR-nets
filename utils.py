@@ -44,7 +44,7 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args):
                          % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
 
-def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch):
+def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False):
     # global best_acc
     net.eval()
     test_loss = 0
@@ -70,7 +70,7 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch):
 
     # Save checkpoint.
     acc = 100.*correct/total
-    if acc > best_acc:
+    if (acc > best_acc) and not test_mode:
         print('Saving..')
         state = {
             'net': net.state_dict(),
@@ -88,7 +88,9 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch):
         best_epoch = epoch
         torch.save(net.state_dict(), "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + ".pt")
 
-    # if epoch == last_epoch:
+    if test_mode:
+        best_acc = acc
+
     print("--> best accuracy is: " + str(best_acc) + " (epoch: " + str(best_epoch) + ")")
     return best_acc, best_epoch
 
