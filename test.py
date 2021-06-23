@@ -154,11 +154,14 @@ def main_test():
             net.conv1.test_mode_switch()
             net.conv2.test_mode_switch()
 
+    num_of_options = 30
     print ("###################################")
     print ("Ternary Model")
     print ("###################################")
     print ("test Data Set")
-    test(net, criterion, 0, device, testloader, args, 0, None, True)
+    for idx in range(1, num_of_options + 1):
+        print("iteration: " + str(idx))
+        test(net, criterion, 0, device, testloader, args, 0, None, True)
     print ("train Data Set")
     # test(net, trainloader)
     test(net, criterion, 0, device, trainloader, args, 0, None, True)
