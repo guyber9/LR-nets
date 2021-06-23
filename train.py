@@ -126,7 +126,6 @@ def main_train():
                 test_model = FPNet_CIFAR10().to(device)
                 test_model.load_state_dict(torch.load('saved_models/cifar10_fp.pt'))
                 # test_model.eval()
-
                 alpha1, betta1 = find_sigm_weights(test_model.conv1.weight, False, args.binary_mode)
                 alpha2, betta2 = find_sigm_weights(test_model.conv2.weight, False, args.binary_mode)
                 alpha3, betta3 = find_sigm_weights(test_model.conv3.weight, False, args.binary_mode)

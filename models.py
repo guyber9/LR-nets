@@ -168,7 +168,7 @@ class LRNet_CIFAR10(nn.Module):
         x = self.bn2(x)
         x = F.max_pool2d(x, 2)  # 128 x 16 x 16
         x = F.relu(x)
-
+        print("x2: " + str(x))
         x = self.conv3(x)  # 256 x 16 x 16
         x = self.bn3(x)
         x = F.relu(x)
@@ -176,6 +176,7 @@ class LRNet_CIFAR10(nn.Module):
         x = self.bn4(x)
         x = F.max_pool2d(x, 2)  # 256 x 8 x 8
         x = F.relu(x)
+        print("x4: " + str(x))
 
         x = self.conv5(x)  # 512 x 8 x 8
         x = self.bn5(x)
@@ -184,6 +185,7 @@ class LRNet_CIFAR10(nn.Module):
         x = self.bn6(x)
         x = F.max_pool2d(x, 2)  # 512 x 4 x 4 (= 8192)
         x = F.relu(x)
+        print("x6: " + str(x))
 
         x = torch.flatten(x, 1)  # 8192
         x = self.dropout1(x)
@@ -192,4 +194,5 @@ class LRNet_CIFAR10(nn.Module):
         x = self.dropout2(x)
         x = self.fc2(x)  # 1024 -> 10
         output = x
+        print("output: " + str(output))
         return output
