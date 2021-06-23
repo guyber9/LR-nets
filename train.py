@@ -121,6 +121,26 @@ def main_train():
         else:
             print ("Training LR-Net for CIFAR10")
             net = LRNet_CIFAR10()
+
+            if args.load_pre_trained:
+                test_model = FPNet().to(device)
+                test_model.load_state_dict(torch.load('saved_models/mnist_fp.pt'))
+                # test_model.eval()
+
+                alpha1, betta1 = find_sigm_weights(test_model.conv1.weight, False)
+                alpha2, betta2 = find_sigm_weights(test_model.conv2.weight, False)
+                alpha3, betta3 = find_sigm_weights(test_model.conv3.weight, False)
+                alpha4, betta4 = find_sigm_weights(test_model.conv4.weight, False)
+                alpha5, betta5 = find_sigm_weights(test_model.conv5.weight, False)
+                alpha6, betta6 = find_sigm_weights(test_model.conv6.weight, False)
+
+                net.conv1.initialize_weights(alpha1, betta1)
+                net.conv2.initialize_weights(alpha2, betta2)
+                net.conv3.initialize_weights(alpha3, betta3)
+                net.conv4.initialize_weights(alpha4, betta4)
+                net.conv5.initialize_weights(alpha5, betta5)
+                net.conv6.initialize_weights(alpha6, betta6)
+
     elif args.mnist:
         if args.full_prec:
             print ("Training FP-Net for MNIST")
