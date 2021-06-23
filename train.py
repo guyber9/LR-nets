@@ -167,7 +167,7 @@ def main_train():
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
         train(net, criterion, epoch, device, trainloader, optimizer, args)
-        test(epoch, testloader)
+        test(net, criterion, epoch, device, testloader, args, (start_epoch+args.epochs))
         scheduler.step()
 
 if __name__ == '__main__':
