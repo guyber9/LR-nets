@@ -159,10 +159,48 @@ def main_train():
 
     criterion = nn.CrossEntropyLoss()
     if args.adam:
-        optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
+        if args.full_prec:
+            optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
+        elif args.mnist:
+            optimizer = optim.Adam([
+                {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
+                {'params': net.fc1.parameters(), 'weight_decay': weight_decay},
+                {'params': net.fc2.parameters(), 'weight_decay': weight_decay}
+            ], lr=args.lr)
+        elif args.cifar10:
+            optimizer = optim.Adam([
+                {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
+                {'params': net.fc1.parameters(), 'weight_decay': weight_decay},
+                {'params': net.fc2.parameters(), 'weight_decay': weight_decay}
+            ], lr=args.lr)
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
     else:
-        optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=5*weight_decay)
+        if args.full_prec:
+            optimizer = optim.SGD(net.parameters(), lr=args.lr, momentum=0.9, weight_decay=5 * weight_decay)
+        elif args.mnist:
+            optimizer = optim.SGD([
+                {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
+                {'params': net.fc1.parameters(), 'weight_decay': 5 * weight_decay},
+                {'params': net.fc2.parameters(), 'weight_decay': 5 * weight_decay}
+            ], lr=args.lr, momentum=0.9)
+        elif args.cifar10:
+            optimizer = optim.SGD([
+                {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
+                {'params': net.fc1.parameters(), 'weight_decay': 5 * weight_decay},
+                {'params': net.fc2.parameters(), 'weight_decay': 5 * weight_decay}
+            ], lr=args.lr, momentum=0.9)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
