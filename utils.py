@@ -56,7 +56,13 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
         for batch_idx, (inputs, targets) in enumerate(testloader):
             inputs, targets = inputs.to(device), targets.to(device)
             outputs = net(inputs)
+
+            print ("output: " + str(outputs))
+            print ("targets: " + str(targets))
+
             loss = criterion(outputs, targets)
+
+            print ("loss: " + str(loss))
 
             test_loss += loss.item()
             _, predicted = outputs.max(1)
