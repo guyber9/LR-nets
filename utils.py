@@ -78,12 +78,10 @@ def test(net, criterion, epoch, device, testloader, args, last_epoch, best_acc):
         isBinary = '_binary' if args.binary_mode else ''
         print("--> best accuracy is: " + str(best_acc) + " (epoch: " + str(epoch) + ")")
         torch.save(net.state_dict(), "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + ".pt")
-        return acc
-    else:
-        return best_acc
 
     if epoch == last_epoch:
         print("--> best accuracy is: " + str(best_acc) + " (epoch: " + str(epoch) + ")")
+    return best_acc
 
 
 _, term_width = os.popen('stty size', 'r').read().split()
