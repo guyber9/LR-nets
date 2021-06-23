@@ -189,17 +189,16 @@ def main_train():
                 {'params': net.fc2.parameters(), 'weight_decay': weight_decay}
             ], lr=args.lr)
         elif args.cifar10:
-            optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
-            # optimizer = optim.Adam([
-            #     {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
-            #     {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
-            #     {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
-            #     {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
-            #     {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
-            #     {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
-            #     {'params': net.fc1.parameters(), 'weight_decay': weight_decay},
-            #     {'params': net.fc2.parameters(), 'weight_decay': weight_decay}
-            # ], lr=args.lr)
+            optimizer = optim.Adam([
+                {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
+                {'params': net.fc1.parameters(), 'weight_decay': weight_decay},
+                {'params': net.fc2.parameters(), 'weight_decay': weight_decay}
+            ], lr=args.lr)
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
     else:
         if args.full_prec:
