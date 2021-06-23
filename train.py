@@ -226,8 +226,12 @@ def test(epoch):
         dataset_name = 'mnist' if args.mnist else 'cifar10'
         net_type = '_fp' if args.full_prec else '_lrnet'
         isBinary = '_binary' if args.binary_mode else ''
-        print("--> best accuracy is: " + str(best_acc) + "(epoch is " + str(epoch))
+        print("--> best accuracy is: " + str(best_acc) + " (epoch: " + str(epoch) + ")")
         torch.save(net.state_dict(), "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + ".pt")
+
+    if epoch == (start_epoch+args.epochs):
+        print("--> best accuracy is: " + str(best_acc) + " (epoch: " + str(epoch) + ")")
+
 
 for epoch in range(start_epoch, start_epoch+args.epochs):
     train(epoch)
