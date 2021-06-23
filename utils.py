@@ -15,6 +15,8 @@ from torch.nn import functional as F
 from torch.nn import init
 import numpy as np
 
+global best_epoch
+
 # Training
 def train(net, criterion, epoch, device, trainloader, optimizer, args):
     print('\nEpoch: %d' % epoch)
@@ -84,11 +86,12 @@ def test(net, criterion, epoch, device, testloader, args, last_epoch, best_acc):
         dataset_name = 'mnist' if args.mnist else 'cifar10'
         net_type = '_fp' if args.full_prec else '_lrnet'
         isBinary = '_binary' if args.binary_mode else ''
-        print("--> best accuracy is: " + str(best_acc) + " (epoch: " + str(epoch) + ")")
+        # print("--> best accuracy is: " + str(best_acc) + " (epoch: " + str(epoch) + ")")
+        best_epoch = epoch
         torch.save(net.state_dict(), "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + ".pt")
 
-    if epoch == last_epoch:
-        print("--> best accuracy is: " + str(best_acc) + " (epoch: " + str(epoch) + ")")
+    # if epoch == last_epoch:
+    print("--> best accuracy is: " + str(best_acc) + " (epoch: " + str(best_epoch) + ")")
     return best_acc
 
 
