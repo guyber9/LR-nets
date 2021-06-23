@@ -36,13 +36,12 @@ class LRnetConv2d(nn.Module):
             self.device = 'cuda'
         else:
             self.device = 'cpu'
-        # transposed = True
+        self.tensoe_dtype = torch.float32
+
         if self.transposed:
             D_0, D_1, D_2, D_3 = out_channels, in_channels, kernel_size, kernel_size
         else:
             D_0, D_1, D_2, D_3 = in_channels, out_channels, kernel_size, kernel_size
-
-        self.tensoe_dtype = torch.float32
 
         self.alpha = torch.nn.Parameter(torch.empty([D_0, D_1, D_2, D_3, 1], dtype=self.tensoe_dtype, device=self.device))
         self.betta = torch.nn.Parameter(torch.empty([D_0, D_1, D_2, D_3, 1], dtype=self.tensoe_dtype, device=self.device))
@@ -56,21 +55,15 @@ class LRnetConv2d(nn.Module):
 
         self.num_of_options = 30
         self.test_weight_arr = []
-        for idx in range(0, self.num_of_options):
-            self.test_weight_arr.append([])
         self.cntr = 0
-
         self.sigmoid = torch.nn.Sigmoid()
         self.reset_parameters()
 
     def reset_parameters(self) -> None:
-        # self.reset_train_parameters()
         init.constant_(self.alpha, -0.69314)
         init.constant_(self.betta, 0.0)
         # init.kaiming_uniform_(self.alpha, a=math.sqrt(5))
         # init.kaiming_uniform_(self.betta, a=math.sqrt(5))
-        # init.uniform_(self.weight_theta, -1, 1)
-        # init.constant_(self.weight_theta, 1)
         if self.bias is not None:
             prob_size = torch.cat(((1 - self.alpha - self.betta), self.alpha, self.betta), 4)
             fan_in, _ = nn.init._calculate_fan_in_and_fan_out(prob_size)
@@ -90,12 +83,11 @@ class LRnetConv2d(nn.Module):
         alpha_prob = sigmoid_func(self.alpha)
         betta_prob = sigmoid_func(self.betta) * (1 - alpha_prob)
         prob_mat = torch.cat(((1 - alpha_prob - betta_prob), alpha_prob, betta_prob), 4)
-
         prob_mat = prob_mat.detach().cpu().clone().numpy()
 
-        # my_array = []
-        # for idx in range(0, num_of_options):
-        #     my_array.append([])
+        self.test_weight_arr = []
+        for idx in range(0, self.num_of_options):
+            self.test_weight_arr.append([])
         for i, val_0 in enumerate(prob_mat):
             my_array_0 = []
             for idx in range(0, self.num_of_options):
@@ -119,8 +111,6 @@ class LRnetConv2d(nn.Module):
                     my_array_0[idx].append(my_array_1[idx])
             for idx in range(0, self.num_of_options):
                 self.test_weight_arr[idx].append(my_array_0[idx])
-        # self.test_weight = torch.tensor(my_array, dtype=self.tensoe_dtype, device=self.device)
-        # self.test_weight_arr = my_array
 
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
@@ -131,24 +121,10 @@ class LRnetConv2d(nn.Module):
             prob_betta = self.sigmoid(self.betta) * (1 - prob_alpha)
             prob_mat = torch.cat(((1 - prob_alpha - prob_betta), prob_alpha, prob_betta), 4)
             # E[X] calc
-            # TODO: self.discrete_mat = self.discrete_mat.to(prob_mat.get_device())
-
-            # discrete_prob = np.array([-1.0, 0.0, 1.0])
-            # discrete_prob = np.tile(discrete_prob, [self.out_channels, self.in_channels, self.kernel_size, self.kernel_size, 1])
-            # # discrete_mat = torch.tensor(discrete_prob, requires_grad=False, dtype=torch.float32, device='cuda')
-            # discrete_mat = torch.as_tensor(discrete_prob, dtype=self.tensoe_dtype, device=self.device)
-
             mean_tmp = prob_mat * self.discrete_mat
             mean = torch.sum(mean_tmp, dim=4)
             m = F.conv2d(input, mean, self.bias, self.stride, self.padding, self.dilation, self.groups)
-
             # E[x^2]
-            # TODO: self.discrete_square_mat = self.discrete_square_mat.to(prob_mat.get_device())
-            # square_discrete_prob = np.array([1.0, 0.0, 1.0])
-            # square_discrete_prob = np.tile(square_discrete_prob, [self.out_channels, self.in_channels, self.kernel_size, self.kernel_size, 1])
-            # # discrete_square_mat = torch.tensor(square_discrete_prob, requires_grad=False, dtype=torch.float32, device='cuda')
-            # discrete_square_mat = torch.as_tensor(square_discrete_prob, dtype=self.tensoe_dtype, device=self.device)
-
             mean_square_tmp = prob_mat * self.discrete_square_mat
             mean_square = torch.sum(mean_square_tmp, dim=4)
             # E[x] ^ 2
@@ -160,12 +136,6 @@ class LRnetConv2d(nn.Module):
             if torch.cuda.is_available():
                 torch.backends.cudnn.deterministic = False
             v = torch.sqrt(z1)
-
             epsilon = torch.rand(z1.size(), requires_grad=False, dtype=self.tensoe_dtype, device=self.device)
-
-            # epsilon = torch.rand(z1.size())
-            # if torch.cuda.is_available():
-            #     epsilon = epsilon.to(device='cuda')
-            #     # epsilon = epsilon.to(z1.get_device())
             return m + epsilon * v
 
