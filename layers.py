@@ -54,6 +54,9 @@ class LRnetConv2d(nn.Module):
         self.discrete_mat = torch.as_tensor(discrete_prob, dtype=self.tensoe_dtype, device=self.device)
         self.discrete_square_mat = self.discrete_mat * self.discrete_mat
 
+        self.test_weight_arr = []
+        self.cntr = 0
+
         self.sigmoid = torch.nn.Sigmoid()
         self.reset_parameters()
 
@@ -87,27 +90,40 @@ class LRnetConv2d(nn.Module):
 
         prob_mat = prob_mat.detach().cpu().clone().numpy()
 
+        num_of_options = 30
         my_array = []
+        for idx in range(1, num_of_options+1):
+            my_array.append([])
         for i, val_0 in enumerate(prob_mat):
             my_array_0 = []
+            for idx in range(1, num_of_options + 1):
+                my_array_0.append([])
             for j, val_1 in enumerate(val_0):
                 my_array_1 = []
+                for idx in range(1, num_of_options + 1):
+                    my_array_1.append([])
                 for m, val_2 in enumerate(val_1):
                     my_array_2 = []
-                    for n, val_3 in enumerate(val_2):
-                        # theta = val_3
-                        values_arr = np.random.default_rng().multinomial(10, val_3)
-                        values = np.nanargmax(values_arr) - 1
-                        # print ("val_3: " + str(val_3))
-                        # print ("values: " + str(values))
-                        my_array_2.append(values)
-                    my_array_1.append(my_array_2)
-                my_array_0.append(my_array_1)
-            my_array.append(my_array_0)
-        self.test_weight = torch.tensor(my_array, dtype=self.tensoe_dtype, device=self.device)
+                    for idx in range(1, num_of_options + 1):
+                        my_array_2.append([])
+                    for n, theta in enumerate(val_2):
+                        for idx in range(1, num_of_options + 1):
+                            values_arr = np.random.default_rng().multinomial(1, theta)
+                            values = np.nanargmax(values_arr) - 1
+                            my_array_2[idx].append(values)
+                    for idx in range(1, num_of_options + 1):
+                        my_array_1[idx].append(my_array_2[idx])
+                for idx in range(1, num_of_options + 1):
+                    my_array_0[idx].append(my_array_1[idx])
+            for idx in range(1, num_of_options + 1):
+                my_array[idx].append(my_array_0[idx])
+        # self.test_weight = torch.tensor(my_array, dtype=self.tensoe_dtype, device=self.device)
+        self.test_weight_arr = my_array
 
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
+            self.test_weight = torch.tensor(self.test_weight_arr[self.cntr],dtype=self.tensoe_dtype,device=self.device)
+            self.cntr = self.cntr + 1
             return F.conv2d(input, self.test_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
         else:
             prob_alpha = self.sigmoid(self.alpha)
