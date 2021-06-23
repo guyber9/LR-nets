@@ -124,9 +124,7 @@ class LRnetConv2d(nn.Module):
 
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
-            print("self.cntr: " + str(self.cntr))
             self.test_weight = torch.tensor(self.test_weight_arr[self.cntr],dtype=self.tensoe_dtype,device=self.device)
-            self.cntr = self.cntr + 1
             return F.conv2d(input, self.test_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
         else:
             prob_alpha = self.sigmoid(self.alpha)
