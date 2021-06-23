@@ -132,14 +132,15 @@ def main_test():
     net.load_state_dict(torch.load("saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + ".pt"))
     net.eval()
     net = net.to(device)
+    criterion = nn.CrossEntropyLoss()
 
     print ("###################################")
     print ("Original Trained Model (no ternary)")
     print ("###################################")
     print ("test Data Set")
-    test(net, testloader)
+    test(net, criterion, 0, device, testloader, args, None, None)
     print ("train Data Set")
-    test(net, trainloader)
+    test(net, criterion, 0, device, trainloader, args, None, None)
 
     if not args.full_prec:
         if args.cifar10:
@@ -157,9 +158,10 @@ def main_test():
     print ("Ternary Model")
     print ("###################################")
     print ("test Data Set")
-    test(net, testloader)
+    test(net, criterion, 0, device, testloader, args, None, None)
     print ("train Data Set")
-    test(net, trainloader)
+    # test(net, trainloader)
+    test(net, criterion, 0, device, trainloader, args, None, None)
 
 if __name__ == '__main__':
     main_test()
