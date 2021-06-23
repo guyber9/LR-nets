@@ -161,9 +161,9 @@ def main_train():
 
     net = net.to(device)
 
-    if device == 'cuda':
+    # if device == 'cuda':
     # TODO    net = torch.nn.DataParallel(net)
-        cudnn.benchmark = True
+    #     cudnn.benchmark = True
 
     if args.resume:
         # Load checkpoint.
