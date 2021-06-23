@@ -39,8 +39,8 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args):
                      % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
 
-def test(net, criterion, epoch, device, testloader, args, last_epoch):
-    global best_acc
+def test(net, criterion, epoch, device, testloader, args, last_epoch, best_acc):
+    # global best_acc
     net.eval()
     test_loss = 0
     correct = 0
@@ -78,6 +78,9 @@ def test(net, criterion, epoch, device, testloader, args, last_epoch):
         isBinary = '_binary' if args.binary_mode else ''
         print("--> best accuracy is: " + str(best_acc) + " (epoch: " + str(epoch) + ")")
         torch.save(net.state_dict(), "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + ".pt")
+        return acc
+    else:
+        return best_acc
 
     if epoch == last_epoch:
         print("--> best accuracy is: " + str(best_acc) + " (epoch: " + str(epoch) + ")")
