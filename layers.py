@@ -106,12 +106,10 @@ class LRnetConv2d(nn.Module):
                     my_array_2 = []
                     for idx in range(0, num_of_options):
                         my_array_2.append([])
-                        print("my_array_2.append([" + str(idx) + ")])")
                     for n, theta in enumerate(val_2):
                         for idx in range(0, num_of_options):
                             values_arr = np.random.default_rng().multinomial(1, theta)
                             values = np.nanargmax(values_arr) - 1
-                            print(idx)
                             my_array_2[idx].append(values)
                     for idx in range(0, num_of_options):
                         my_array_1[idx].append(my_array_2[idx])

@@ -113,17 +113,17 @@ def main_test():
     print('==> Building model..')
     if args.cifar10:
         if args.full_prec:
-            print ("Training FP-Net for CIFAR10")
+            print ("Testing FP-Net for CIFAR10")
             net = FPNet_CIFAR10()
         else:
-            print ("Training LR-Net for CIFAR10")
+            print ("Testing LR-Net for CIFAR10")
             net = LRNet_CIFAR10()
     elif args.mnist:
         if args.full_prec:
-            print ("Training FP-Net for MNIST")
+            print ("Testing FP-Net for MNIST")
             net = FPNet().to(device)
         else:
-            print ("Training LR-Net for MNIST")
+            print ("Testing LR-Net for MNIST")
             net = LRNet().to(device)
 
     dataset_name = 'mnist' if args.mnist else 'cifar10'
