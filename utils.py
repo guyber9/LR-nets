@@ -210,7 +210,7 @@ def format_time(seconds):
 #     return theta
 
 
-def find_sigm_weights(w, my_prints=False):
+def find_sigm_weights(w, my_prints=False, binary_mode=False):
     if my_prints:
         print("w: " + str(w))
         print(w.size())
@@ -221,9 +221,12 @@ def find_sigm_weights(w, my_prints=False):
     w_norm = w / torch.std(w)
     e_alpha = p_max - ((p_max - p_min) * torch.abs(w_norm))
     e_betta = 0.5 * (1 + (w_norm / (1 - e_alpha)))
-    if my_prints:
-        print("alpha: " + str(alpha))
-    e_alpha = torch.clamp(e_alpha, p_min, p_max)
+
+    if binary_mode:
+        e_alpha = torch.zeros(w.size())
+    else:
+        e_alpha = torch.clamp(e_alpha, p_min, p_max)
+
     if my_prints:
         print("alpha.clip: " + str(e_alpha))
         print("alpha.size: " + str(e_alpha.size()))
@@ -244,7 +247,6 @@ def find_sigm_weights(w, my_prints=False):
     alpha_prob = np.expand_dims(alpha_prob, axis=-1)
     betta_prob = np.expand_dims(betta_prob, axis=-1)
     return alpha_prob, betta_prob
-
 
 def print_full_tensor(input, input_name):
     for i, val1 in enumerate(input):
