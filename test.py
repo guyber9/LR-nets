@@ -138,9 +138,9 @@ def main_test():
     print ("Original Trained Model (no ternary)")
     print ("###################################")
     print ("test Data Set")
-    test(net, criterion, 0, device, testloader, args, None, None)
+    test(net, criterion, 0, device, testloader, args, 0, None)
     print ("train Data Set")
-    test(net, criterion, 0, device, trainloader, args, None, None)
+    test(net, criterion, 0, device, trainloader, args, 0, None)
 
     if not args.full_prec:
         if args.cifar10:
@@ -158,10 +158,10 @@ def main_test():
     print ("Ternary Model")
     print ("###################################")
     print ("test Data Set")
-    test(net, criterion, 0, device, testloader, args, None, None)
+    test(net, criterion, 0, device, testloader, args, 0, None)
     print ("train Data Set")
     # test(net, trainloader)
-    test(net, criterion, 0, device, trainloader, args, None, None)
+    test(net, criterion, 0, device, trainloader, args, 0, None)
 
 if __name__ == '__main__':
     main_test()
