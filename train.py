@@ -65,6 +65,7 @@ def main_train():
         test_kwargs.update(cuda_kwargs)
 
     best_acc = 0  # best test accuracy
+    best_epoch = 0
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
     # Data
@@ -205,7 +206,7 @@ def main_train():
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
         train(net, criterion, epoch, device, trainloader, optimizer, args)
-        best_acc = test(net, criterion, epoch, device, testloader, args, (start_epoch+args.epochs-1), best_acc)
+        best_acc, best_epoch = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch)
         scheduler.step()
 
 if __name__ == '__main__':
