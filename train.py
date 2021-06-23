@@ -124,7 +124,7 @@ def main_train():
 
             if args.load_pre_trained:
                 test_model = FPNet().to(device)
-                test_model.load_state_dict(torch.load('saved_models/mnist_fp.pt'))
+                test_model.load_state_dict(torch.load('saved_models/cifar10_fp.pt'))
                 # test_model.eval()
 
                 alpha1, betta1 = find_sigm_weights(test_model.conv1.weight, False)
