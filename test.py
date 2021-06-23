@@ -164,6 +164,8 @@ def main_test():
         test(net, criterion, 0, device, testloader, args, 0, None, True)
         net.conv1.cntr = net.conv1.cntr + 1
         net.conv2.cntr = net.conv2.cntr + 1
+    net.conv1.cntr = 0
+    net.conv2.cntr = 0
     print ("train Data Set")
     # test(net, trainloader)
     test(net, criterion, 0, device, trainloader, args, 0, None, True)
