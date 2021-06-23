@@ -92,32 +92,32 @@ class LRnetConv2d(nn.Module):
 
         num_of_options = 30
         my_array = []
-        for idx in range(1, num_of_options+1):
+        for idx in range(0, num_of_options):
             my_array.append([])
         for i, val_0 in enumerate(prob_mat):
             my_array_0 = []
-            for idx in range(1, num_of_options + 1):
+            for idx in range(0, num_of_options):
                 my_array_0.append([])
             for j, val_1 in enumerate(val_0):
                 my_array_1 = []
-                for idx in range(1, num_of_options + 1):
+                for idx in range(0, num_of_options):
                     my_array_1.append([])
                 for m, val_2 in enumerate(val_1):
                     my_array_2 = []
-                    for idx in range(1, num_of_options + 1):
+                    for idx in range(0, num_of_options):
                         my_array_2.append([])
                         print("my_array_2.append([" + str(idx) + ")])")
                     for n, theta in enumerate(val_2):
-                        for idx in range(1, num_of_options + 1):
+                        for idx in range(0, num_of_options):
                             values_arr = np.random.default_rng().multinomial(1, theta)
                             values = np.nanargmax(values_arr) - 1
                             print(idx)
                             my_array_2[idx].append(values)
-                    for idx in range(1, num_of_options + 1):
+                    for idx in range(0, num_of_options):
                         my_array_1[idx].append(my_array_2[idx])
-                for idx in range(1, num_of_options + 1):
+                for idx in range(0, num_of_options):
                     my_array_0[idx].append(my_array_1[idx])
-            for idx in range(1, num_of_options + 1):
+            for idx in range(0, num_of_options):
                 my_array[idx].append(my_array_0[idx])
         # self.test_weight = torch.tensor(my_array, dtype=self.tensoe_dtype, device=self.device)
         self.test_weight_arr = my_array

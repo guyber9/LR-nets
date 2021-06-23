@@ -159,7 +159,7 @@ def main_test():
     print ("Ternary Model")
     print ("###################################")
     print ("test Data Set")
-    for idx in range(1, num_of_options + 1):
+    for idx in range(0, num_of_options):
         print("iteration: " + str(idx))
         test(net, criterion, 0, device, testloader, args, 0, None, True)
     print ("train Data Set")
