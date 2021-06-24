@@ -524,12 +524,9 @@ def main():
     parser.add_argument('--norm', action='store_true', default=False, help='norm init layer')
 
     args = parser.parse_args()
-    use_cuda = not args.no_cuda and torch.cuda.is_available()
-
     torch.manual_seed(args.seed)
-
+    use_cuda = not args.no_cuda and torch.cuda.is_available()
     device = torch.device("cuda" if use_cuda else "cpu")
-
     train_kwargs = {'batch_size': args.batch_size}
     test_kwargs = {'batch_size': args.test_batch_size}
     if use_cuda:
