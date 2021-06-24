@@ -88,9 +88,9 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args):
         # print("targets: " + str(targets))
         loss = criterion(outputs, targets)
         # print("loss: " + str(loss))
-        # loss.backward()
-        torch.autograd.set_detect_anomaly(True)
-        loss.backward(retain_graph=True)
+        loss.backward()
+        # torch.autograd.set_detect_anomaly(True)
+        # loss.backward(retain_graph=True)
         optimizer.step()
 
         train_loss += loss.item()
