@@ -1,20 +1,18 @@
-'''Train CIFAR10 with PyTorch.'''
+from __future__ import print_function
+import argparse
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import torch.backends.cudnn as cudnn
-
 import torchvision
 import torchvision.transforms as transforms
 from torchvision import datasets, transforms
-
 import os
-import argparse
 
 from models import *
-from utils import find_sigm_weights
-from utils import train, test
+from utils import find_sigm_weights, train, test
+
 
 def main_train():
     # TODO
@@ -22,7 +20,6 @@ def main_train():
     parser = argparse.ArgumentParser(description='PyTorch MNIST/CIFAR10 Training')
     parser.add_argument('--mnist', action='store_true', default=False, help='mnist flag')
     parser.add_argument('--cifar10', action='store_true', default=False, help='cifar10 flag')
-
     parser.add_argument('--resume', '-r', action='store_true',help='resume from checkpoint')
     parser.add_argument('--batch-size', type=int, default=256, metavar='N',help='input batch size for training (default: 64)')
     parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',help='input batch size for testing (default: 1000)')
@@ -229,7 +226,8 @@ def main_train():
     for epoch in range(start_epoch, start_epoch+args.epochs):
         # train(net, criterion, epoch, device, trainloader, optimizer, args)
         train(args, net, device, trainloader, optimizer, epoch)
-        best_acc, best_epoch = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False)
+        # best_acc, best_epoch = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False)
+        test(net, device, testloader)
         scheduler.step()
 
 if __name__ == '__main__':
