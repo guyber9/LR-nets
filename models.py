@@ -143,12 +143,12 @@ class LRNet_CIFAR10(nn.Module):
 
     def __init__(self):
         super(LRNet_CIFAR10, self).__init__()
-        self.conv1 = lrnet_nn.MyNewConv2d(3, 128, 3, 1, padding=1)
-        self.conv2 = lrnet_nn.MyNewConv2d(128, 128, 3, 1, padding=1)
-        self.conv3 = lrnet_nn.MyNewConv2d(128, 256, 3, 1, padding=1)
-        self.conv4 = lrnet_nn.MyNewConv2d(256, 256, 3, 1, padding=1)
-        self.conv5 = lrnet_nn.MyNewConv2d(256, 512, 3, 1, padding=1)
-        self.conv6 = lrnet_nn.MyNewConv2d(512, 512, 3, 1, padding=1)
+        self.conv1 = lrnet_nn.LRnetConv2d(3, 128, 3, 1, padding=1)
+        self.conv2 = lrnet_nn.LRnetConv2d(128, 128, 3, 1, padding=1)
+        self.conv3 = lrnet_nn.LRnetConv2d(128, 256, 3, 1, padding=1)
+        self.conv4 = lrnet_nn.LRnetConv2d(256, 256, 3, 1, padding=1)
+        self.conv5 = lrnet_nn.LRnetConv2d(256, 512, 3, 1, padding=1)
+        self.conv6 = lrnet_nn.LRnetConv2d(512, 512, 3, 1, padding=1)
         self.bn1 = nn.BatchNorm2d(128)
         self.bn2 = nn.BatchNorm2d(128)
         self.bn3 = nn.BatchNorm2d(256)
