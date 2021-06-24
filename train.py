@@ -11,7 +11,7 @@ from torchvision import datasets, transforms
 import os
 
 from models import *
-from utils import find_sigm_weights, train, test
+from utils import find_sigm_weights, train, test, find
 
 
 def main_train():
@@ -123,12 +123,12 @@ def main_train():
                 test_model = FPNet_CIFAR10().to(device)
                 test_model.load_state_dict(torch.load('saved_models/cifar10_fp.pt'))
                 # test_model.eval()
-                alpha1, betta1 = find_sigm_weights(test_model.conv1.weight, False, args.binary_mode)
-                alpha2, betta2 = find_sigm_weights(test_model.conv2.weight, False, args.binary_mode)
-                alpha3, betta3 = find_sigm_weights(test_model.conv3.weight, False, args.binary_mode)
-                alpha4, betta4 = find_sigm_weights(test_model.conv4.weight, False, args.binary_mode)
-                alpha5, betta5 = find_sigm_weights(test_model.conv5.weight, False, args.binary_mode)
-                alpha6, betta6 = find_sigm_weights(test_model.conv6.weight, False, args.binary_mode)
+                alpha1, betta1 = find(test_model.conv1.weight, False, args.binary_mode)
+                alpha2, betta2 = find(test_model.conv2.weight, False, args.binary_mode)
+                alpha3, betta3 = find(test_model.conv3.weight, False, args.binary_mode)
+                alpha4, betta4 = find(test_model.conv4.weight, False, args.binary_mode)
+                alpha5, betta5 = find(test_model.conv5.weight, False, args.binary_mode)
+                alpha6, betta6 = find(test_model.conv6.weight, False, args.binary_mode)
 
                 net.conv1.initialize_weights(alpha1, betta1)
                 net.conv2.initialize_weights(alpha2, betta2)
@@ -226,8 +226,8 @@ def main_train():
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
         # train(net, criterion, epoch, device, trainloader, optimizer, args)
-        train(args, net, device, trainloader, optimizer, epoch)
         # best_acc, best_epoch = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False)
+        train(args, net, device, trainloader, optimizer, epoch)
         test(net, device, testloader)
         scheduler.step()
 
