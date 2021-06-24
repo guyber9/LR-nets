@@ -157,9 +157,9 @@ def main_train():
                 net.conv1.initialize_weights(alpha1, betta1)
                 net.conv2.initialize_weights(alpha2, betta2)
 
-    if device == 'cuda':
+    # if device == 'cuda':
     # TODO    net = torch.nn.DataParallel(net)
-        cudnn.benchmark = True
+    #     cudnn.benchmark = True
 
     if args.resume:
         # Load checkpoint.
@@ -172,7 +172,6 @@ def main_train():
         # TODO
         net.load_state_dict(torch.load('../model_2/LRNet/saved_model/best_cifar10_cnn.pt'))
 
-    net = net.to(device)
     weight_decay = 10**((-1)*args.wd)
     probability_decay = 10**((-1)*args.pd)
     criterion = nn.CrossEntropyLoss()
@@ -243,6 +242,8 @@ def main_train():
         net.conv4.initialize_weights(alpha4, betta4)
         net.conv5.initialize_weights(alpha5, betta5)
         net.conv6.initialize_weights(alpha6, betta6)
+
+    net = net.to(device)
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
         if args.stam:
