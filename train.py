@@ -47,6 +47,8 @@ def main_train():
 
     parser.add_argument('--save', action='store', default='tmp_models/cifar10', help='name of saved model')
 
+    parser.add_argument('--stam', action='store_true', default=False, help='run with adam')
+
     args = parser.parse_args()
     torch.manual_seed(args.seed)
     use_cuda = torch.cuda.is_available()
@@ -155,9 +157,9 @@ def main_train():
                 net.conv1.initialize_weights(alpha1, betta1)
                 net.conv2.initialize_weights(alpha2, betta2)
 
-    # if device == 'cuda':
+    if device == 'cuda':
     # TODO    net = torch.nn.DataParallel(net)
-    #     cudnn.benchmark = True
+        cudnn.benchmark = True
 
     if args.resume:
         # Load checkpoint.
@@ -240,6 +242,9 @@ def main_train():
         net.conv6.initialize_weights(alpha6, betta6)
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
+        if args.stam:
+            print("x " + str(net.conv1.alpha))
+            print("x " + str(net.conv1.betta))
         train(net, criterion, epoch, device, trainloader, optimizer, args)
         best_acc, best_epoch = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False)
         scheduler.step()
