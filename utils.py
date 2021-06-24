@@ -325,38 +325,3 @@ def print_full_tensor(input, input_name):
         for j, val2 in enumerate(val1):
             for m, val3 in enumerate(val2):
                 print (str(input_name) + "(" + str(i) + ", " + str(j) + ", " + str(m) + ": " + str(val3))
-
-def find(w, my_prints=False):
-    if my_prints:
-        print("w: " + str(w))
-        print(w.size())
-        print(type(w))
-
-    p_max = 0.95
-    p_min = 0.05
-    w_norm = w / torch.std(w)
-    e_alpha = p_max - ((p_max - p_min) * torch.abs(w_norm))
-    e_betta = 0.5 * (1 + (w_norm / (1 - e_alpha)))
-    if my_prints:
-        print("alpha: " + str(e_alpha))
-    e_alpha = torch.clamp(e_alpha, p_min, p_max)
-    if my_prints:
-        print("alpha.clip: " + str(e_alpha))
-        print("alpha.size: " + str(e_alpha.size()))
-
-    if my_prints:
-        print("e_betta: " + str(e_betta))
-    e_betta = torch.clamp(e_betta, p_min, p_max)
-    if my_prints:
-        print("e_betta.clip: " + str(e_betta))
-
-    alpha_prob = torch.log(e_alpha / (1 - e_alpha))
-    betta_prob = torch.log(e_betta / (1 - e_betta))
-    if my_prints:
-        print("alpha_prob: " + str(alpha_prob))
-        print("betta_prob: " + str(betta_prob))
-    alpha_prob = alpha_prob.detach().cpu().clone().numpy()
-    betta_prob = betta_prob.detach().cpu().clone().numpy()
-    alpha_prob = np.expand_dims(alpha_prob, axis=-1)
-    betta_prob = np.expand_dims(betta_prob, axis=-1)
-    return alpha_prob, betta_prob
