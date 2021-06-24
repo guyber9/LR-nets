@@ -122,7 +122,7 @@ def main_train():
                 print("Loading Parameters for CIFAR10")
                 test_model = FPNet_CIFAR10().to(device)
                 test_model.load_state_dict(torch.load('saved_models/cifar10_fp.pt'))
-                test_model.eval()
+                # test_model.eval()
                 alpha1, betta1 = find(test_model.conv1.weight, False)
                 alpha2, betta2 = find(test_model.conv2.weight, False)
                 alpha3, betta3 = find(test_model.conv3.weight, False)

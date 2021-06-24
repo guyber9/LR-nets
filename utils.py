@@ -337,7 +337,7 @@ def find(w, my_prints=False):
     e_alpha = p_max - ((p_max - p_min) * torch.abs(w_norm))
     e_betta = 0.5 * (1 + (w_norm / (1 - e_alpha)))
     if my_prints:
-        print("alpha: " + str(alpha))
+        print("alpha: " + str(e_alpha))
     e_alpha = torch.clamp(e_alpha, p_min, p_max)
     if my_prints:
         print("alpha.clip: " + str(e_alpha))
