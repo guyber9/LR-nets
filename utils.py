@@ -15,38 +15,80 @@ from torch.nn import functional as F
 from torch.nn import init
 import numpy as np
 
+def train(args, model, device, train_loader, optimizer, epoch):
+    model.train()
+    weight_decay = 10**((-1)*args.wd) # 1e-4
+    probability_decay = 10**((-1)*args.pd) # 1e-11
+    print("weight_decay: " + str(weight_decay))
+    print("probability_decay: " + str(probability_decay))
+    for batch_idx, (data, target) in enumerate(train_loader):
+        data, target = data.to(device), target.to(device)
+        optimizer.zero_grad()
+        output = model(data)
+        if args.cifar10:
+            if args.full_prec:
+                loss = F.cross_entropy(output, target)
+                ce_loss = loss
+            else:
+                ce_loss = F.cross_entropy(output, target)
+                loss = ce_loss + probability_decay * (torch.norm(model.conv1.alpha, 2) + torch.norm(model.conv1.betta, 2)
+                                                 + torch.norm(model.conv2.alpha, 2) + torch.norm(model.conv2.betta, 2)
+                                                 + torch.norm(model.conv3.alpha, 2) + torch.norm(model.conv3.betta, 2)
+                                                 + torch.norm(model.conv4.alpha, 2) + torch.norm(model.conv4.betta, 2)
+                                                 + torch.norm(model.conv5.alpha, 2) + torch.norm(model.conv5.betta, 2)
+                                                 + torch.norm(model.conv6.alpha, 2) + torch.norm(model.conv6.betta, 2)) \
+                       + weight_decay * (torch.norm(model.fc1.weight, 2) + (torch.norm(model.fc2.weight, 2)))
+        else:
+            if args.full_prec:
+                loss = F.cross_entropy(output, target)
+            else:
+                loss = F.cross_entropy(output, target) + probability_decay * (torch.norm(model.conv1.alpha, 2)
+                                                               + torch.norm(model.conv1.betta, 2)
+                                                               + torch.norm(model.conv2.alpha, 2)
+                                                               + torch.norm(model.conv2.betta, 2)) + weight_decay * (torch.norm(model.fc1.weight, 2) + (torch.norm(model.fc2.weight, 2)))
+        # optimizer.zero_grad()
+        if args.debug_mode:
+            torch.autograd.set_detect_anomaly(True)
+            loss.backward(retain_graph=True)
+        else:
+            loss.backward()
+        optimizer.step()
+        if batch_idx % args.log_interval == 0:
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tce_loss: {:.6f}\tloss: {:.6f}'.format(
+                epoch, batch_idx * len(data), len(train_loader.dataset),
+                100. * batch_idx / len(train_loader), ce_loss.item(), loss.item()))
 
 # Training
-def train(net, criterion, epoch, device, trainloader, optimizer, args):
-    print('\nEpoch: %d' % epoch)
-    net.train()
-    train_loss = 0
-    correct = 0
-    total = 0
-    for batch_idx, (inputs, targets) in enumerate(trainloader):
-        inputs, targets = inputs.to(device), targets.to(device)
-        optimizer.zero_grad()
-        outputs = net(inputs)
-        # print("output: " + str(outputs))
-        # print("targets: " + str(targets))
-        loss = criterion(outputs, targets)
-        # print("loss: " + str(loss))
-        # loss.backward()
-        torch.autograd.set_detect_anomaly(True)
-        loss.backward(retain_graph=True)
-        optimizer.step()
-
-        train_loss += loss.item()
-        _, predicted = outputs.max(1)
-        total += targets.size(0)
-        correct += predicted.eq(targets).sum().item()
-
-        if args.nohup:
-            print(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                         % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
-        else:
-            progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                         % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+# def train(net, criterion, epoch, device, trainloader, optimizer, args):
+#     print('\nEpoch: %d' % epoch)
+#     net.train()
+#     train_loss = 0
+#     correct = 0
+#     total = 0
+#     for batch_idx, (inputs, targets) in enumerate(trainloader):
+#         inputs, targets = inputs.to(device), targets.to(device)
+#         optimizer.zero_grad()
+#         outputs = net(inputs)
+#         # print("output: " + str(outputs))
+#         # print("targets: " + str(targets))
+#         loss = criterion(outputs, targets)
+#         # print("loss: " + str(loss))
+#         # loss.backward()
+#         torch.autograd.set_detect_anomaly(True)
+#         loss.backward(retain_graph=True)
+#         optimizer.step()
+#
+#         train_loss += loss.item()
+#         _, predicted = outputs.max(1)
+#         total += targets.size(0)
+#         correct += predicted.eq(targets).sum().item()
+#
+#         if args.nohup:
+#             print(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+#                          % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+#         else:
+#             progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+#                          % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
 
 def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False):
