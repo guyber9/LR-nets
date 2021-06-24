@@ -224,6 +224,7 @@ def main_train():
             ], lr=args.lr, momentum=0.9)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
 
+    # TODO
     optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
 
