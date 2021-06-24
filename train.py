@@ -157,9 +157,9 @@ def main_train():
                 net.conv1.initialize_weights(alpha1, betta1)
                 net.conv2.initialize_weights(alpha2, betta2)
 
-    # if device == 'cuda':
+    if device == 'cuda':
     # TODO    net = torch.nn.DataParallel(net)
-    #     cudnn.benchmark = True
+        cudnn.benchmark = True
 
     if args.resume:
         # Load checkpoint.
