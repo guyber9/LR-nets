@@ -81,11 +81,11 @@ def main_train():
         ])
 
         trainset = torchvision.datasets.CIFAR10(
-            root='./data', train=True, download=True, transform=transform_train)
+            root='../data', train=True, download=True, transform=transform_train)
         trainloader = torch.utils.data.DataLoader(trainset, **train_kwargs)
 
         testset = torchvision.datasets.CIFAR10(
-            root='./data', train=False, download=True, transform=transform_test)
+            root='../data', train=False, download=True, transform=transform_test)
         testloader = torch.utils.data.DataLoader(testset, **test_kwargs)
 
         classes = ('plane', 'car', 'bird', 'cat', 'deer',
@@ -159,9 +159,9 @@ def main_train():
 
     net = net.to(device)
 
-    if device == 'cuda':
+    # if device == 'cuda':
     # TODO    net = torch.nn.DataParallel(net)
-        cudnn.benchmark = True
+    #     cudnn.benchmark = True
 
     if args.resume:
         # Load checkpoint.
@@ -223,6 +223,9 @@ def main_train():
                 {'params': net.fc2.parameters(), 'weight_decay': 5 * weight_decay}
             ], lr=args.lr, momentum=0.9)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
+
+    optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
         # train(net, criterion, epoch, device, trainloader, optimizer, args)
