@@ -48,10 +48,9 @@ def main_train():
     parser.add_argument('--save', action='store', default='tmp_models/cifar10', help='name of saved model')
 
     args = parser.parse_args()
-
+    torch.manual_seed(args.seed)
     use_cuda = torch.cuda.is_available()
     device = 'cuda' if use_cuda else 'cpu'
-
     train_kwargs = {'batch_size': args.batch_size}
     test_kwargs = {'batch_size': args.test_batch_size}
     if use_cuda:
