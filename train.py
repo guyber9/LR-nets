@@ -117,24 +117,24 @@ def main_train():
             print ("Training LR-Net for CIFAR10")
             net = LRNet_CIFAR10()
 
-            # if args.load_pre_trained:
-            #     print("Loading Parameters for CIFAR10")
-            #     test_model = FPNet_CIFAR10().to(device)
-            #     test_model.load_state_dict(torch.load('saved_models/cifar10_fp.pt'))
-            #     # test_model.eval()
-            #     alpha1, betta1 = find(test_model.conv1.weight, False)
-            #     alpha2, betta2 = find(test_model.conv2.weight, False)
-            #     alpha3, betta3 = find(test_model.conv3.weight, False)
-            #     alpha4, betta4 = find(test_model.conv4.weight, False)
-            #     alpha5, betta5 = find(test_model.conv5.weight, False)
-            #     alpha6, betta6 = find(test_model.conv6.weight, False)
-            #
-            #     net.conv1.initialize_weights(alpha1, betta1)
-            #     net.conv2.initialize_weights(alpha2, betta2)
-            #     net.conv3.initialize_weights(alpha3, betta3)
-            #     net.conv4.initialize_weights(alpha4, betta4)
-            #     net.conv5.initialize_weights(alpha5, betta5)
-            #     net.conv6.initialize_weights(alpha6, betta6)
+            if args.load_pre_trained:
+                print("Loading Parameters for CIFAR10")
+                test_model = FPNet_CIFAR10().to(device)
+                test_model.load_state_dict(torch.load('saved_models/cifar10_fp.pt'))
+                # test_model.eval()
+                alpha1, betta1 = find(test_model.conv1.weight, False)
+                alpha2, betta2 = find(test_model.conv2.weight, False)
+                alpha3, betta3 = find(test_model.conv3.weight, False)
+                alpha4, betta4 = find(test_model.conv4.weight, False)
+                alpha5, betta5 = find(test_model.conv5.weight, False)
+                alpha6, betta6 = find(test_model.conv6.weight, False)
+
+                net.conv1.initialize_weights(alpha1, betta1)
+                net.conv2.initialize_weights(alpha2, betta2)
+                net.conv3.initialize_weights(alpha3, betta3)
+                net.conv4.initialize_weights(alpha4, betta4)
+                net.conv5.initialize_weights(alpha5, betta5)
+                net.conv6.initialize_weights(alpha6, betta6)
     elif args.mnist:
         if args.full_prec:
             print ("Training FP-Net for MNIST")
@@ -181,10 +181,10 @@ def main_train():
         elif args.mnist:
             optimizer = optim.Adam([
                 {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
-                {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
-                {'params': net.fc1.parameters(), 'weight_decay': weight_decay},
-                {'params': net.fc2.parameters(), 'weight_decay': weight_decay}
-            ], lr=args.lr)
+                {'params': net.conv2.parameters(), 'weight_decay': probability_decay}
+                # {'params': net.fc1.parameters(), 'weight_decay': weight_decay},
+                # {'params': net.fc2.parameters(), 'weight_decay': weight_decay}
+            ], lr=args.lr, weight_decay=weight_decay)
         elif args.cifar10:
             optimizer = optim.Adam([
                 {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
@@ -192,10 +192,10 @@ def main_train():
                 {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
                 {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
                 {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
-                {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
-                {'params': net.fc1.parameters(), 'weight_decay': weight_decay},
-                {'params': net.fc2.parameters(), 'weight_decay': weight_decay}
-            ], lr=args.lr)
+                {'params': net.conv6.parameters(), 'weight_decay': probability_decay}
+                # {'params': net.fc1.parameters(), 'weight_decay': weight_decay},
+                # {'params': net.fc2.parameters(), 'weight_decay': weight_decay}
+            ], lr=args.lr, weight_decay=weight_decay)
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
     else:
         if args.full_prec:
@@ -203,10 +203,10 @@ def main_train():
         elif args.mnist:
             optimizer = optim.SGD([
                 {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
-                {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
-                {'params': net.fc1.parameters(), 'weight_decay': 5 * weight_decay},
-                {'params': net.fc2.parameters(), 'weight_decay': 5 * weight_decay}
-            ], lr=args.lr, momentum=0.9)
+                {'params': net.conv2.parameters(), 'weight_decay': probability_decay}
+                # {'params': net.fc1.parameters(), 'weight_decay': 5 * weight_decay},
+                # {'params': net.fc2.parameters(), 'weight_decay': 5 * weight_decay}
+            ], lr=args.lr, momentum=0.9, weight_decay=5*weight_decay)
         elif args.cifar10:
             optimizer = optim.SGD([
                 {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
@@ -214,30 +214,30 @@ def main_train():
                 {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
                 {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
                 {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
-                {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
-                {'params': net.fc1.parameters(), 'weight_decay': 5 * weight_decay},
-                {'params': net.fc2.parameters(), 'weight_decay': 5 * weight_decay}
-            ], lr=args.lr, momentum=0.9)
+                {'params': net.conv6.parameters(), 'weight_decay': probability_decay}
+                # {'params': net.fc1.parameters(), 'weight_decay': 5 * weight_decay},
+                # {'params': net.fc2.parameters(), 'weight_decay': 5 * weight_decay}
+            ], lr=args.lr, momentum=0.9, weight_decay=5*weight_decay)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
 
-    if args.load_pre_trained:
-        print("Loading Parameters for CIFAR10")
-        test_model = FPNet_CIFAR10().to(device)
-        test_model.load_state_dict(torch.load('saved_models/cifar10_fp.pt'))
-        test_model.eval()
-        alpha1, betta1 = find_sigm_weights(test_model.conv1.weight, False)
-        alpha2, betta2 = find_sigm_weights(test_model.conv2.weight, False)
-        alpha3, betta3 = find_sigm_weights(test_model.conv3.weight, False)
-        alpha4, betta4 = find_sigm_weights(test_model.conv4.weight, False)
-        alpha5, betta5 = find_sigm_weights(test_model.conv5.weight, False)
-        alpha6, betta6 = find_sigm_weights(test_model.conv6.weight, False)
-
-        net.conv1.initialize_weights(alpha1, betta1)
-        net.conv2.initialize_weights(alpha2, betta2)
-        net.conv3.initialize_weights(alpha3, betta3)
-        net.conv4.initialize_weights(alpha4, betta4)
-        net.conv5.initialize_weights(alpha5, betta5)
-        net.conv6.initialize_weights(alpha6, betta6)
+    # if args.load_pre_trained:
+    #     print("Loading Parameters for CIFAR10")
+    #     test_model = FPNet_CIFAR10().to(device)
+    #     test_model.load_state_dict(torch.load('saved_models/cifar10_fp.pt'))
+    #     test_model.eval()
+    #     alpha1, betta1 = find_sigm_weights(test_model.conv1.weight, False)
+    #     alpha2, betta2 = find_sigm_weights(test_model.conv2.weight, False)
+    #     alpha3, betta3 = find_sigm_weights(test_model.conv3.weight, False)
+    #     alpha4, betta4 = find_sigm_weights(test_model.conv4.weight, False)
+    #     alpha5, betta5 = find_sigm_weights(test_model.conv5.weight, False)
+    #     alpha6, betta6 = find_sigm_weights(test_model.conv6.weight, False)
+    #
+    #     net.conv1.initialize_weights(alpha1, betta1)
+    #     net.conv2.initialize_weights(alpha2, betta2)
+    #     net.conv3.initialize_weights(alpha3, betta3)
+    #     net.conv4.initialize_weights(alpha4, betta4)
+    #     net.conv5.initialize_weights(alpha5, betta5)
+    #     net.conv6.initialize_weights(alpha6, betta6)
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
         train(net, criterion, epoch, device, trainloader, optimizer, args)
