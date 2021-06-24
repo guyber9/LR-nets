@@ -175,7 +175,7 @@ def main_train():
         # net.load_state_dict(checkpoint['net'])
         # best_acc = checkpoint['acc']
         # start_epoch = checkpoint['epoch']
-        test_model.load_state_dict(torch.load('../model_2/LRNet/saved_model/best_cifar10_cnn.pt'))
+        net.load_state_dict(torch.load('../model_2/LRNet/saved_model/best_cifar10_cnn.pt'))
 
     weight_decay = 10**((-1)*args.wd)
     probability_decay = 10**((-1)*args.pd)
