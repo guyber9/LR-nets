@@ -195,7 +195,7 @@ def main_train():
                 {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
                 {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
                 {'params': net.fc1.parameters()},
-                {'params': net.fc1.parameters()},
+                {'params': net.fc2.parameters()},
                 {'params': net.bn1.parameters()},
                 {'params': net.bn2.parameters()},
                 {'params': net.bn3.parameters()},
@@ -227,8 +227,8 @@ def main_train():
             ], lr=args.lr, momentum=0.9, weight_decay=5*weight_decay)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
 
-    optimizer = optim.Adam(net.parameters(), lr=args.lr)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
+    # optimizer = optim.Adam(net.parameters(), lr=args.lr)
+    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
 
     # if args.load_pre_trained:
     #     print("Loading Parameters for CIFAR10")
