@@ -241,11 +241,12 @@ def main_train():
             optimizer = optim.SGD([
                 {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
                 {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
-                {'params': net.fc1.parameters(), 'weight_decay': weight_decay},
-                {'params': net.fc2.parameters(), 'weight_decay': weight_decay},
+                {'params': net.fc1.parameters(), 'weight_decay': 5*weight_decay},
+                {'params': net.fc2.parameters(), 'weight_decay': 5*weight_decay},
                 {'params': net.bn1.parameters()},
                 {'params': net.bn2.parameters()}
-            ], lr=args.lr, momentum=0.9, weight_decay=5*weight_decay)
+            ], lr=args.lr, momentum=0.9)
+            # ], lr=args.lr, momentum=0.9, weight_decay=5*weight_decay)
         elif args.cifar10:
             optimizer = optim.SGD([
                 {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
@@ -253,9 +254,15 @@ def main_train():
                 {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
                 {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
                 {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
-                {'params': net.conv6.parameters(), 'weight_decay': probability_decay}
-                # {'params': net.fc1.parameters(), 'weight_decay': 5 * weight_decay},
-                # {'params': net.fc2.parameters(), 'weight_decay': 5 * weight_decay}
+                {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
+                {'params': net.fc1.parameters()},
+                {'params': net.fc2.parameters()},
+                {'params': net.bn1.parameters()},
+                {'params': net.bn2.parameters()},
+                {'params': net.bn3.parameters()},
+                {'params': net.bn4.parameters()},
+                {'params': net.bn5.parameters()},
+                {'params': net.bn6.parameters()}
             ], lr=args.lr, momentum=0.9, weight_decay=5*weight_decay)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
 
