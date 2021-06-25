@@ -126,14 +126,23 @@ def main_test():
             print ("Testing LR-Net for MNIST")
             net = LRNet().to(device)
 
+    criterion = nn.CrossEntropyLoss()
+    test_mode = True
+    dataset_name = 'mnist' if args.mnist else 'cifar10'
+    isBinary = '_binary' if args.binary_mode else '_ternary'
+    net.load_state_dict(torch.load("trained_models/" + str(dataset_name) + "_lrnet" + str(isBinary) + ".pt"))
+    net.eval()
+    net = net.to(device)
+    best_acc, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode)
+
+    print("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
+
     dataset_name = 'mnist' if args.mnist else 'cifar10'
     net_type = '_fp' if args.full_prec else '_lrnet'
     isBinary = '_binary' if args.binary_mode else ''
     net.load_state_dict(torch.load("saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + ".pt"))
     net.eval()
     net = net.to(device)
-    criterion = nn.CrossEntropyLoss()
-    test_mode = True
 
     print ("###################################")
     print ("Original Trained Model (no ternary)")
@@ -156,7 +165,6 @@ def main_test():
             net.conv2.test_mode_switch()
 
         num_of_options = 30
-        best_acc = 0
         print ("###################################")
         print ("Ternary Model")
         print ("###################################")
@@ -169,10 +177,9 @@ def main_test():
             if (acc > best_acc):
                 best_acc = acc
                 dataset_name = 'mnist' if args.mnist else 'cifar10'
-                net_type = '_lrnet'
                 isBinary = '_binary' if args.binary_mode else '_ternary'
                 torch.save(net.state_dict(),
-                           "trained_models/" + str(dataset_name) + str(net_type) + str(isBinary) + ".pt")
+                           "trained_models/" + str(dataset_name) + "_lrnet" + str(isBinary) + ".pt")
         print ("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
 
         net.conv1.cntr = 0
