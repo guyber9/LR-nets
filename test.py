@@ -168,7 +168,12 @@ def main_test():
             net.conv2.cntr = net.conv2.cntr + 1
             if (acc > best_acc):
                 best_acc = acc
-        print ("The best acc is :" + str(best_acc))
+                dataset_name = 'mnist' if args.mnist else 'cifar10'
+                net_type = '_lrnet'
+                isBinary = '_binary' if args.binary_mode else '_ternary'
+                torch.save(net.state_dict(),
+                           "trained_models/" + str(dataset_name) + str(net_type) + str(isBinary) + ".pt")
+        print ("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
 
         net.conv1.cntr = 0
         net.conv2.cntr = 0
