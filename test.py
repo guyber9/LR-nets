@@ -155,20 +155,20 @@ def main_test():
     print ("train Data Set")
     test(net, criterion, 0, device, trainloader, args, 0, None, test_mode)
 
+    # net.conv1.num_of_options = args.num_of_options
+    # net.conv2.num_of_options = args.num_of_options
+
     if not args.full_prec:
         if args.cifar10:
-            net.conv1.test_mode_switch()
-            net.conv2.test_mode_switch()
-            net.conv3.test_mode_switch()
-            net.conv4.test_mode_switch()
-            net.conv5.test_mode_switch()
-            net.conv6.test_mode_switch()
+            net.conv1.test_mode_switch(args.num_of_options)
+            net.conv2.test_mode_switch(args.num_of_options)
+            net.conv3.test_mode_switch(args.num_of_options)
+            net.conv4.test_mode_switch(args.num_of_options)
+            net.conv5.test_mode_switch(args.num_of_options)
+            net.conv6.test_mode_switch(args.num_of_options)
         elif args.mnist:
-            net.conv1.test_mode_switch()
-            net.conv2.test_mode_switch()
-
-        net.conv1.num_of_options = args.num_of_options
-        net.conv2.num_of_options = args.num_of_options
+            net.conv1.test_mode_switch(args.num_of_options)
+            net.conv2.test_mode_switch(args.num_of_options)
 
         print ("###################################")
         print ("Ternary Model")

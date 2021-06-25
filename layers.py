@@ -76,7 +76,7 @@ class LRnetConv2d(nn.Module):
         self.alpha = nn.Parameter(torch.tensor(alpha, dtype=self.tensoe_dtype, device=self.device))
         self.betta = nn.Parameter(torch.tensor(betta, dtype=self.tensoe_dtype, device=self.device))
 
-    def test_mode_switch(self) -> None:
+    def test_mode_switch(self, num_of_options) -> None:
         print ("test_mode_switch")
         self.test_forward = True
         print("Initializing Test Weights: \n")
@@ -85,7 +85,7 @@ class LRnetConv2d(nn.Module):
         betta_prob = sigmoid_func(self.betta) * (1 - alpha_prob)
         prob_mat = torch.cat(((1 - alpha_prob - betta_prob), alpha_prob, betta_prob), 4)
         prob_mat = prob_mat.detach().cpu().clone().numpy()
-
+        self.num_of_options = num_of_options
         self.test_weight_arr = []
         for idx in range(0, self.num_of_options):
             self.test_weight_arr.append([])
