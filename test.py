@@ -128,14 +128,15 @@ def main_test():
 
     criterion = nn.CrossEntropyLoss()
     test_mode = True
-    dataset_name = 'mnist' if args.mnist else 'cifar10'
-    isBinary = '_binary' if args.binary_mode else '_ternary'
-    net.load_state_dict(torch.load("trained_models/" + str(dataset_name) + "_lrnet" + str(isBinary) + ".pt"))
-    net.eval()
-    net = net.to(device)
-    best_acc, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode)
 
-    print("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
+    # dataset_name = 'mnist' if args.mnist else 'cifar10'
+    # isBinary = '_binary' if args.binary_mode else '_ternary'
+    # net.load_state_dict(torch.load("trained_models/" + str(dataset_name) + "_lrnet" + str(isBinary) + ".pt"))
+    # net.eval()
+    # net = net.to(device)
+    # best_acc, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode)
+    # print("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
+    best_acc = 0;
 
     dataset_name = 'mnist' if args.mnist else 'cifar10'
     net_type = '_fp' if args.full_prec else '_lrnet'
