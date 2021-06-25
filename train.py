@@ -46,7 +46,7 @@ def main_train():
 
     parser.add_argument('--adam', action='store_true', default=False, help='run with adam')
 
-    parser.add_argument('--save_file', action='store', default='no_need_to_save', help='name of saved model')
+    parser.add_argument('--save-file', action='store', default='no_need_to_save', help='name of saved model')
 
     parser.add_argument('--stam', action='store_true', default=False, help='run with adam')
 
