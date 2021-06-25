@@ -12,7 +12,6 @@ import os
 import argparse
 
 from models import *
-from utils import progress_bar
 from utils import find_sigm_weights
 from utils import test
 
