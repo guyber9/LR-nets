@@ -283,8 +283,8 @@ def main_train():
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
         if args.stam:
-            print("x " + str(net.conv1.alpha))
-            print("x " + str(net.conv1.betta))
+            print("alpha " + str(net.conv1.alpha))
+            print("betta " + str(net.conv1.betta))
         train(net, criterion, epoch, device, trainloader, optimizer, args)
         best_acc, best_epoch = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False)
         scheduler.step()

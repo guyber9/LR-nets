@@ -133,14 +133,15 @@ def main_test():
     net.eval()
     net = net.to(device)
     criterion = nn.CrossEntropyLoss()
+    test_mode = True
 
     print ("###################################")
     print ("Original Trained Model (no ternary)")
     print ("###################################")
     print ("test Data Set")
-    test(net, criterion, 0, device, testloader, args, 0, None, True)
+    test(net, criterion, 0, device, testloader, args, 0, None, test_mode)
     print ("train Data Set")
-    test(net, criterion, 0, device, trainloader, args, 0, None, True)
+    test(net, criterion, 0, device, trainloader, args, 0, None, test_mode)
 
     if not args.full_prec:
         if args.cifar10:
@@ -156,7 +157,6 @@ def main_test():
 
         num_of_options = 30
         best_acc = 0
-        test_mode = True
         print ("###################################")
         print ("Ternary Model")
         print ("###################################")
