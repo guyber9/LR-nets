@@ -182,6 +182,11 @@ def main_test():
             acc, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode)
             net.conv1.cntr = net.conv1.cntr + 1
             net.conv2.cntr = net.conv2.cntr + 1
+            if args.cifar10:
+                net.conv3.cntr = net.conv3.cntr + 1
+                net.conv4.cntr = net.conv4.cntr + 1
+                net.conv5.cntr = net.conv5.cntr + 1
+                net.conv6.cntr = net.conv6.cntr + 1
             if (acc > best_acc):
                 best_acc = acc
                 dataset_name = 'mnist' if args.mnist else 'cifar10'
