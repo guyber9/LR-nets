@@ -134,22 +134,24 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
     # Save checkpoint.
     acc = 100.*correct/total
     if (acc > best_acc) and not test_mode:
-        print('Saving..')
-        state = {
-            'net': net.state_dict(),
-            'acc': acc,
-            'epoch': epoch,
-        }
-        if not os.path.isdir('checkpoint'):
-            os.mkdir('checkpoint')
-        torch.save(state, './checkpoint/ckpt.pth')
+        if not args.dont_save:
+            print('Saving..')
+            state = {
+                'net': net.state_dict(),
+                'acc': acc,
+                'epoch': epoch,
+            }
+            if not os.path.isdir('checkpoint'):
+                os.mkdir('checkpoint')
+            torch.save(state, './checkpoint/ckpt.pth')
         best_acc = acc
-
-        dataset_name = 'mnist' if args.mnist else 'cifar10'
-        net_type = '_fp' if args.full_prec else '_lrnet'
-        isBinary = '_binary' if args.binary_mode else ''
         best_epoch = epoch
-        torch.save(net.state_dict(), "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + ".pt")
+
+        if (acc > best_acc) and not test_mode:
+            dataset_name = 'mnist' if args.mnist else 'cifar10'
+            net_type = '_fp' if args.full_prec else '_lrnet'
+            isBinary = '_binary' if args.binary_mode else ''
+            torch.save(net.state_dict(), "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + ".pt")
 
     if test_mode:
         best_acc = acc

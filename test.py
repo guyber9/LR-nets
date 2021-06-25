@@ -43,6 +43,7 @@ def main_test():
     parser.add_argument('--pd', type=int, default=11, metavar='N', help='pd is 10**((-1)*pd)')
     parser.add_argument('--binary-mode', action='store_true', default=False, help='binary mode bit')
     parser.add_argument('--nohup', action='store_true', default=False, help='nohup mode')
+    parser.add_argument('--dont_save', action='store_true', default=False, help='dont_save mode')
 
     parser.add_argument('--adam', action='store_true', default=False, help='run with adam')
 
@@ -154,20 +155,26 @@ def main_test():
             net.conv2.test_mode_switch()
 
         num_of_options = 30
+        best_acc = 0
+        test_mode = True
         print ("###################################")
         print ("Ternary Model")
         print ("###################################")
         print ("test Data Set")
         for idx in range(0, num_of_options):
             print("iteration: " + str(idx))
-            test(net, criterion, 0, device, testloader, args, 0, None, True)
+            acc, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode)
             net.conv1.cntr = net.conv1.cntr + 1
             net.conv2.cntr = net.conv2.cntr + 1
+            if (acc > best_acc):
+                best_acc = acc
+        print ("The best acc is :" + str(best_acc))
+
         net.conv1.cntr = 0
         net.conv2.cntr = 0
         print ("train Data Set")
         # test(net, trainloader)
-        test(net, criterion, 0, device, trainloader, args, 0, None, True)
+        test(net, criterion, 0, device, trainloader, args, 0, None, test_mode)
 
 if __name__ == '__main__':
     main_test()

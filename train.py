@@ -42,6 +42,7 @@ def main_train():
     parser.add_argument('--pd', type=int, default=11, metavar='N', help='pd is 10**((-1)*pd)')
     parser.add_argument('--binary-mode', action='store_true', default=False, help='binary mode bit')
     parser.add_argument('--nohup', action='store_true', default=False, help='nohup mode')
+    parser.add_argument('--dont_save', action='store_true', default=False, help='dont_save mode')
 
     parser.add_argument('--adam', action='store_true', default=False, help='run with adam')
 
