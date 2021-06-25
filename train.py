@@ -137,6 +137,24 @@ def main_train():
                 net.conv4.initialize_weights(alpha4, betta4)
                 net.conv5.initialize_weights(alpha5, betta5)
                 net.conv6.initialize_weights(alpha6, betta6)
+
+                def normalize_layer(w):
+                    if args.norm:
+                        return nn.Parameter(w / torch.std(w))
+                    else:
+                        return w
+
+                net.conv1.bias = normalize_layer(test_model.conv1.bias)
+                net.conv2.bias = normalize_layer(test_model.conv2.bias)
+                net.conv3.bias = normalize_layer(test_model.conv3.bias)
+                net.conv4.bias = normalize_layer(test_model.conv4.bias)
+                net.conv5.bias = normalize_layer(test_model.conv5.bias)
+                net.conv6.bias = normalize_layer(test_model.conv6.bias)
+
+                net.fc1.weight = test_model.fc1.weight
+                net.fc1.bias = test_model.fc1.bias
+                net.fc2.weight = test_model.fc2.weight
+                net.fc2.bias = test_model.fc2.bias
     elif args.mnist:
         if args.full_prec:
             print ("Training FP-Net for MNIST")
