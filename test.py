@@ -49,6 +49,8 @@ def main_test():
 
     parser.add_argument('--save', action='store', default='tmp_models/cifar10', help='name of saved model')
 
+    parser.add_argument('--num-of-options', type=int, default=11, metavar='N', help='num_of_options for rand')
+
     args = parser.parse_args()
 
     use_cuda = torch.cuda.is_available()
@@ -165,7 +167,10 @@ def main_test():
             net.conv1.test_mode_switch()
             net.conv2.test_mode_switch()
 
-        num_of_options = 30
+        num_of_options = args.num_of_options
+        net.conv1.num_of_options = num_of_options
+        net.conv2.num_of_options = num_of_options
+
         print ("###################################")
         print ("Ternary Model")
         print ("###################################")
