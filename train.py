@@ -139,10 +139,11 @@ def main_train():
                 net.conv6.initialize_weights(alpha6, betta6)
 
                 def normalize_layer(w):
-                    if args.norm:
-                        return nn.Parameter(w / torch.std(w))
-                    else:
-                        return w
+                    return w
+                    # if args.norm:
+                    #     return nn.Parameter(w / torch.std(w))
+                    # else:
+                    #     return w
 
                 net.conv1.bias = normalize_layer(test_model.conv1.bias)
                 net.conv2.bias = normalize_layer(test_model.conv2.bias)
