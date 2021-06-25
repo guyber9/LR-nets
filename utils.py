@@ -84,7 +84,7 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args):
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
         outputs = net(inputs)
-        print("output: " + str(outputs))
+        # print("output: " + str(outputs))
         # print("targets: " + str(targets))
         loss = criterion(outputs, targets)
         # print("loss: " + str(loss))
