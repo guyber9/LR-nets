@@ -176,6 +176,14 @@ def main_train():
                 net.conv1.initialize_weights(alpha1, betta1)
                 net.conv2.initialize_weights(alpha2, betta2)
 
+                net.conv1.bias = test_model.conv1.bias
+                net.conv2.bias = test_model.conv2.bias
+
+                net.fc1.weight = test_model.fc1.weight
+                net.fc1.bias = test_model.fc1.bias
+                net.fc2.weight = test_model.fc2.weight
+                net.fc2.bias = test_model.fc2.bias
+
     # if device == 'cuda':
     # TODO    net = torch.nn.DataParallel(net)
     #     cudnn.benchmark = True
@@ -202,8 +210,10 @@ def main_train():
             optimizer = optim.Adam([
                 {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
                 {'params': net.conv2.parameters(), 'weight_decay': probability_decay}
-                # {'params': net.fc1.parameters(), 'weight_decay': weight_decay},
-                # {'params': net.fc2.parameters(), 'weight_decay': weight_decay}
+                {'params': net.fc1.parameters(), 'weight_decay': weight_decay},
+                {'params': net.fc2.parameters(), 'weight_decay': weight_decay},
+                {'params': net.bn1.parameters()},
+                {'params': net.bn2.parameters()}
             ], lr=args.lr, weight_decay=weight_decay)
         elif args.cifar10:
             optimizer = optim.Adam([
