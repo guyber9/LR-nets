@@ -49,7 +49,7 @@ def main_test():
 
     parser.add_argument('--save', action='store', default='tmp_models/cifar10', help='name of saved model')
 
-    parser.add_argument('--num-of-options', type=int, default=11, metavar='N', help='num_of_options for rand')
+    parser.add_argument('--num-of-options', type=int, default=30, metavar='N', help='num_of_options for rand')
 
     args = parser.parse_args()
 
@@ -167,15 +167,14 @@ def main_test():
             net.conv1.test_mode_switch()
             net.conv2.test_mode_switch()
 
-        num_of_options = args.num_of_options
-        net.conv1.num_of_options = num_of_options
-        net.conv2.num_of_options = num_of_options
+        net.conv1.num_of_options = args.num_of_options
+        net.conv2.num_of_options = args.num_of_options
 
         print ("###################################")
         print ("Ternary Model")
         print ("###################################")
         print ("test Data Set")
-        for idx in range(0, num_of_options):
+        for idx in range(0, args.num_of_options):
             print("iteration: " + str(idx))
             acc, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode)
             net.conv1.cntr = net.conv1.cntr + 1
