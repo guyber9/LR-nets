@@ -296,6 +296,12 @@ def main_train():
     else:
         f = None
 
+    print("giu: " + str(args.save_file))
+    print("giu: " + str(args.save_file != 'no_need_to_save'))
+    print("file:")
+    print(f)
+    exit(1)
+
     for epoch in range(start_epoch, start_epoch+args.epochs):
         if args.stam:
             print("alpha " + str(net.conv1.alpha))
