@@ -46,7 +46,7 @@ def main_train():
 
     parser.add_argument('--adam', action='store_true', default=False, help='run with adam')
 
-    parser.add_argument('--save', action='store', default='tmp_models/cifar10', help='name of saved model')
+    parser.add_argument('--save_file', action='store', default='no_need_to_save', help='name of saved model')
 
     parser.add_argument('--stam', action='store_true', default=False, help='run with adam')
 
@@ -290,13 +290,21 @@ def main_train():
 
     net = net.to(device)
 
+    if args.save_file != 'no_need_to_save':
+        file_name = "tmp_logs/" + str(args.save_file) + ".log"
+        f = open(file_name, "w")
+    else:
+        f = None
+
     for epoch in range(start_epoch, start_epoch+args.epochs):
         if args.stam:
             print("alpha " + str(net.conv1.alpha))
             print("betta " + str(net.conv1.betta))
-        train(net, criterion, epoch, device, trainloader, optimizer, args)
-        best_acc, best_epoch = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False)
+        train(net, criterion, epoch, device, trainloader, optimizer, args, f)
+        best_acc, best_epoch = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
         scheduler.step()
+
+    f.close()
 
 if __name__ == '__main__':
     main_train()

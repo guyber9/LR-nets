@@ -163,7 +163,7 @@ class LRNet_CIFAR10(nn.Module):
     def forward(self, x):
         x = self.conv1(x)  # input is 3 x 32 x 32, output is 128 x 32 x 32
         # print("x1: " + str(x))
-        # x = self.bn1(x)
+        # x = self.bn1(x)  # <- problematic batchnoram (?)
         x = F.relu(x)
         # print("bn1: " + str(x))
         x = self.conv2(x)  # 128 x 32 x 32

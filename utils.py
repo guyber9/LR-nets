@@ -74,7 +74,7 @@ import numpy as np
 #     return (100. * correct / len(test_loader.dataset))
 
 # Training
-def train(net, criterion, epoch, device, trainloader, optimizer, args):
+def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None):
     print('\nEpoch: %d' % epoch)
     net.train()
     train_loss = 0
@@ -104,12 +104,16 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args):
         if args.nohup:
             print(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                          % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+            if f is not None:
+                print('Train Epoch: {} [{}/{} ({:.0f}%)]\tloss: {:.6f}\tloss: {:.6f}'.format(
+                    epoch, batch_idx * len(trainloader), len(trainloader.dataset),
+                           100. * batch_idx / len(trainloader), loss.item(), loss.item()), file=f)
         else:
             progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                          % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
 
-def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False):
+def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=None):
     # global best_acc
     net.eval()
     test_loss = 0
@@ -128,15 +132,17 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
             if args.nohup:
                 print(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                              % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
+            if f is not None:
+                print('\n' ' set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+                    test_loss, correct, len(testloader.dataset),
+                    100. * correct / len(testloader.dataset)), file=f)
+
             else:
                 progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                              % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
     # Save checkpoint.
     acc = 100.*correct/total
-    print("acc: " + str(acc))
-    print("best_acc: " + str(best_acc))
-    print("test_mode: " + str(test_mode))
     if (acc > best_acc) and not test_mode:
         if not args.dont_save:
             print('Saving..')
@@ -148,13 +154,12 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
             if not os.path.isdir('checkpoint'):
                 os.mkdir('checkpoint')
             torch.save(state, './checkpoint/ckpt.pth')
+            dataset_name = 'mnist' if args.mnist else 'cifar10'
+            net_type = '_fp' if args.full_prec else '_lrnet'
+            isBinary = '_binary' if args.binary_mode else ''
+            torch.save(net.state_dict(), "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + ".pt")
         best_acc = acc
         best_epoch = epoch
-        dataset_name = 'mnist' if args.mnist else 'cifar10'
-        net_type = '_fp' if args.full_prec else '_lrnet'
-        isBinary = '_binary' if args.binary_mode else ''
-        torch.save(net.state_dict(), "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + ".pt")
-
     if test_mode:
         best_acc = acc
 
@@ -162,86 +167,86 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
     return best_acc, best_epoch
 
 
-_, term_width = os.popen('stty size', 'r').read().split()
-term_width = int(term_width)
-
-TOTAL_BAR_LENGTH = 65.
-last_time = time.time()
-begin_time = last_time
-def progress_bar(current, total, msg=None):
-    global last_time, begin_time
-    if current == 0:
-        begin_time = time.time()  # Reset for new bar.
-
-    cur_len = int(TOTAL_BAR_LENGTH*current/total)
-    rest_len = int(TOTAL_BAR_LENGTH - cur_len) - 1
-
-    sys.stdout.write(' [')
-    for i in range(cur_len):
-        sys.stdout.write('=')
-    sys.stdout.write('>')
-    for i in range(rest_len):
-        sys.stdout.write('.')
-    sys.stdout.write(']')
-
-    cur_time = time.time()
-    step_time = cur_time - last_time
-    last_time = cur_time
-    tot_time = cur_time - begin_time
-
-    L = []
-    L.append('  Step: %s' % format_time(step_time))
-    L.append(' | Tot: %s' % format_time(tot_time))
-    if msg:
-        L.append(' | ' + msg)
-
-    msg = ''.join(L)
-    sys.stdout.write(msg)
-    for i in range(term_width-int(TOTAL_BAR_LENGTH)-len(msg)-3):
-        sys.stdout.write(' ')
-
-    # Go back to the center of the bar.
-    for i in range(term_width-int(TOTAL_BAR_LENGTH/2)+2):
-        sys.stdout.write('\b')
-    sys.stdout.write(' %d/%d ' % (current+1, total))
-
-    if current < total-1:
-        sys.stdout.write('\r')
-    else:
-        sys.stdout.write('\n')
-    sys.stdout.flush()
-
-def format_time(seconds):
-    days = int(seconds / 3600/24)
-    seconds = seconds - days*3600*24
-    hours = int(seconds / 3600)
-    seconds = seconds - hours*3600
-    minutes = int(seconds / 60)
-    seconds = seconds - minutes*60
-    secondsf = int(seconds)
-    seconds = seconds - secondsf
-    millis = int(seconds*1000)
-
-    f = ''
-    i = 1
-    if days > 0:
-        f += str(days) + 'D'
-        i += 1
-    if hours > 0 and i <= 2:
-        f += str(hours) + 'h'
-        i += 1
-    if minutes > 0 and i <= 2:
-        f += str(minutes) + 'm'
-        i += 1
-    if secondsf > 0 and i <= 2:
-        f += str(secondsf) + 's'
-        i += 1
-    if millis > 0 and i <= 2:
-        f += str(millis) + 'ms'
-        i += 1
-    if f == '':
-        f = '0ms'
-    return f
+# _, term_width = os.popen('stty size', 'r').read().split()
+# term_width = int(term_width)
+#
+# TOTAL_BAR_LENGTH = 65.
+# last_time = time.time()
+# begin_time = last_time
+# def progress_bar(current, total, msg=None):
+#     global last_time, begin_time
+#     if current == 0:
+#         begin_time = time.time()  # Reset for new bar.
+#
+#     cur_len = int(TOTAL_BAR_LENGTH*current/total)
+#     rest_len = int(TOTAL_BAR_LENGTH - cur_len) - 1
+#
+#     sys.stdout.write(' [')
+#     for i in range(cur_len):
+#         sys.stdout.write('=')
+#     sys.stdout.write('>')
+#     for i in range(rest_len):
+#         sys.stdout.write('.')
+#     sys.stdout.write(']')
+#
+#     cur_time = time.time()
+#     step_time = cur_time - last_time
+#     last_time = cur_time
+#     tot_time = cur_time - begin_time
+#
+#     L = []
+#     L.append('  Step: %s' % format_time(step_time))
+#     L.append(' | Tot: %s' % format_time(tot_time))
+#     if msg:
+#         L.append(' | ' + msg)
+#
+#     msg = ''.join(L)
+#     sys.stdout.write(msg)
+#     for i in range(term_width-int(TOTAL_BAR_LENGTH)-len(msg)-3):
+#         sys.stdout.write(' ')
+#
+#     # Go back to the center of the bar.
+#     for i in range(term_width-int(TOTAL_BAR_LENGTH/2)+2):
+#         sys.stdout.write('\b')
+#     sys.stdout.write(' %d/%d ' % (current+1, total))
+#
+#     if current < total-1:
+#         sys.stdout.write('\r')
+#     else:
+#         sys.stdout.write('\n')
+#     sys.stdout.flush()
+#
+# def format_time(seconds):
+#     days = int(seconds / 3600/24)
+#     seconds = seconds - days*3600*24
+#     hours = int(seconds / 3600)
+#     seconds = seconds - hours*3600
+#     minutes = int(seconds / 60)
+#     seconds = seconds - minutes*60
+#     secondsf = int(seconds)
+#     seconds = seconds - secondsf
+#     millis = int(seconds*1000)
+#
+#     f = ''
+#     i = 1
+#     if days > 0:
+#         f += str(days) + 'D'
+#         i += 1
+#     if hours > 0 and i <= 2:
+#         f += str(hours) + 'h'
+#         i += 1
+#     if minutes > 0 and i <= 2:
+#         f += str(minutes) + 'm'
+#         i += 1
+#     if secondsf > 0 and i <= 2:
+#         f += str(secondsf) + 's'
+#         i += 1
+#     if millis > 0 and i <= 2:
+#         f += str(millis) + 'ms'
+#         i += 1
+#     if f == '':
+#         f = '0ms'
+#     return f
 
 # def find_weights(w, my_prints=False):
 #     if my_prints:
