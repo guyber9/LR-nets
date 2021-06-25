@@ -134,6 +134,9 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
 
     # Save checkpoint.
     acc = 100.*correct/total
+    print("acc: " + str(acc))
+    print("best_acc: " + str(best_acc))
+    print("test_mode: " + str(test_mode))
     if (acc > best_acc) and not test_mode:
         if not args.dont_save:
             print('Saving..')
