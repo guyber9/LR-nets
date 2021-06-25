@@ -304,7 +304,8 @@ def main_train():
         best_acc, best_epoch = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
         scheduler.step()
 
-    f.close()
+    if args.save_file != 'no_need_to_save':
+        f.close()
 
 if __name__ == '__main__':
     main_train()
