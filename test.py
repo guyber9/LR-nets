@@ -139,12 +139,14 @@ def main_test():
     # net = net.to(device)
     # best_acc, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode)
     # print("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
-    best_acc = 0;
+    best_acc = 0
 
     dataset_name = 'mnist' if args.mnist else 'cifar10'
     net_type = '_fp' if args.full_prec else '_lrnet'
     isBinary = '_binary' if args.binary_mode else ''
-    net.load_state_dict(torch.load("saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + ".pt"))
+    load_model_name = "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + ".pt"
+    print('==> Loading model: ' + str(load_model_name))
+    net.load_state_dict(torch.load(load_model_name))
     net.eval()
     net = net.to(device)
 
