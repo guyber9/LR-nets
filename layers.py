@@ -76,7 +76,7 @@ class LRnetConv2d(nn.Module):
         self.alpha = nn.Parameter(torch.tensor(alpha, dtype=self.tensoe_dtype, device=self.device))
         self.betta = nn.Parameter(torch.tensor(betta, dtype=self.tensoe_dtype, device=self.device))
 
-    def test_mode_switch(self, num_of_options, tickets=1) -> None:
+    def test_mode_switch(self, num_of_options, tickets=10) -> None:
         print ("test_mode_switch")
         self.test_forward = True
         print("Initializing Test Weights: \n")
