@@ -167,13 +167,17 @@ def main_train():
         if args.full_prec:
             if args.ver2:
                 print("Training FP-Net for CIFAR10 | ver2")
-                net = FPNet_sign()
+                net = FPNet_sign().to(device)
             else:
                 print ("Training FP-Net for MNIST")
                 net = FPNet().to(device)
         else:
-            print ("Training LR-Net for MNIST")
-            net = LRNet().to(device)
+            if args.ver2:
+                print("Training FP-Net for CIFAR10 | ver2")
+                net = LRNet_sign().to(device)
+            else:
+                print ("Training LR-Net for MNIST")
+                net = LRNet().to(device)
 
             if args.load_pre_trained:
                 print("Loading Parameters for MNIST")
