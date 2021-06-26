@@ -117,8 +117,8 @@ def main_train():
     if args.cifar10:
         if args.full_prec:
             if args.ver2:
-                print("Training FP-Net for CIFAR10 | ver2")
-                net = FPNet_sign()
+                print("add net")
+                exit(1)
             else:
                 print("Training FP-Net for CIFAR10")
                 net = FPNet_CIFAR10()
@@ -165,8 +165,12 @@ def main_train():
                 net.fc2.bias = test_model.fc2.bias
     elif args.mnist:
         if args.full_prec:
-            print ("Training FP-Net for MNIST")
-            net = FPNet().to(device)
+            if args.ver2:
+                print("Training FP-Net for CIFAR10 | ver2")
+                net = FPNet_sign()
+            else:
+                print ("Training FP-Net for MNIST")
+                net = FPNet().to(device)
         else:
             print ("Training LR-Net for MNIST")
             net = LRNet().to(device)
