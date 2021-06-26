@@ -50,6 +50,8 @@ def main_train():
 
     parser.add_argument('--stam', action='store_true', default=False, help='run with adam')
 
+    parser.add_argument('--ver2', action='store_true', default=False, help='run with adam')
+
     args = parser.parse_args()
     torch.manual_seed(args.seed)
     use_cuda = torch.cuda.is_available()
@@ -114,8 +116,12 @@ def main_train():
     print('==> Building model..')
     if args.cifar10:
         if args.full_prec:
-            print ("Training FP-Net for CIFAR10")
-            net = FPNet_CIFAR10()
+            if args.ver2:
+                print("Training FP-Net for CIFAR10")
+                net = FPNet_CIFAR10()
+            else:
+                print("Training FP-Net for CIFAR10 | ver2")
+                net = FPNet_sign()
         else:
             print ("Training LR-Net for CIFAR10")
             net = LRNet_CIFAR10()

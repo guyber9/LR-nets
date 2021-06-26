@@ -155,7 +155,8 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
             dataset_name = 'mnist' if args.mnist else 'cifar10'
             net_type = '_fp' if args.full_prec else '_lrnet'
             isBinary = '_binary' if args.binary_mode else ''
-            torch.save(net.state_dict(), "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + ".pt")
+            isVer2 = 'ver2' if args.ver2 else ''
+            torch.save(net.state_dict(), "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + str(isVer2) + ".pt")
         best_acc = acc
         best_epoch = epoch
     if test_mode:
