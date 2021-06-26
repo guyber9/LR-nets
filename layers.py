@@ -392,7 +392,7 @@ class NewLRnetConv2d(nn.Module):
             input_mean = 2 * (1 - torch.erf((-1) * m / v)) - 1
             # print_full_tensor(discrete_input, "")
 
-            m = F.conv2d(input, mean, self.bias, self.stride, self.padding, self.dilation, self.groups)
+            m = F.conv2d(input_mean, mean, self.bias, self.stride, self.padding, self.dilation, self.groups)
             # E[x^2]
             mean_square_tmp = prob_mat * self.discrete_square_mat
             mean_square = torch.sum(mean_square_tmp, dim=4)
