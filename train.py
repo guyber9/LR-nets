@@ -117,11 +117,11 @@ def main_train():
     if args.cifar10:
         if args.full_prec:
             if args.ver2:
-                print("Training FP-Net for CIFAR10")
-                net = FPNet_CIFAR10()
-            else:
                 print("Training FP-Net for CIFAR10 | ver2")
                 net = FPNet_sign()
+            else:
+                print("Training FP-Net for CIFAR10")
+                net = FPNet_CIFAR10()
         else:
             print ("Training LR-Net for CIFAR10")
             net = LRNet_CIFAR10()
