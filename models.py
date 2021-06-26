@@ -105,7 +105,7 @@ class FPNet_sign(nn.Module):
 class LRNet_sign(nn.Module):
 
     def __init__(self):
-        super(LRNet, self).__init__()
+        super(LRNet_sign, self).__init__()
         self.conv1 = lrnet_nn.LRnetConv2d_not_sample(1, 32, 5, 1)
         self.conv2 = lrnet_nn.NewLRnetConv2d(32, 64, 5, 1)
         self.fc1 = nn.Linear(6400, 512)
