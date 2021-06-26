@@ -135,10 +135,6 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
                 if f is not None:
                     print(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                           % (test_loss / (batch_idx + 1), 100. * correct / total, correct, total), file=f)
-                    # print('\n' ' set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-                    #     test_loss, correct, len(testloader.dataset),
-                    #     100. * correct / len(testloader.dataset)), file=f)
-
             else:
                 progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                              % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
@@ -165,7 +161,9 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
     if test_mode:
         best_acc = acc
 
-    print("--> best accuracy is: " + str(best_acc) + " (epoch: " + str(best_epoch) + ")", file=f)
+    print("--> best accuracy is: " + str(best_acc) + " (epoch: " + str(best_epoch) + ")")
+    if f is not None:
+        print("--> best accuracy is: " + str(best_acc) + " (epoch: " + str(best_epoch) + ")", file=f)
     return best_acc, best_epoch
 
 
