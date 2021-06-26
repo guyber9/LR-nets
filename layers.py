@@ -392,21 +392,21 @@ class NewLRnetConv2d(nn.Module):
             input_mean = 2 * (1 - torch.erf((-1) * m / v)) - 1
             # print_full_tensor(discrete_input, "")
 
-            m = F.conv2d(input_mean, mean, self.bias, self.stride, self.padding, self.dilation, self.groups)
+            m1 = F.conv2d(input_mean, mean, self.bias, self.stride, self.padding, self.dilation, self.groups)
             # E[x^2]
             mean_square_tmp = prob_mat * self.discrete_square_mat
             mean_square = torch.sum(mean_square_tmp, dim=4)
             # E[x] ^ 2
             mean_pow2 = mean * mean
 
-            sigma_square = mean_square - mean_pow2
+            # sigma_square = mean_square - mean_pow2
             e_h_2 = torch.ones(input_mean.size(), dtype=self.tensoe_dtype, device=self.device)
 
             if torch.cuda.is_available():
                 torch.backends.cudnn.deterministic = True
 
             # z1 = F.conv2d((input_mean*input_mean), mean_pow2, None, self.stride, self.padding, self.dilation, self.groups)
-            z1 = m * m
+            z1 = m1 * m1
             z2 = F.conv2d(e_h_2, mean_square, None, self.stride, self.padding, self.dilation, self.groups)
             z3 = F.conv2d((input_mean*input_mean), mean_pow2, None, self.stride, self.padding, self.dilation, self.groups)
 
@@ -414,10 +414,10 @@ class NewLRnetConv2d(nn.Module):
                 torch.backends.cudnn.deterministic = False
 
             z = z1 + z2 - z3
-            v = torch.sqrt(z)
+            v1 = torch.sqrt(z)
             epsilon = torch.rand(z.size(), requires_grad=False, dtype=self.tensoe_dtype, device=self.device)
 
             # print ("m: " + str(m))
             # print ("v: " + str(v))
 
-            return m + epsilon * v
+            return m1 + epsilon * v1
