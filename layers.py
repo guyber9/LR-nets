@@ -194,10 +194,12 @@ class LRnetConv2d_not_sample(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self) -> None:
-        init.constant_(self.alpha, -0.69314)
-        init.constant_(self.betta, 0.0)
+        # init.constant_(self.alpha, -0.69314)
+        # init.constant_(self.betta, 0.0)
         # init.kaiming_uniform_(self.alpha, a=math.sqrt(5))
         # init.kaiming_uniform_(self.betta, a=math.sqrt(5))
+        torch.nn.init.normal_(self.alpha, mean=0.0, std=0.01)
+        torch.nn.init.normal_(self.betta, mean=0.0, std=0.01)
         if self.bias is not None:
             prob_size = torch.cat(((1 - self.alpha - self.betta), self.alpha, self.betta), 4)
             fan_in, _ = nn.init._calculate_fan_in_and_fan_out(prob_size)
@@ -323,8 +325,10 @@ class NewLRnetConv2d(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self) -> None:
-        init.constant_(self.alpha, -0.69314)
-        init.constant_(self.betta, 0.0)
+        # init.constant_(self.alpha, -0.69314)
+        # init.constant_(self.betta, 0.0)
+        torch.nn.init.normal_(self.alpha, mean=0.0, std=0.01)
+        torch.nn.init.normal_(self.betta, mean=0.0, std=0.01)
         if self.bias is not None:
             prob_size = torch.cat(((1 - self.alpha - self.betta), self.alpha, self.betta), 4)
             fan_in, _ = nn.init._calculate_fan_in_and_fan_out(prob_size)
@@ -406,7 +410,7 @@ class NewLRnetConv2d(nn.Module):
                 torch.backends.cudnn.deterministic = True
 
             # z1 = F.conv2d((input_mean*input_mean), mean_pow2, None, self.stride, self.padding, self.dilation, self.groups)
-            z1 = m1 * m1
+            # z1 = m1 * m1
             z2 = F.conv2d(e_h_2, mean_square, None, self.stride, self.padding, self.dilation, self.groups)
             z3 = F.conv2d((input_mean*input_mean), mean_pow2, None, self.stride, self.padding, self.dilation, self.groups)
 

@@ -78,44 +78,17 @@ class LRNet(nn.Module):
         output = x
         return output
 
-
-class FPNet_sign(nn.Module):
-
-    def __init__(self):
-        super(FPNet_sign, self).__init__()
-        self.conv1 = nn.Conv2d(1, 32, 5, 1)  # 32 x 24 x 24
-        self.conv2 = nn.Conv2d(32, 64, 5, 1)  # 64 x 20 x 20
-        self.fc1 = nn.Linear(6400, 512)
-        self.fc2 = nn.Linear(512, 10)
-
-    def forward(self, x):
-        x = self.conv1(x)
-        x = torch.sign(x)
-        x = self.conv2(x)
-        x = F.relu(x)
-        x = F.max_pool2d(x, 2)  # 64 x 10 x 10
-        x = torch.flatten(x, 1)  # 1024
-        x = self.fc1(x)
-        x = F.relu(x)
-        x = self.fc2(x)
-        output = x
-        return output
-
-
 class LRNet_sign(nn.Module):
 
     def __init__(self):
         super(LRNet_sign, self).__init__()
-        # self.conv1 = lrnet_nn.LRnetConv2d_not_sample(1, 32, 5, 1)
-        # self.conv2 = lrnet_nn.NewLRnetConv2d(32, 64, 5, 1)
-        self.conv1 = lrnet_nn.LRnetConv2d(1, 32, 5, 1)
-        self.conv2 = lrnet_nn.LRnetConv2d(32, 64, 5, 1)
+        self.conv1 = lrnet_nn.LRnetConv2d_not_sample(1, 32, 5, 1)
+        self.conv2 = lrnet_nn.NewLRnetConv2d(32, 64, 5, 1)
         self.fc1 = nn.Linear(6400, 512)
         self.fc2 = nn.Linear(512, 10)
 
     def forward(self, x):
         x = self.conv1(x)
-        x = torch.sign(x)
         x = self.conv2(x)
         x = F.relu(x)
         x = F.max_pool2d(x, 2)  # 64 x 10 x 10

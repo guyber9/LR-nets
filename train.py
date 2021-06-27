@@ -165,29 +165,16 @@ def main_train():
                 net.fc2.bias = test_model.fc2.bias
     elif args.mnist:
         if args.full_prec:
-            if args.ver2:
-                print("Training FP-Net for CIFAR10 | ver2")
-                net = FPNet_sign().to(device)
-            else:
-                print ("Training FP-Net for MNIST")
-                net = FPNet().to(device)
+            print ("Training FP-Net for MNIST")
+            net = FPNet().to(device)
         else:
-            if args.ver2:
-                print("Training FP-Net for CIFAR10 | ver2")
-                net = LRNet_sign().to(device)
-            else:
-                print ("Training LR-Net for MNIST")
-                net = LRNet().to(device)
+            print ("Training LR-Net for MNIST")
+            net = LRNet().to(device)
 
             if args.load_pre_trained:
-                if args.ver2:
-                    print("Training FP-Net for CIFAR10 | ver2")
-                    test_model = FPNet_sign().to(device)
-                    test_model.load_state_dict(torch.load('saved_models/mnist_fp_ver2.pt'))
-                else:
-                    print("Loading Parameters for MNIST")
-                    test_model = FPNet().to(device)
-                    test_model.load_state_dict(torch.load('saved_models/mnist_fp.pt'))
+                print("Loading Parameters for MNIST")
+                test_model = FPNet().to(device)
+                test_model.load_state_dict(torch.load('saved_models/mnist_fp.pt'))
                 # test_model.eval()
 
                 alpha1, betta1 = find_sigm_weights(test_model.conv1.weight, False, args.binary_mode)
@@ -228,12 +215,14 @@ def main_train():
             optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
         elif args.mnist:
             if args.ver2:
-                optimizer = optim.Adam([
-                    {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.fc1.parameters(), 'weight_decay': weight_decay},
-                    {'params': net.fc2.parameters(), 'weight_decay': weight_decay}
-                ], lr=args.lr, weight_decay=weight_decay)
+                # TODO
+                optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
+                # optimizer = optim.Adam([
+                #     {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
+                #     {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
+                #     {'params': net.fc1.parameters(), 'weight_decay': weight_decay},
+                #     {'params': net.fc2.parameters(), 'weight_decay': weight_decay}
+                # ], lr=args.lr, weight_decay=weight_decay)
             else:
                 optimizer = optim.Adam([
                     {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
