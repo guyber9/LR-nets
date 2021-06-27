@@ -76,6 +76,10 @@ class LRnetConv2d(nn.Module):
         self.alpha = nn.Parameter(torch.tensor(alpha, dtype=self.tensoe_dtype, device=self.device))
         self.betta = nn.Parameter(torch.tensor(betta, dtype=self.tensoe_dtype, device=self.device))
 
+    def train_mode_switch(self) -> None:
+        print ("train_mode_switch")
+        self.test_forward = False
+
     def test_mode_switch(self, num_of_options, tickets=10) -> None:
         print ("test_mode_switch")
         self.test_forward = True
@@ -85,13 +89,16 @@ class LRnetConv2d(nn.Module):
         betta_prob = sigmoid_func(self.betta) * (1 - alpha_prob)
         prob_mat = torch.cat(((1 - alpha_prob - betta_prob), alpha_prob, betta_prob), 4)
         # prob_mat = prob_mat.detach().cpu().clone().numpy()
-        self.num_of_options = num_of_options
 
-        self.test_weight_arr = []
-        for idx in range(0, self.num_of_options):
-            sampled = torch.distributions.Categorical(prob_mat).sample() - 1
-            # sampled = torch.distributions.Multinomial(prob_mat).sample() - 1
-            self.test_weight_arr.append(sampled)
+        sampled = torch.distributions.Categorical(prob_mat).sample() - 1
+        self.test_weight = torch.tensor(sampled, dtype=self.tensor_dtype, device=self.device)
+
+        # self.num_of_options = num_of_options
+        # self.test_weight_arr = []
+        # for idx in range(0, self.num_of_options):
+        #     sampled = torch.distributions.Categorical(prob_mat).sample() - 1
+        #     # sampled = torch.distributions.Multinomial(prob_mat).sample() - 1
+        #     self.test_weight_arr.append(sampled)
 
         # self.test_weight_arr = []
         # for idx in range(0, self.num_of_options):
@@ -122,7 +129,7 @@ class LRnetConv2d(nn.Module):
 
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
-            self.test_weight = torch.tensor(self.test_weight_arr[self.cntr],dtype=self.tensoe_dtype,device=self.device)
+            # self.test_weight = torch.tensor(self.test_weight_arr[self.cntr],dtype=self.tensor_dtype,device=self.device)
             return F.conv2d(input, self.test_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
         else:
             # print ("alpha: " + str(self.alpha))
@@ -146,7 +153,7 @@ class LRnetConv2d(nn.Module):
             if torch.cuda.is_available():
                 torch.backends.cudnn.deterministic = False
             v = torch.sqrt(z1)
-            epsilon = torch.rand(z1.size(), requires_grad=False, dtype=self.tensoe_dtype, device=self.device)
+            epsilon = torch.rand(z1.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
 
             # print ("m: " + str(m))
             # print ("v: " + str(v))
@@ -177,21 +184,21 @@ class LRnetConv2d_not_sample(nn.Module):
             self.device = 'cuda'
         else:
             self.device = 'cpu'
-        self.tensoe_dtype = torch.float32
+        self.tensor_dtype = torch.float32
 
         if self.transposed:
             D_0, D_1, D_2, D_3 = out_channels, in_channels, kernel_size, kernel_size
         else:
             D_0, D_1, D_2, D_3 = in_channels, out_channels, kernel_size, kernel_size
 
-        self.alpha = torch.nn.Parameter(torch.empty([D_0, D_1, D_2, D_3, 1], dtype=self.tensoe_dtype, device=self.device))
-        self.betta = torch.nn.Parameter(torch.empty([D_0, D_1, D_2, D_3, 1], dtype=self.tensoe_dtype, device=self.device))
+        self.alpha = torch.nn.Parameter(torch.empty([D_0, D_1, D_2, D_3, 1], dtype=self.tensor_dtype, device=self.device))
+        self.betta = torch.nn.Parameter(torch.empty([D_0, D_1, D_2, D_3, 1], dtype=self.tensor_dtype, device=self.device))
         self.test_weight = torch.empty([D_0, D_1, D_2, D_3], dtype=torch.float32, device=self.device)
-        self.bias = torch.nn.Parameter(torch.empty([out_channels], dtype=self.tensoe_dtype, device=self.device))
+        self.bias = torch.nn.Parameter(torch.empty([out_channels], dtype=self.tensor_dtype, device=self.device))
 
         discrete_prob = np.array([-1.0, 0.0, 1.0])
         discrete_prob = np.tile(discrete_prob, [self.out_channels, self.in_channels, self.kernel_size, self.kernel_size, 1])
-        self.discrete_mat = torch.as_tensor(discrete_prob, dtype=self.tensoe_dtype, device=self.device)
+        self.discrete_mat = torch.as_tensor(discrete_prob, dtype=self.tensor_dtype, device=self.device)
         self.discrete_square_mat = self.discrete_mat * self.discrete_mat
 
         self.num_of_options = 30
@@ -215,8 +222,8 @@ class LRnetConv2d_not_sample(nn.Module):
 
     def initialize_weights(self, alpha, betta) -> None:
         print ("Initialize Weights")
-        self.alpha = nn.Parameter(torch.tensor(alpha, dtype=self.tensoe_dtype, device=self.device))
-        self.betta = nn.Parameter(torch.tensor(betta, dtype=self.tensoe_dtype, device=self.device))
+        self.alpha = nn.Parameter(torch.tensor(alpha, dtype=self.tensor_dtype, device=self.device))
+        self.betta = nn.Parameter(torch.tensor(betta, dtype=self.tensor_dtype, device=self.device))
 
     def test_mode_switch(self, num_of_options, tickets=10) -> None:
         print ("test_mode_switch")
@@ -257,7 +264,7 @@ class LRnetConv2d_not_sample(nn.Module):
 
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
-            self.test_weight = torch.tensor(self.test_weight_arr[self.cntr],dtype=self.tensoe_dtype,device=self.device)
+            self.test_weight = torch.tensor(self.test_weight_arr[self.cntr],dtype=self.tensor_dtype,device=self.device)
             return F.conv2d(input, self.test_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
         else:
             prob_alpha = self.sigmoid(self.alpha)
@@ -308,21 +315,21 @@ class NewLRnetConv2d(nn.Module):
             self.device = 'cuda'
         else:
             self.device = 'cpu'
-        self.tensoe_dtype = torch.float32
+        self.tensor_dtype = torch.float32
 
         if self.transposed:
             D_0, D_1, D_2, D_3 = out_channels, in_channels, kernel_size, kernel_size
         else:
             D_0, D_1, D_2, D_3 = in_channels, out_channels, kernel_size, kernel_size
 
-        self.alpha = torch.nn.Parameter(torch.empty([D_0, D_1, D_2, D_3, 1], dtype=self.tensoe_dtype, device=self.device))
-        self.betta = torch.nn.Parameter(torch.empty([D_0, D_1, D_2, D_3, 1], dtype=self.tensoe_dtype, device=self.device))
+        self.alpha = torch.nn.Parameter(torch.empty([D_0, D_1, D_2, D_3, 1], dtype=self.tensor_dtype, device=self.device))
+        self.betta = torch.nn.Parameter(torch.empty([D_0, D_1, D_2, D_3, 1], dtype=self.tensor_dtype, device=self.device))
         self.test_weight = torch.empty([D_0, D_1, D_2, D_3], dtype=torch.float32, device=self.device)
-        self.bias = torch.nn.Parameter(torch.empty([out_channels], dtype=self.tensoe_dtype, device=self.device))
+        self.bias = torch.nn.Parameter(torch.empty([out_channels], dtype=self.tensor_dtype, device=self.device))
 
         discrete_prob = np.array([-1.0, 0.0, 1.0])
         discrete_prob = np.tile(discrete_prob, [self.out_channels, self.in_channels, self.kernel_size, self.kernel_size, 1])
-        self.discrete_mat = torch.as_tensor(discrete_prob, dtype=self.tensoe_dtype, device=self.device)
+        self.discrete_mat = torch.as_tensor(discrete_prob, dtype=self.tensor_dtype, device=self.device)
         self.discrete_square_mat = self.discrete_mat * self.discrete_mat
 
         self.num_of_options = 30
@@ -344,8 +351,8 @@ class NewLRnetConv2d(nn.Module):
 
     def initialize_weights(self, alpha, betta) -> None:
         print ("Initialize Weights")
-        self.alpha = nn.Parameter(torch.tensor(alpha, dtype=self.tensoe_dtype, device=self.device))
-        self.betta = nn.Parameter(torch.tensor(betta, dtype=self.tensoe_dtype, device=self.device))
+        self.alpha = nn.Parameter(torch.tensor(alpha, dtype=self.tensor_dtype, device=self.device))
+        self.betta = nn.Parameter(torch.tensor(betta, dtype=self.tensor_dtype, device=self.device))
 
     def test_mode_switch(self, num_of_options, tickets=10) -> None:
         print ("test_mode_switch")
@@ -386,7 +393,7 @@ class NewLRnetConv2d(nn.Module):
 
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
-            self.test_weight = torch.tensor(self.test_weight_arr[self.cntr],dtype=self.tensoe_dtype,device=self.device)
+            self.test_weight = torch.tensor(self.test_weight_arr[self.cntr],dtype=self.tensor_dtype,device=self.device)
             return F.conv2d(input, self.test_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
         else:
             m, v = input
@@ -411,7 +418,7 @@ class NewLRnetConv2d(nn.Module):
             mean_pow2 = mean * mean
 
             # sigma_square = mean_square - mean_pow2
-            e_h_2 = torch.ones(input_mean.size(), dtype=self.tensoe_dtype, device=self.device)
+            e_h_2 = torch.ones(input_mean.size(), dtype=self.tensor_dtype, device=self.device)
 
             if torch.cuda.is_available():
                 torch.backends.cudnn.deterministic = True
@@ -427,7 +434,7 @@ class NewLRnetConv2d(nn.Module):
             # z = z1 + z2 - z3
             z = z2 - z3
             v1 = torch.sqrt(z)
-            epsilon = torch.rand(z.size(), requires_grad=False, dtype=self.tensoe_dtype, device=self.device)
+            epsilon = torch.rand(z.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
 
             # print ("m: " + str(m))
             # print ("v: " + str(v))
