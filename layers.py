@@ -90,15 +90,15 @@ class LRnetConv2d(nn.Module):
         prob_mat = torch.cat(((1 - alpha_prob - betta_prob), alpha_prob, betta_prob), 4)
         # prob_mat = prob_mat.detach().cpu().clone().numpy()
 
-        sampled = torch.distributions.Categorical(prob_mat).sample() - 1
-        self.test_weight = torch.tensor(sampled, dtype=self.tensor_dtype, device=self.device)
+        # sampled = torch.distributions.Categorical(prob_mat).sample() - 1
+        # self.test_weight = torch.tensor(sampled, dtype=self.tensor_dtype, device=self.device)
 
-        # self.num_of_options = num_of_options
-        # self.test_weight_arr = []
-        # for idx in range(0, self.num_of_options):
-        #     sampled = torch.distributions.Categorical(prob_mat).sample() - 1
-        #     # sampled = torch.distributions.Multinomial(prob_mat).sample() - 1
-        #     self.test_weight_arr.append(sampled)
+        self.num_of_options = num_of_options
+        self.test_weight_arr = []
+        for idx in range(0, self.num_of_options):
+            sampled = torch.distributions.Categorical(prob_mat).sample() - 1
+            # sampled = torch.distributions.Multinomial(prob_mat).sample() - 1
+            self.test_weight_arr.append(sampled)
 
         # self.test_weight_arr = []
         # for idx in range(0, self.num_of_options):
@@ -129,7 +129,7 @@ class LRnetConv2d(nn.Module):
 
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
-            # self.test_weight = torch.tensor(self.test_weight_arr[self.cntr],dtype=self.tensor_dtype,device=self.device)
+            self.test_weight = torch.tensor(self.test_weight_arr[self.cntr],dtype=self.tensor_dtype,device=self.device)
             return F.conv2d(input, self.test_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
         else:
             # print ("alpha: " + str(self.alpha))
