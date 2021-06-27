@@ -320,9 +320,11 @@ def main_train():
         if args.stam:
             print("alpha " + str(net.conv1.alpha))
             print("betta " + str(net.conv1.betta))
-        net.train_mode_switch()
+        net.conv1.train_mode_switch()
+        net.conv2.train_mode_switch()
         train(net, criterion, epoch, device, trainloader, optimizer, args, f)
-        net.test_mode_switch()
+        net.conv1.test_mode_switch()
+        net.conv2.test_mode_switch()
         best_acc, best_epoch = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
         scheduler.step()
 
