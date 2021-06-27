@@ -413,7 +413,8 @@ class NewLRnetConv2d(nn.Module):
             if torch.cuda.is_available():
                 torch.backends.cudnn.deterministic = False
 
-            z = z1 + z2 - z3
+            # z = z1 + z2 - z3
+            z = z2 - z3
             v1 = torch.sqrt(z)
             epsilon = torch.rand(z.size(), requires_grad=False, dtype=self.tensoe_dtype, device=self.device)
 
