@@ -80,7 +80,7 @@ class LRnetConv2d(nn.Module):
         print ("train_mode_switch")
         self.test_forward = False
 
-    def test_mode_switch(self, num_of_options, tickets=10) -> None:
+    def test_mode_switch(self, num_of_options=1, tickets=10) -> None:
         print ("test_mode_switch")
         self.test_forward = True
         print("Initializing Test Weights: \n")
