@@ -90,7 +90,7 @@ class LRnetConv2d(nn.Module):
         self.test_weight_arr = []
         for idx in range(0, self.num_of_options):
             sampled = torch.distributions.Categorical(prob_mat).sample()
-            self.test_weight_arr[idx].append(sampled)
+            self.test_weight_arr.append(sampled)
 
         # self.test_weight_arr = []
         # for idx in range(0, self.num_of_options):
