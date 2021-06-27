@@ -180,9 +180,13 @@ def main_train():
                 net = LRNet().to(device)
 
             if args.load_pre_trained:
-                print("Loading Parameters for MNIST")
-                test_model = FPNet().to(device)
-                test_model.load_state_dict(torch.load('saved_models/mnist_fp.pt'))
+                if args.ver2:
+                    print("Training FP-Net for CIFAR10 | ver2")
+                    test_model = LRNet_sign().to(device)
+                else:
+                    print("Loading Parameters for MNIST")
+                    test_model = FPNet().to(device)
+                    test_model.load_state_dict(torch.load('saved_models/mnist_fp_ver2.pt'))
                 # test_model.eval()
 
                 alpha1, betta1 = find_sigm_weights(test_model.conv1.weight, False, args.binary_mode)
