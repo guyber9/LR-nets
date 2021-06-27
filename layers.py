@@ -84,34 +84,40 @@ class LRnetConv2d(nn.Module):
         alpha_prob = sigmoid_func(self.alpha)
         betta_prob = sigmoid_func(self.betta) * (1 - alpha_prob)
         prob_mat = torch.cat(((1 - alpha_prob - betta_prob), alpha_prob, betta_prob), 4)
-        prob_mat = prob_mat.detach().cpu().clone().numpy()
+        # prob_mat = prob_mat.detach().cpu().clone().numpy()
         self.num_of_options = num_of_options
+
         self.test_weight_arr = []
         for idx in range(0, self.num_of_options):
-            self.test_weight_arr.append([])
-        for i, val_0 in enumerate(prob_mat):
-            my_array_0 = []
-            for idx in range(0, self.num_of_options):
-                my_array_0.append([])
-            for j, val_1 in enumerate(val_0):
-                my_array_1 = []
-                for idx in range(0, self.num_of_options):
-                    my_array_1.append([])
-                for m, val_2 in enumerate(val_1):
-                    my_array_2 = []
-                    for idx in range(0, self.num_of_options):
-                        my_array_2.append([])
-                    for n, theta in enumerate(val_2):
-                        for idx in range(0, self.num_of_options):
-                            values_arr = np.random.default_rng().multinomial(tickets, theta)
-                            values = np.nanargmax(values_arr) - 1
-                            my_array_2[idx].append(values)
-                    for idx in range(0, self.num_of_options):
-                        my_array_1[idx].append(my_array_2[idx])
-                for idx in range(0, self.num_of_options):
-                    my_array_0[idx].append(my_array_1[idx])
-            for idx in range(0, self.num_of_options):
-                self.test_weight_arr[idx].append(my_array_0[idx])
+            sampled = torch.distributions.Categorical(prob_mat).sample()
+            self.test_weight_arr[idx].append(sampled)
+
+        # self.test_weight_arr = []
+        # for idx in range(0, self.num_of_options):
+        #     self.test_weight_arr.append([])
+        # for i, val_0 in enumerate(prob_mat):
+        #     my_array_0 = []
+        #     for idx in range(0, self.num_of_options):
+        #         my_array_0.append([])
+        #     for j, val_1 in enumerate(val_0):
+        #         my_array_1 = []
+        #         for idx in range(0, self.num_of_options):
+        #             my_array_1.append([])
+        #         for m, val_2 in enumerate(val_1):
+        #             my_array_2 = []
+        #             for idx in range(0, self.num_of_options):
+        #                 my_array_2.append([])
+        #             for n, theta in enumerate(val_2):
+        #                 for idx in range(0, self.num_of_options):
+        #                     values_arr = np.random.default_rng().multinomial(tickets, theta)
+        #                     values = np.nanargmax(values_arr) - 1
+        #                     my_array_2[idx].append(values)
+        #             for idx in range(0, self.num_of_options):
+        #                 my_array_1[idx].append(my_array_2[idx])
+        #         for idx in range(0, self.num_of_options):
+        #             my_array_0[idx].append(my_array_1[idx])
+        #     for idx in range(0, self.num_of_options):
+        #         self.test_weight_arr[idx].append(my_array_0[idx])
 
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
