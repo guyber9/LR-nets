@@ -182,7 +182,7 @@ def main_train():
             if args.load_pre_trained:
                 if args.ver2:
                     print("Training FP-Net for CIFAR10 | ver2")
-                    test_model = LRNet_sign().to(device)
+                    test_model = FPNet_sign().to(device)
                 else:
                     print("Loading Parameters for MNIST")
                     test_model = FPNet().to(device)
