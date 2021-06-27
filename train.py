@@ -323,10 +323,11 @@ def main_train():
         net.conv1.train_mode_switch()
         net.conv2.train_mode_switch()
         train(net, criterion, epoch, device, trainloader, optimizer, args, f)
-        test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
-        net.conv1.test_mode_switch()
-        net.conv2.test_mode_switch()
-        best_acc, best_epoch = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
+        # test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
+        net.conv1.test_mode_switch(num_of_option=10)
+        net.conv2.test_mode_switch(num_of_option=10)
+        for idx in range(0, 10):
+            best_acc, best_epoch = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
         scheduler.step()
 
     if args.save_file != 'no_need_to_save':
