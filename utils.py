@@ -111,6 +111,7 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None):
         else:
             progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                          % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+        return (100.*correct/total)
 
 
 def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=None):

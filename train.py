@@ -322,16 +322,23 @@ def main_train():
             print("betta " + str(net.conv1.betta))
         net.conv1.train_mode_switch()
         net.conv2.train_mode_switch()
-        train(net, criterion, epoch, device, trainloader, optimizer, args, f)
-        # test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
-        net.conv1.test_mode_switch(10)
-        net.conv2.test_mode_switch(10)
+        train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
+        test_acc = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
+        scheduler.step()
+
+        net.conv1.test_mode_switch(1)
+        net.conv2.test_mode_switch(1)
         for idx in range(0, 10):
             best_acc, best_epoch = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
             net.conv1.cntr = net.conv1.cntr + 1
             net.conv2.cntr = net.conv2.cntr + 1
         net.conv1.cntr = 0
         net.conv2.cntr = 0
+        print("#################################3")
+        print("train_acc: " + str(train_acc))
+        print("test_acc: " + str(test_acc))
+        print("best_acc: " + str(best_acc))
+        print("#################################3")
         scheduler.step()
 
     if args.save_file != 'no_need_to_save':
