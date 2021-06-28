@@ -154,9 +154,14 @@ def main_test():
         if param.requires_grad:
             print (name, param.data)
 
+    test(net, criterion, 0, device, trainloader, args, 0, None, test_mode)
+
     net = stam().to(device)
     net.load_state_dict(torch.load(load_model_name))
 
+    test(net, criterion, 0, device, trainloader, args, 0, None, test_mode)
+
+    exit(1)
     # model.conv1 = net.conv1
     # model.conv2 = net.conv2
     # model.fc1 = net.fc1
