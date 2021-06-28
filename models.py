@@ -81,7 +81,7 @@ class LRNet(nn.Module):
 class stam(nn.Module):
 
     def __init__(self):
-        super(LRNet, self).__init__()
+        super(stam, self).__init__()
         self.conv1 = lrnet_nn.LRnetConv2d(1, 32, 5, 1)
         self.conv2 = lrnet_nn.LRnetConv2d(32, 64, 5, 1)
         self.fc1 = nn.Linear(1024, 512)
