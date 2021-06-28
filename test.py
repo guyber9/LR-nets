@@ -149,6 +149,13 @@ def main_test():
     net.eval()
     net = net.to(device)
 
+    for name, param in net.named_parameters():
+        if param.requires_grad:
+            print
+            name, param.data
+
+    exit(1)
+
     print ("###################################")
     print ("Original Trained Model (no ternary)")
     print ("###################################")
