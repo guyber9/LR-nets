@@ -159,6 +159,11 @@ def main_test():
     # net = stam().to(device)
     # net.load_state_dict(torch.load(load_model_name))
 
+    print("sampled")
+    for name, param in net.named_parameters():
+        if param.requires_grad:
+            print (name, param.data)
+
     net.conv1.test_mode_switch(args.options, args.tickets)
     net.conv2.test_mode_switch(args.options, args.tickets)
 
