@@ -151,8 +151,7 @@ def main_test():
 
     for name, param in net.named_parameters():
         if param.requires_grad:
-            print
-            name, param.data
+            print (name, param.data)
 
     exit(1)
 
