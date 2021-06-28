@@ -84,8 +84,14 @@ class stam(nn.Module):
         super(stam, self).__init__()
         self.conv1 = lrnet_nn.LRnetConv2d(1, 32, 5, 1)
         self.conv2 = lrnet_nn.LRnetConv2d(32, 64, 5, 1)
+        # self.conv1 = MyBinaryConv2d(1, 32, 5, 1)
+        # self.conv2 = MyBinaryConv2d(32, 64, 5, 1)
+        self.dropout1 = nn.Dropout(0.5)
+        self.dropout2 = nn.Dropout(0.5)
         self.fc1 = nn.Linear(1024, 512)
         self.fc2 = nn.Linear(512, 10)
+        self.bn1 = nn.BatchNorm2d(32)
+        self.bn2 = nn.BatchNorm2d(64)
 
     def forward(self, x):
         x = self.conv1(x)  # 32 x 24 x 24

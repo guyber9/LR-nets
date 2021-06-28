@@ -154,12 +154,15 @@ def main_test():
         if param.requires_grad:
             print (name, param.data)
 
-    model = stam().to(device)
-    model.conv1 = net.conv1
-    model.conv2 = net.conv2
-    model.fc1 = net.fc1
-    model.fc2 = net.fc2
-    net = model
+    net = stam().to(device)
+    net.load_state_dict(torch.load(load_model_name))
+
+    # model.conv1 = net.conv1
+    # model.conv2 = net.conv2
+    # model.fc1 = net.fc1
+    # model.fc2 = net.fc2
+    # net = model
+
 
     # exit(1)
     ######################################################################
