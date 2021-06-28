@@ -149,11 +149,20 @@ def main_test():
     net.eval()
     net = net.to(device)
 
+    ######################################################################
     for name, param in net.named_parameters():
         if param.requires_grad:
             print (name, param.data)
 
-    exit(1)
+    model = stam().to(device)
+    model.conv1 = net.conv1
+    model.conv2 = net.conv2
+    model.fc1 = net.fc1
+    model.fc2 = net.fc2
+    net = model
+
+    # exit(1)
+    ######################################################################
 
     print ("###################################")
     print ("Original Trained Model (no ternary)")
