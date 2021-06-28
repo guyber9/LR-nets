@@ -149,36 +149,25 @@ def main_test():
     net.eval()
     net = net.to(device)
 
-    ######################################################################
-    for name, param in net.named_parameters():
-        if param.requires_grad:
-            print (name, param.data)
-
-    test(net, criterion, 0, device, trainloader, args, 0, None, test_mode)
-
-    # net = stam().to(device)
-    # net.load_state_dict(torch.load(load_model_name))
-
-    print("sampled")
-    for name, param in net.named_parameters():
-        if param.requires_grad:
-            print (name, param.data)
-
-    net.conv1.test_mode_switch(args.options, args.tickets)
-    net.conv2.test_mode_switch(args.options, args.tickets)
-
-    test(net, criterion, 0, device, trainloader, args, 0, None, test_mode)
-
-    exit(1)
-    # model.conv1 = net.conv1
-    # model.conv2 = net.conv2
-    # model.fc1 = net.fc1
-    # model.fc2 = net.fc2
-    # net = model
-
-
+    # ######################################################################
+    # for name, param in net.named_parameters():
+    #     if param.requires_grad:
+    #         print (name, param.data)
+    #
+    # test(net, criterion, 0, device, trainloader, args, 0, None, test_mode)
+    #
+    # print("sampled")
+    # for name, param in net.named_parameters():
+    #     if param.requires_grad:
+    #         print (name, param.data)
+    #
+    # net.conv1.test_mode_switch(args.options, args.tickets)
+    # net.conv2.test_mode_switch(args.options, args.tickets)
+    #
+    # test(net, criterion, 0, device, trainloader, args, 0, None, test_mode)
+    #
     # exit(1)
-    ######################################################################
+    # ######################################################################
 
     print ("###################################")
     print ("Original Trained Model (no ternary)")
