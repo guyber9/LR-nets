@@ -62,6 +62,7 @@ class LRNet(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)  # 32 x 24 x 24
+        print("x1: " + str(x))
         x = self.bn1(x)
         x = F.max_pool2d(x, 2) # 32 x 12 x 12
         x = F.relu(x)
@@ -95,6 +96,7 @@ class stam(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)  # 32 x 24 x 24
+        x = self.bn1(x)
         x = F.max_pool2d(x, 2) # 32 x 12 x 12
         x = F.relu(x)
         x = self.conv2(x) # 64 x 8 x 8

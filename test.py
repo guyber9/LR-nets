@@ -156,8 +156,11 @@ def main_test():
 
     test(net, criterion, 0, device, trainloader, args, 0, None, test_mode)
 
-    net = stam().to(device)
-    net.load_state_dict(torch.load(load_model_name))
+    # net = stam().to(device)
+    # net.load_state_dict(torch.load(load_model_name))
+
+    net.conv1.test_mode_switch(args.options, args.tickets)
+    net.conv2.test_mode_switch(args.options, args.tickets)
 
     test(net, criterion, 0, device, trainloader, args, 0, None, test_mode)
 
