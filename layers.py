@@ -129,7 +129,7 @@ class LRnetConv2d(nn.Module):
 
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
-            print("Initializing Test Weights: \n")
+            # print("Initializing Test Weights: \n")
             sigmoid_func = torch.nn.Sigmoid()
             alpha_prob = sigmoid_func(self.alpha)
             betta_prob = sigmoid_func(self.betta) * (1 - alpha_prob)
