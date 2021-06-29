@@ -166,7 +166,7 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
     print("--> best accuracy is: " + str(best_acc) + " (epoch: " + str(best_epoch) + ")")
     if f is not None:
         print("--> best accuracy is: " + str(best_acc) + " (epoch: " + str(best_epoch) + ")", file=f)
-    return best_acc, best_epoch
+    return best_acc, best_epoch, acc
 
 
 _, term_width = os.popen('stty size', 'r').read().split()

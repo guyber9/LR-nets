@@ -323,13 +323,13 @@ def main_train():
         net.conv1.train_mode_switch()
         net.conv2.train_mode_switch()
         train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
-        test_acc, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
+        test_acc, _, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
         scheduler.step()
 
         net.conv1.test_mode_switch(1)
         net.conv2.test_mode_switch(1)
         for idx in range(0, 1):
-            best_acc, best_epoch = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
+            best_acc, best_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
             net.conv1.cntr = net.conv1.cntr + 1
             net.conv2.cntr = net.conv2.cntr + 1
         net.conv1.cntr = 0
@@ -338,6 +338,7 @@ def main_train():
         print("train_acc: " + str(train_acc))
         print("test_acc: " + str(test_acc))
         print("best_acc: " + str(best_acc))
+        print("sampled_acc: " + str(sampled_acc))
         print("#################################3")
         scheduler.step()
 

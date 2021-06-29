@@ -198,7 +198,7 @@ def main_test():
         print ("test Data Set")
         for idx in range(0, args.options):
             print("iteration: " + str(idx))
-            acc, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode)
+            acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode)
             net.conv1.cntr = net.conv1.cntr + 1
             net.conv2.cntr = net.conv2.cntr + 1
             if args.cifar10:
