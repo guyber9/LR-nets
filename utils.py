@@ -140,11 +140,11 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
 
-            print('Test Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+            print('Test Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
                 test_loss, correct, len(testloader.dataset),
                 100. * correct / len(testloader.dataset)))
             if f is not None:
-                print('Test Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+                print('Test Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
                     test_loss, correct, len(testloader.dataset),
                     100. * correct / len(testloader.dataset)), file=f)
 
