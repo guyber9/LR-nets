@@ -138,15 +138,24 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
 
-            if args.nohup:
-                print(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                             % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
-                if f is not None:
-                    print(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                          % (test_loss / (batch_idx + 1), 100. * correct / total, correct, total), file=f)
-            else:
-                progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                             % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
+            print('\n' ' set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+                test_loss, correct, len(testloader.dataset),
+                100. * correct / len(testloader.dataset)))
+            if f is not None:
+                print('\n' + ' set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+                    test_loss, correct, len(testloader.dataset),
+                    100. * correct / len(testloader.dataset)), file=f)
+            return (100. * correct / len(testloader.dataset))
+
+            # if args.nohup:
+            #     print(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+            #                  % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
+            #     if f is not None:
+            #         print(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+            #               % (test_loss / (batch_idx + 1), 100. * correct / total, correct, total), file=f)
+            # else:
+            #     progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+            #                  % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
     # Save checkpoint.
     acc = 100.*correct/total
