@@ -147,7 +147,6 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
                 print('\n' + ' set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
                     test_loss, correct, len(testloader.dataset),
                     100. * correct / len(testloader.dataset)), file=f)
-            return (100. * correct / len(testloader.dataset))
 
             # if args.nohup:
             #     print(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
