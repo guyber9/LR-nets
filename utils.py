@@ -80,6 +80,7 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None):
     train_loss = 0
     correct = 0
     total = 0
+    t0 = time.time()
     for batch_idx, (inputs, targets) in enumerate(trainloader):
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
@@ -119,6 +120,7 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None):
         # else:
         #     progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
         #                  % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+    print('{} seconds'.format(time.time() - t0))
     return (100.*correct/total)
 
 
