@@ -445,8 +445,8 @@ class NewLRnetConv2d(nn.Module):
             # print ("m: " + str(m))
             # print ("v: " + str(v))
 
-            # if self.output_sample:
-            epsilon = torch.rand(z.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
-            return m1 + epsilon * v1
-            # else:
-            #     return m1, v1
+            if self.output_sample:
+                epsilon = torch.rand(z.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
+                return m1 + epsilon * v1
+            else:
+                return m1, v1
