@@ -85,7 +85,7 @@ class LRNet_sign(nn.Module):
         self.conv1 = lrnet_nn.LRnetConv2d_not_sample(1, 32, 5, 1)
         self.conv2 = lrnet_nn.NewLRnetConv2d(32, 32, 5, 1, output_sample=False)
         self.conv3 = lrnet_nn.NewLRnetConv2d(32, 64, 5, 1, output_sample=True)
-        self.fc1 = nn.Linear(4096, 512)
+        self.fc1 = nn.Linear(6400, 512)
         # self.fc1 = nn.Linear(6400, 512)
         self.fc2 = nn.Linear(512, 10)
 
