@@ -334,30 +334,30 @@ def main_train():
         if args.stam:
             print("alpha " + str(net.conv1.alpha))
             print("betta " + str(net.conv1.betta))
-        net.conv1.train_mode_switch()
-        net.conv2.train_mode_switch()
+        # net.conv1.train_mode_switch()
+        # net.conv2.train_mode_switch()
         train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
         test_acc, _, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
         scheduler.step()
 
-        options = 20
-        net.conv1.test_mode_switch(options)
-        net.conv2.test_mode_switch(options)
-        if (epoch % 5) == 0:
-            t_sampled_acc = 0
-            for idx in range(0, options):
-                best_acc, best_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
-                net.conv1.cntr = net.conv1.cntr + 1
-                net.conv2.cntr = net.conv2.cntr + 1
-                t_sampled_acc = t_sampled_acc + sampled_acc
-            net.conv1.cntr = 0
-            net.conv2.cntr = 0
-            print("#################################3")
-            print("train_acc: " + str(train_acc))
-            print("test_acc: " + str(test_acc))
-            print("best_acc: " + str(best_acc))
-            print("sampled_acc: " + str(t_sampled_acc/options))
-            print("#################################3")
+        # options = 20
+        # net.conv1.test_mode_switch(options)
+        # net.conv2.test_mode_switch(options)
+        # if (epoch % 5) == 0:
+        #     t_sampled_acc = 0
+        #     for idx in range(0, options):
+        #         best_acc, best_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
+        #         net.conv1.cntr = net.conv1.cntr + 1
+        #         net.conv2.cntr = net.conv2.cntr + 1
+        #         t_sampled_acc = t_sampled_acc + sampled_acc
+        #     net.conv1.cntr = 0
+        #     net.conv2.cntr = 0
+        #     print("#################################3")
+        #     print("train_acc: " + str(train_acc))
+        #     print("test_acc: " + str(test_acc))
+        #     print("best_acc: " + str(best_acc))
+        #     print("sampled_acc: " + str(t_sampled_acc/options))
+        #     print("#################################3")
         scheduler.step()
 
     if args.save_file != 'no_need_to_save':
