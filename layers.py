@@ -311,11 +311,13 @@ class NewLRnetConv2d(nn.Module):
         clusters: int = 3,
         transposed: bool = True,
         test_forward: bool = False,
+        output_sample: bool = False,
     ):
         super(NewLRnetConv2d, self).__init__()
         self.in_channels, self.out_channels, self.kernel_size, self.stride, self.padding, self.dilation, self.groups, self.clusters = in_channels, out_channels, kernel_size, stride, padding, dilation, groups, clusters
         self.test_forward = test_forward
         self.transposed = transposed
+        self.output_sample = output_sample
         if torch.cuda.is_available():
             self.device = 'cuda'
         else:
@@ -439,9 +441,12 @@ class NewLRnetConv2d(nn.Module):
             # z = z1 + z2 - z3
             z = z2 - z3
             v1 = torch.sqrt(z)
-            epsilon = torch.rand(z.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
 
             # print ("m: " + str(m))
             # print ("v: " + str(v))
 
-            return m1 + epsilon * v1
+            if self.output_sample:
+                epsilon = torch.rand(z.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
+                return m1 + epsilon * v1
+            else:
+                return m1, v1

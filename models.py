@@ -221,3 +221,36 @@ class LRNet_CIFAR10(nn.Module):
         output = x
         # print("output: " + str(x))
         return output
+
+
+class LRNet_CIFAR10_ver2(nn.Module):
+
+    def __init__(self):
+        super(LRNet_CIFAR10_ver2, self).__init__()
+        self.conv1 = lrnet_nn.LRnetConv2d_not_sample(3, 128, 3, stride=1, padding=1)
+        self.conv2 = lrnet_nn.NewLRnetConv2d(128, 128, 3, stride=2, padding=1, output_sample=False)
+        self.conv3 = lrnet_nn.NewLRnetConv2d(128, 256, 3, stride=1, padding=1, output_sample=False)
+        self.conv4 = lrnet_nn.NewLRnetConv2d(256, 256, 3, stride=2, padding=1, output_sample=False)
+        self.conv5 = lrnet_nn.NewLRnetConv2d(256, 512, 3, stride=1, padding=1, output_sample=False)
+        self.conv6 = lrnet_nn.NewLRnetConv2d(512, 512, 3, stride=2, padding=1, output_sample=True)
+        self.dropout1 = nn.Dropout(0.5)
+        self.dropout2 = nn.Dropout(0.5)
+        self.fc1 = nn.Linear(8192, 1024)
+        self.fc2 = nn.Linear(1024, 10)
+
+    def forward(self, x):
+        x = self.conv1(x)  # input is 3 x 32 x 32, output is 128 x 32 x 32
+        x = self.conv2(x)  # 128 x 32 x 32
+        x = self.conv3(x)  # 256 x 16 x 16
+        x = self.conv4(x)  # 256 x 16 x 16
+        x = self.conv5(x)  # 512 x 8 x 8
+        x = self.conv6(x)  # 512 x 8 x 8
+        x = F.relu(x)
+        x = torch.flatten(x, 1)  # 8192
+        x = self.dropout1(x)
+        x = self.fc1(x)  # 8192 -> 1024
+        x = F.relu(x)
+        x = self.dropout2(x)
+        x = self.fc2(x)  # 1024 -> 10
+        output = x
+        return output
