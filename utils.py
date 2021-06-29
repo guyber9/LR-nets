@@ -103,13 +103,13 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None):
         correct += predicted.eq(targets).sum().item()
 
         if batch_idx % args.log_interval == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tloss: {:.6f}'.format(
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tacc: {:.3f} \tloss: {:.6f}'.format(
                 epoch, batch_idx * len(inputs), len(trainloader.dataset),
-                100. * batch_idx / len(trainloader), loss.item()))
+                100. * batch_idx / len(trainloader), 100.*correct/total, loss.item()))
         if f is not None:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tloss: {:.6f}'.format(
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tacc: {:.3f} \tloss: {:.6f}'.format(
                 epoch, batch_idx * len(inputs), len(trainloader.dataset),
-                       100. * batch_idx / len(trainloader), loss.item()), file = f)
+                       100. * batch_idx / len(trainloader), 100. * correct / total, loss.item()), file = f)
         # if args.nohup:
         #     print(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
         #                  % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
@@ -140,11 +140,11 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
 
-            print('\n' ' set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+            print('Test Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
                 test_loss, correct, len(testloader.dataset),
                 100. * correct / len(testloader.dataset)))
             if f is not None:
-                print('\n' + ' set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+                print('Test Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
                     test_loss, correct, len(testloader.dataset),
                     100. * correct / len(testloader.dataset)), file=f)
 
