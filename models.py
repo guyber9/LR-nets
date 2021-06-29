@@ -91,7 +91,7 @@ class LRNet_sign(nn.Module):
     def forward(self, x):
         x = self.conv1(x)  # 32 x 24 x 24
         x = self.conv2(x)  # 32 x 20 x 20
-        x = self.conv2(x)  # 64 x 16 x 16
+        x = self.conv3(x)  # 64 x 16 x 16
         x = F.relu(x)
         x = F.max_pool2d(x, 2)  # 64 x 8 x 8
         x = torch.flatten(x, 1)  # 1024
