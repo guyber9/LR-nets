@@ -102,24 +102,24 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None):
         total += targets.size(0)
         correct += predicted.eq(targets).sum().item()
 
-        # if batch_idx % args.log_interval == 0:
-        #     print('Train Epoch: {} [{}/{} ({:.0f}%)]\tacc: {:.3f} \tloss: {:.6f}'.format(
-        #         epoch, batch_idx * len(inputs), len(trainloader.dataset),
-        #         100. * batch_idx / len(trainloader), 100.*correct/total, loss.item()))
-        # if f is not None:
-        #     print('Train Epoch: {} [{}/{} ({:.0f}%)]\tacc: {:.3f} \tloss: {:.6f}'.format(
-        #         epoch, batch_idx * len(inputs), len(trainloader.dataset),
-        #                100. * batch_idx / len(trainloader), 100. * correct / total, loss.item()), file = f)
-        if args.nohup:
-            print(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                         % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
-            if f is not None:
-                print('Train Epoch: {} [{}/{} ({:.0f}%)]\tloss: {:.6f}\tloss: {:.6f}'.format(
-                    epoch, batch_idx * len(trainloader), len(trainloader.dataset),
-                           100. * batch_idx / len(trainloader), loss.item(), loss.item()), file=f)
-        else:
-            progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                         % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+        if batch_idx % args.log_interval == 0:
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tacc: {:.3f} \tloss: {:.6f}'.format(
+                epoch, batch_idx * len(inputs), len(trainloader.dataset),
+                100. * batch_idx / len(trainloader), 100.*correct/total, loss.item()))
+        if f is not None:
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tacc: {:.3f} \tloss: {:.6f}'.format(
+                epoch, batch_idx * len(inputs), len(trainloader.dataset),
+                       100. * batch_idx / len(trainloader), 100. * correct / total, loss.item()), file = f)
+        # if args.nohup:
+        #     print(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+        #                  % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+        #     if f is not None:
+        #         print('Train Epoch: {} [{}/{} ({:.0f}%)]\tloss: {:.6f}\tloss: {:.6f}'.format(
+        #             epoch, batch_idx * len(trainloader), len(trainloader.dataset),
+        #                    100. * batch_idx / len(trainloader), loss.item(), loss.item()), file=f)
+        # else:
+        #     progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+        #                  % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
     print('{} seconds'.format(time.time() - t0))
     return (100.*correct/total)
 
@@ -140,23 +140,23 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
 
-            # print('Test Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
-            #     test_loss, correct, len(testloader.dataset),
-            #     100. * correct / len(testloader.dataset)))
-            # if f is not None:
-            #     print('Test Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
-            #         test_loss, correct, len(testloader.dataset),
-            #         100. * correct / len(testloader.dataset)), file=f)
+            print('Test Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
+                test_loss, correct, len(testloader.dataset),
+                100. * correct / len(testloader.dataset)))
+            if f is not None:
+                print('Test Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
+                    test_loss, correct, len(testloader.dataset),
+                    100. * correct / len(testloader.dataset)), file=f)
 
-            if args.nohup:
-                print(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                             % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
-                if f is not None:
-                    print(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                          % (test_loss / (batch_idx + 1), 100. * correct / total, correct, total), file=f)
-            else:
-                progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                             % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
+            # if args.nohup:
+            #     print(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+            #                  % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
+            #     if f is not None:
+            #         print(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+            #               % (test_loss / (batch_idx + 1), 100. * correct / total, correct, total), file=f)
+            # else:
+            #     progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+            #                  % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
     # Save checkpoint.
     acc = 100.*correct/total
