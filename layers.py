@@ -77,13 +77,13 @@ class LRnetConv2d(nn.Module):
         self.betta = nn.Parameter(torch.tensor(betta, dtype=self.tensor_dtype, device=self.device))
 
     def train_mode_switch(self) -> None:
-        print ("train_mode_switch")
+        # print ("train_mode_switch")
         self.test_forward = False
 
     def test_mode_switch(self, num_of_options=1, tickets=10) -> None:
-        print ("test_mode_switch")
+        # print ("test_mode_switch")
         self.test_forward = True
-        print("Initializing Test Weights: \n")
+        # print("Initializing Test Weights: \n")
         sigmoid_func = torch.nn.Sigmoid()
         alpha_prob = sigmoid_func(self.alpha)
         betta_prob = sigmoid_func(self.betta) * (1 - alpha_prob)
