@@ -220,6 +220,8 @@ def main_test():
         # test(net, trainloader)
         test(net, criterion, 0, device, trainloader, args, 0, None, test_mode)
 
+        print ("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
+
 if __name__ == '__main__':
     main_test()
 
