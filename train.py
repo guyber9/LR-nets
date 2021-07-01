@@ -344,7 +344,7 @@ def main_train():
         tickest = 10
         net.conv1.test_mode_switch(options, tickest)
         net.conv2.test_mode_switch(options, tickest)
-        if (epoch % 5) == 0:
+        if (epoch % 2) == 0:
             t_sampled_acc = 0
             for idx in range(0, options):
                 best_acc, best_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
