@@ -94,7 +94,7 @@ class LRnetConv2d(nn.Module):
 
         self.num_of_options = num_of_options
         self.test_weight_arr = []
-        m = torch.distributions.Multinomial(10, prob_mat)
+        m = torch.distributions.Multinomial(tickets, prob_mat)
         for idx in range(0, self.num_of_options):
             sampled = m.sample()
             values = torch.argmax(sampled, dim=4) - 1
