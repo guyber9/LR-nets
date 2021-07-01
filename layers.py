@@ -94,9 +94,18 @@ class LRnetConv2d(nn.Module):
 
         self.num_of_options = num_of_options
         self.test_weight_arr = []
+        m = torch.distributions.Multinomial(10, prob_mat)
         for idx in range(0, self.num_of_options):
-            sampled = torch.distributions.Categorical(prob_mat).sample() - 1
-            self.test_weight_arr.append(sampled)
+            sampled = m.sample()
+            values = torch.argmax(sampled, dim=4) - 1
+            self.test_weight_arr.append(values)
+
+        # it was thst way
+        # self.num_of_options = num_of_options
+        # self.test_weight_arr = []
+        # for idx in range(0, self.num_of_options):
+        #     sampled = torch.distributions.Categorical(prob_mat).sample() - 1
+        #     self.test_weight_arr.append(sampled)
 
         # self.test_weight_arr = []
         # for idx in range(0, self.num_of_options):
