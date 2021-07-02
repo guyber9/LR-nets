@@ -102,6 +102,8 @@ class LRNet_sign(nn.Module):
         print(x.size())
         x = F.relu(x)
         x = F.max_pool2d(x, 2)  # 64 x 8 x 8
+        print("end size" + str(x.size()))
+        exit(1)
         x = torch.flatten(x, 1)  # 1024
         x = self.fc1(x)
         x = F.relu(x)
