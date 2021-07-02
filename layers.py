@@ -105,6 +105,8 @@ class LRnetConv2d(nn.Module):
             print_full_tensor(self.test_weight_arr[idx], "self.test_weight_arr__" + str(idx))
         dif = self.test_weight_arr[1] - self.test_weight_arr[0]
         print_full_tensor(dif, "dif")
+        histc = torch.histc(prob_mat, bins=10, min=0, max=1)
+        print(histc)
         exit(1)
     # it was thst way
         # self.num_of_options = num_of_options
