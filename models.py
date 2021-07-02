@@ -91,9 +91,13 @@ class LRNet_sign(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)  # 32 x 24 x 24
-        print(x.size())
+        m, v = x
+        print(m.size())
+        print(v.size())
         x = self.conv2(x)  # 32 x 20 x 20
-        print(x.size())
+        m, v = x
+        print(m.size())
+        print(v.size())
         x = self.conv3(x)  # 64 x 16 x 16
         print(x.size())
         x = F.relu(x)
