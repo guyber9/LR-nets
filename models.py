@@ -74,6 +74,11 @@ class LRNet(nn.Module):
         x = F.max_pool2d(x, 2) # 32 x 12 x 12
         x = F.relu(x)
         x = self.conv2(x) # 64 x 8 x 8
+        print("hist2 max: " + str(imax))
+        print("hist2 min: " + str(imin))
+        hist2 = torch.histc(x, bins=100, min=-20, max=20)
+        torch.set_printoptions(threshold=10_000)
+        print(hist2)
         x = self.bn2(x)
         x = F.max_pool2d(x, 2) # 64 x 4 x 4
         x = F.relu(x)
