@@ -103,6 +103,8 @@ class LRnetConv2d(nn.Module):
         print_full_tensor(prob_mat, "prob_mat")
         for idx in range(0, self.num_of_options):
             print_full_tensor(self.test_weight_arr[idx], "self.test_weight_arr__" + str(idx))
+        dif = self.test_weight_arr[1] - self.test_weight_arr[0]
+        print_full_tensor(dif, "dif")
         exit(1)
     # it was thst way
         # self.num_of_options = num_of_options
