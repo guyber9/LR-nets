@@ -371,7 +371,7 @@ def print_summary(train_acc, best_acc, best_sampled_acc, t_sampled_acc, f):
     print('best_sampled_acc:\t{:.3f}'.format(best_sampled_acc))
     print(':\t{:.3f}'.format(t_sampled_acc))
     print("#################################")
-    if f not None:
+    if f is not None:
         print("#################################", file = f)
         print('train_acc:\t{:.3f}'.format(train_acc), file = f)
         print('best_acc:\t{:.3f}'.format(best_acc), file = f)
