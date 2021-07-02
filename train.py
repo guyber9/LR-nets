@@ -347,8 +347,8 @@ def main_train():
         scheduler.step()
 
         if args.sampled_test and args.mnist: #TODO: add cifar10
-            net.conv1.test_mode_switch(args.options, args.tickest)
-            net.conv2.test_mode_switch(args.options, args.tickest)
+            net.conv1.test_mode_switch(args.options, args.tickets)
+            net.conv2.test_mode_switch(args.options, args.tickets)
             if (epoch % 2) == 0:
                 t_sampled_acc = 0
                 for idx in range(0, args.options):
