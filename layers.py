@@ -12,7 +12,7 @@ from torch.nn.common_types import _size_1_t, _size_2_t, _size_3_t
 from torch.nn.parallel import DistributedDataParallel as DDP
 import torch.distributed as dist
 import os
-
+from utils import print_full_tensor
 
 class LRnetConv2d(nn.Module):
 
@@ -100,7 +100,10 @@ class LRnetConv2d(nn.Module):
             values = torch.argmax(sampled, dim=4) - 1
             self.test_weight_arr.append(values)
 
-        # it was thst way
+        print_full_tensor(prob_mat, "prob_mat")
+        print_full_tensor(self.test_weight_arr[0], "self.test_weight_arr'")
+        exit(1)
+    # it was thst way
         # self.num_of_options = num_of_options
         # self.test_weight_arr = []
         # for idx in range(0, self.num_of_options):
