@@ -94,20 +94,29 @@ class LRnetConv2d(nn.Module):
 
         self.num_of_options = num_of_options
         self.test_weight_arr = []
-        m = torch.distributions.Multinomial(tickets, prob_mat)
+        if tickets > 1:
+            m = torch.distributions.Multinomial(tickets, prob_mat)
+        else:
+            m = torch.distributions.Categorical(prob_mat)
         for idx in range(0, self.num_of_options):
             sampled = m.sample()
-            values = torch.argmax(sampled, dim=4) - 1
+            if tickets > 1:
+                values = torch.argmax(sampled, dim=4) - 1
+            else:
+                values = sampled - 1
             self.test_weight_arr.append(values)
 
-        print_full_tensor(prob_mat, "prob_mat")
-        for idx in range(0, self.num_of_options):
-            print_full_tensor(self.test_weight_arr[idx], "self.test_weight_arr__" + str(idx))
-        dif = self.test_weight_arr[1] - self.test_weight_arr[0]
-        print_full_tensor(dif, "dif")
-        histc = torch.histc(prob_mat, bins=10, min=0, max=1)
-        print(histc)
-        exit(1)
+        # ################################################3
+        # print_full_tensor(prob_mat, "prob_mat")
+        # for idx in range(0, self.num_of_options):
+        #     print_full_tensor(self.test_weight_arr[idx], "self.test_weight_arr__" + str(idx))
+        # dif = self.test_weight_arr[1] - self.test_weight_arr[0]
+        # print_full_tensor(dif, "dif")
+        # histc = torch.histc(prob_mat, bins=10, min=0, max=1)
+        # print(histc)
+        # exit(1)
+        # ################################################3
+
     # it was thst way
         # self.num_of_options = num_of_options
         # self.test_weight_arr = []
