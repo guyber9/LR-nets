@@ -266,7 +266,7 @@ class LRNet_CIFAR10_ver2(nn.Module):
         imin = torch.min(x)
         print("hist1 max: " + str(imax))
         print("hist1 min: " + str(imin))
-        hist2 = torch.histc(x, bins=100, min=-20, max=20)
+        hist1 = torch.histc(x, bins=100, min=-20, max=20)
         torch.set_printoptions(threshold=10_000)
         print(hist1)
 
