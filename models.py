@@ -67,7 +67,7 @@ class LRNet(nn.Module):
         imin = torch.min(x)
         print("max: " + str(imax))
         print("min: " + str(imin))
-        hist1 = torch.histc(x, bins=100, min=-30, max=30)
+        hist1 = torch.histc(x, bins=100, min=-20, max=20)
         torch.set_printoptions(threshold=10_000)
         print(hist1)
         x = self.bn1(x)
