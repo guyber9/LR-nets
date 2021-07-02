@@ -363,3 +363,18 @@ def print_full_tensor(input, input_name):
         for j, val2 in enumerate(val1):
             for m, val3 in enumerate(val2):
                 print (str(input_name) + "(" + str(i) + ", " + str(j) + ", " + str(m) + ": " + str(val3))
+
+def print_summary(train_acc, best_acc, best_sampled_acc, t_sampled_acc, f):
+    print("#################################")
+    print('train_acc:\t{:.3f}'.format(train_acc))
+    print('best_acc:\t{:.3f}'.format(best_acc))
+    print('best_sampled_acc:\t{:.3f}'.format(best_sampled_acc))
+    print(':\t{:.3f}'.format(t_sampled_acc))
+    print("#################################")
+    if f not None:
+        print("#################################", file = f)
+        print('train_acc:\t{:.3f}'.format(train_acc), file = f)
+        print('best_acc:\t{:.3f}'.format(best_acc), file = f)
+        print('best_sampled_acc:\t{:.3f}'.format(best_sampled_acc), file = f)
+        print(':\t{:.3f}'.format(t_sampled_acc))
+        print("#################################", file = f)

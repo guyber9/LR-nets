@@ -11,7 +11,7 @@ from torchvision import datasets, transforms
 import os
 
 from models import *
-from utils import find_sigm_weights, train, test
+from utils import find_sigm_weights, train, test, print_summary
 
 
 def main_train():
@@ -359,12 +359,7 @@ def main_train():
                     t_sampled_acc = t_sampled_acc + sampled_acc
                 net.conv1.cntr = 0
                 net.conv2.cntr = 0
-                print("#################################3")
-                print("train_acc: " + str(train_acc))
-                print("test_acc (no sampled): " + str(best_acc))
-                print("best_sampled_acc: " + str(best_sampled_acc))
-                print("curr_sampled_acc: " + str(t_sampled_acc/args.options))
-                print("#################################3")
+                print_summary(train_acc, best_acc, best_sampled_acc, t_sampled_acc/args.options, f)
         scheduler.step()
 
     if args.save_file != 'no_need_to_save':
