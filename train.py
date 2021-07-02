@@ -340,8 +340,9 @@ def main_train():
         if args.debug:
             print("alpha " + str(net.conv1.alpha))
             print("betta " + str(net.conv1.betta))
-        net.conv1.train_mode_switch()
-        net.conv2.train_mode_switch()
+        if args.sampled_test and args.mnist: #TODO: add cifar10
+            net.conv1.train_mode_switch()
+            net.conv2.train_mode_switch()
         train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
         best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
         scheduler.step()
