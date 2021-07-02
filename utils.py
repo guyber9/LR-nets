@@ -110,7 +110,7 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None):
                 if f is not None:
                     print('Train Epoch: {} [{}/{} ({:.0f}%)]\tacc: {:.3f} \tloss: {:.6f}'.format(
                         epoch, batch_idx * len(inputs), len(trainloader.dataset),
-                               100. * batch_idx / len(trainloader), 100. * correct / total, loss.item()), file = f)
+                               100. * batch_idx / len(trainloader), 100. * correct / total, loss.item()), file=f)
         else:
             progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
                          % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
@@ -366,15 +366,15 @@ def print_full_tensor(input, input_name):
 
 def print_summary(train_acc, best_acc, best_sampled_acc, t_sampled_acc, f):
     print("#################################")
-    print('train_acc:\t{:.3f}'.format(train_acc))
-    print('best_acc:\t{:.3f}'.format(best_acc))
+    print('train_acc:       \t{:.3f}'.format(train_acc))
+    print('best_acc:        \t{:.3f}'.format(best_acc))
     print('best_sampled_acc:\t{:.3f}'.format(best_sampled_acc))
-    print(':\t{:.3f}'.format(t_sampled_acc))
+    print('curr_sampled_acc:\t{:.3f}'.format(t_sampled_acc))
     print("#################################")
     if f is not None:
-        print("#################################", file = f)
-        print('train_acc:\t{:.3f}'.format(train_acc), file = f)
-        print('best_acc:\t{:.3f}'.format(best_acc), file = f)
-        print('best_sampled_acc:\t{:.3f}'.format(best_sampled_acc), file = f)
-        print(':\t{:.3f}'.format(t_sampled_acc))
-        print("#################################", file = f)
+        print("#################################", file=f)
+        print('train_acc:       \t{:.3f}'.format(train_acc), file=f)
+        print('best_acc:        \t{:.3f}'.format(best_acc), file=f)
+        print('best_sampled_acc:\t{:.3f}'.format(best_sampled_acc), file=f)
+        print('curr_sampled_acc:\t{:.3f}'.format(t_sampled_acc), file=f)
+        print("#################################", file=f)
