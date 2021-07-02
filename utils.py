@@ -142,12 +142,10 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
 
             if batch_idx % args.log_interval == 0:
                 print('Test Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
-                    test_loss, correct, len(testloader.dataset),
-                    100. * correct / len(testloader.dataset)))
+                    test_loss, correct, total, 100. * correct / total))
                 if f is not None:
                     print('Test Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)'.format(
-                        test_loss, correct, len(testloader.dataset),
-                        100. * correct / len(testloader.dataset)), file=f)
+                        test_loss, correct, total, 100. * correct / total), file=f)
 
             # if args.nohup:
             #     print(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
