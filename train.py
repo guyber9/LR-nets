@@ -44,11 +44,15 @@ def main_train():
     parser.add_argument('--nohup', action='store_true', default=False, help='nohup mode')
     parser.add_argument('--dont-save', action='store_true', default=False, help='dont_save mode')
 
-    parser.add_argument('--adam', action='store_true', default=False, help='run with adam')
+    parser.add_argument('--sgd', action='store_true', default=False, help='run with sgd')
 
     parser.add_argument('--save-file', action='store', default='no_need_to_save', help='name of saved model')
 
-    parser.add_argument('--stam', action='store_true', default=False, help='run with adam')
+    parser.add_argument('--debug', action='store_true', default=False, help='run with adam')
+
+    parser.add_argument('--options', type=int, default=1, metavar='N', help='num_of_options for rand')
+    parser.add_argument('--tickets', type=int, default=10, metavar='N', help='num of tickets')
+    parser.add_argument('--sampled-test', action='store_true', default=False, help='sampled validation in training')
 
     parser.add_argument('--ver2', action='store_true', default=False, help='run with adam')
 
@@ -218,7 +222,7 @@ def main_train():
     probability_decay = 10**((-1)*args.pd)
     criterion = nn.CrossEntropyLoss()
 
-    if args.adam:
+    if not args.sgd:
         if args.full_prec:
             optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
         elif args.mnist:
@@ -331,34 +335,36 @@ def main_train():
         f = None
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
-        if args.stam:
+        if args.debug:
             print("alpha " + str(net.conv1.alpha))
             print("betta " + str(net.conv1.betta))
         net.conv1.train_mode_switch()
         net.conv2.train_mode_switch()
         train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
-        test_acc, _, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
+        if args.sampled_test:
+            no_con, _, test_acc = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
+        else:
+            best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
         scheduler.step()
 
-        options = 1
-        tickest = 10
-        net.conv1.test_mode_switch(options, tickest)
-        net.conv2.test_mode_switch(options, tickest)
-        if (epoch % 2) == 0:
-            t_sampled_acc = 0
-            for idx in range(0, options):
-                best_acc, best_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
-                net.conv1.cntr = net.conv1.cntr + 1
-                net.conv2.cntr = net.conv2.cntr + 1
-                t_sampled_acc = t_sampled_acc + sampled_acc
-            net.conv1.cntr = 0
-            net.conv2.cntr = 0
-            print("#################################3")
-            print("train_acc: " + str(train_acc))
-            print("test_acc: " + str(test_acc))
-            print("best_acc: " + str(best_acc))
-            print("sampled_acc: " + str(t_sampled_acc/options))
-            print("#################################3")
+        if args.sampled_test and args.mnist: #TODO: add cifar10
+            net.conv1.test_mode_switch(args.options, args.tickest)
+            net.conv2.test_mode_switch(args.options, args.tickest)
+            if (epoch % 2) == 0:
+                t_sampled_acc = 0
+                for idx in range(0, args.options):
+                    best_acc, best_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
+                    net.conv1.cntr = net.conv1.cntr + 1
+                    net.conv2.cntr = net.conv2.cntr + 1
+                    t_sampled_acc = t_sampled_acc + sampled_acc
+                net.conv1.cntr = 0
+                net.conv2.cntr = 0
+                print("#################################3")
+                print("train_acc: " + str(train_acc))
+                print("test_acc: " + str(test_acc))
+                print("best_acc: " + str(best_acc))
+                print("sampled_acc: " + str(t_sampled_acc/args.options))
+                print("#################################3")
         scheduler.step()
 
     if args.save_file != 'no_need_to_save':
