@@ -71,6 +71,8 @@ def main_train():
 
     best_acc = 0  # best test accuracy
     best_epoch = 0
+    best_sampled_acc = 0  # best test accuracy
+    best_sampled_epoch = 0
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
     # Data
@@ -341,10 +343,7 @@ def main_train():
         net.conv1.train_mode_switch()
         net.conv2.train_mode_switch()
         train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
-        if args.sampled_test:
-            no_con, _, test_acc = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
-        else:
-            best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
+        best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
         scheduler.step()
 
         if args.sampled_test and args.mnist: #TODO: add cifar10
@@ -353,7 +352,7 @@ def main_train():
             if (epoch % 2) == 0:
                 t_sampled_acc = 0
                 for idx in range(0, args.options):
-                    best_acc, best_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
+                    best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, False, f)
                     net.conv1.cntr = net.conv1.cntr + 1
                     net.conv2.cntr = net.conv2.cntr + 1
                     t_sampled_acc = t_sampled_acc + sampled_acc
@@ -361,9 +360,9 @@ def main_train():
                 net.conv2.cntr = 0
                 print("#################################3")
                 print("train_acc: " + str(train_acc))
-                print("test_acc: " + str(test_acc))
-                print("best_acc: " + str(best_acc))
-                print("sampled_acc: " + str(t_sampled_acc/args.options))
+                print("test_acc (no sampled): " + str(best_acc))
+                print("best_sampled_acc: " + str(best_sampled_acc))
+                print("curr_sampled_acc: " + str(t_sampled_acc/args.options))
                 print("#################################3")
         scheduler.step()
 
