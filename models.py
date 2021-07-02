@@ -64,7 +64,7 @@ class LRNet(nn.Module):
     def forward(self, x):
         x = self.conv1(x)  # 32 x 24 x 24
         imax = torch.max(x)
-        imin = torch.max(x)
+        imin = torch.min(x)
         print("max: " + str(imax))
         print("min: " + str(imin))
         hist1 = torch.histc(x, bins=100, min=-30, max=30)
