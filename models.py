@@ -8,6 +8,7 @@ from torch.nn import functional as F
 import torch.nn as nn
 import time
 import layers as lrnet_nn
+from utils import print_full_tensor
 
 ################
 ## MNIST nets ##
@@ -62,12 +63,12 @@ class LRNet(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)  # 32 x 24 x 24
-        print ("hist1: " + str(torch.histc(x, bins=10, min=-10, max=10)))
+        hist1 = torch.histc(x, bins=100, min=-10, max=10)
+        print_full_tensor(hist1, "hist1")
         x = self.bn1(x)
         x = F.max_pool2d(x, 2) # 32 x 12 x 12
         x = F.relu(x)
         x = self.conv2(x) # 64 x 8 x 8
-        print ("hist2: " + str(torch.histc(x, bins=10, min=-10, max=10)))
         x = self.bn2(x)
         x = F.max_pool2d(x, 2) # 64 x 4 x 4
         x = F.relu(x)
