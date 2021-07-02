@@ -62,6 +62,7 @@ class LRNet(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)  # 32 x 24 x 24
+        print ("hist1: " + str(torch.histc(x, bins=50, min=-10, max=10)))
         x = self.bn1(x)
         x = F.max_pool2d(x, 2) # 32 x 12 x 12
         x = F.relu(x)
@@ -221,6 +222,16 @@ class LRNet_CIFAR10(nn.Module):
         output = x
         # print("output: " + str(x))
         return output
+
+class LRNet_sign(nn.Module):
+    def __init__(self):
+        super(LRNet_sign, self).__init__()
+        self.conv1 = lrnet_nn.LRnetConv2d_not_sample(1, 32, 5, 1)
+        self.conv2 = lrnet_nn.NewLRnetConv2d(32, 32, 5, 1, output_sample=False)
+        self.conv3 = lrnet_nn.NewLRnetConv2d(32, 64, 5, 1, output_sample=True)
+        self.fc1 = nn.Linear(4096, 512)
+        # self.fc1 = nn.Linear(6400, 512)
+        self.fc2 = nn.Linear(512, 10)
 
 
 class LRNet_CIFAR10_ver2(nn.Module):
