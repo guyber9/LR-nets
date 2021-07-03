@@ -356,7 +356,7 @@ def main_train():
             if (epoch % 2) == 0:
                 t_sampled_acc = 0
                 for idx in range(0, args.options):
-                    best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, False, f)
+                    best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, True, f) # note: model is saved only in above test method
                     net.conv1.cntr = net.conv1.cntr + 1
                     net.conv2.cntr = net.conv2.cntr + 1
                     t_sampled_acc = t_sampled_acc + sampled_acc
