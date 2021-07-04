@@ -226,10 +226,10 @@ class LRNet_CIFAR10(nn.Module):
         x = F.relu(x)
 
         x = torch.flatten(x, 1)  # 8192
-        # x = self.dropout1(x)
+        x = self.dropout1(x)
         x = self.fc1(x)  # 8192 -> 1024
         x = F.relu(x)
-        # x = self.dropout2(x)
+        x = self.dropout2(x)
         x = self.fc2(x)  # 1024 -> 10
         output = x
         # print("output: " + str(x))
