@@ -210,7 +210,7 @@ class LRNet_CIFAR10(nn.Module):
         # print("bn2: " + str(x))
         x = F.max_pool2d(x, 2)  # 128 x 16 x 16
         x = F.relu(x)
-        self.dropout3 = nn.Dropout(0.2)
+        self.dropout3 = nn.Dropout(0.35)
 
         x = self.conv3(x)  # 256 x 16 x 16
         x = self.bn3(x)
@@ -219,7 +219,7 @@ class LRNet_CIFAR10(nn.Module):
         x = self.bn4(x)
         x = F.max_pool2d(x, 2)  # 256 x 8 x 8
         x = F.relu(x)
-        self.dropout4 = nn.Dropout(0.2)
+        self.dropout4 = nn.Dropout(0.35)
 
         x = self.conv5(x)  # 512 x 8 x 8
         x = self.bn5(x)
