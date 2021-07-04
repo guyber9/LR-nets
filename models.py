@@ -83,10 +83,10 @@ class LRNet(nn.Module):
         x = F.max_pool2d(x, 2) # 64 x 4 x 4
         x = F.relu(x)
         x = torch.flatten(x, 1) # 1024
-        # x = self.dropout1(x)
+        x = self.dropout1(x)
         x = self.fc1(x)
         x = F.relu(x)
-        # x = self.dropout2(x)
+        x = self.dropout2(x)
         x = self.fc2(x)
         output = x
         return output
