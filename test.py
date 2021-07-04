@@ -216,6 +216,11 @@ def main_test():
 
         net.conv1.cntr = 0
         net.conv2.cntr = 0
+        if args.cifar10:
+            net.conv3.cntr = 0
+            net.conv4.cntr = 0
+            net.conv5.cntr = 0
+            net.conv6.cntr = 0
         print ("train Data Set")
         # test(net, trainloader)
         test(net, criterion, 0, device, trainloader, args, 0, None, test_mode)
