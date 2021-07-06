@@ -185,7 +185,7 @@ class LRNet_CIFAR10(nn.Module):
         self.conv4 = lrnet_nn.LRnetConv2d(256, 256, 3, 1, padding=1)
         self.conv5 = lrnet_nn.LRnetConv2d(256, 512, 3, 1, padding=1)
         self.conv6 = lrnet_nn.LRnetConv2d(512, 512, 3, 1, padding=1)
-        self.bn1 = nn.BatchNorm2d(128)
+        # self.bn1 = nn.BatchNorm2d(128)
         self.bn2 = nn.BatchNorm2d(128)
         self.bn3 = nn.BatchNorm2d(256)
         self.bn4 = nn.BatchNorm2d(256)
@@ -203,7 +203,7 @@ class LRNet_CIFAR10(nn.Module):
     def forward(self, x):
         x = self.conv1(x)  # input is 3 x 32 x 32, output is 128 x 32 x 32
         # print("x1: " + str(x))
-        x = self.bn1(x)  # <- problematic batchnoram (?)
+        # x = self.bn1(x)  # <- problematic batchnoram (?)
         x = F.relu(x)
         # print("bn1: " + str(x))
         x = self.dropout5(x)
