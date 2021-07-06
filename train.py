@@ -300,7 +300,7 @@ def main_train():
                     {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
                     {'params': net.fc1.parameters()},
                     {'params': net.fc2.parameters()},
-                    {'params': net.bn1.parameters()},
+                    # {'params': net.bn1.parameters()}, #TODO
                     {'params': net.bn2.parameters()},
                     {'params': net.bn3.parameters()},
                     {'params': net.bn4.parameters()},
