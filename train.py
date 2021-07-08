@@ -347,8 +347,6 @@ def main_train():
             net.conv1.train_mode_switch()
             net.conv2.train_mode_switch()
             if args.cifar10:
-                net.conv1.train_mode_switch()
-                net.conv2.train_mode_switch()
                 net.conv3.train_mode_switch()
                 net.conv4.train_mode_switch()
                 net.conv5.train_mode_switch()
@@ -372,10 +370,10 @@ def main_train():
                     net.conv1.cntr = net.conv1.cntr + 1
                     net.conv2.cntr = net.conv2.cntr + 1
                     if args.cifar10:
-                        net.conv3.cntr = net.conv2.cntr + 1
-                        net.conv4.cntr = net.conv2.cntr + 1
-                        net.conv5.cntr = net.conv2.cntr + 1
-                        net.conv6.cntr = net.conv2.cntr + 1
+                        net.conv3.cntr = net.conv3.cntr + 1
+                        net.conv4.cntr = net.conv4.cntr + 1
+                        net.conv5.cntr = net.conv5.cntr + 1
+                        net.conv6.cntr = net.conv6.cntr + 1
                     t_sampled_acc = t_sampled_acc + sampled_acc
                 net.conv1.cntr = 0
                 net.conv2.cntr = 0
