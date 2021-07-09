@@ -117,6 +117,9 @@ def main_test():
         if args.full_prec:
             print ("Testing FP-Net for CIFAR10")
             net = FPNet_CIFAR10()
+        elif args.ver2:
+            print("Testing LR-Net for CIFAR10 | ver2")
+            net = LRNet_CIFAR10_ver2()
         else:
             print ("Testing LR-Net for CIFAR10")
             net = LRNet_CIFAR10()
@@ -124,6 +127,9 @@ def main_test():
         if args.full_prec:
             print ("Testing FP-Net for MNIST")
             net = FPNet().to(device)
+        elif args.ver2:
+            print("Testing LR-Net for MNIST | ver2")
+            net = LRNet_sign().to(device)
         else:
             print ("Testing LR-Net for MNIST")
             net = LRNet().to(device)
@@ -177,11 +183,10 @@ def main_test():
     print ("train Data Set")
     test(net, criterion, 0, device, trainloader, args, 0, None, test_mode)
 
-    # net.conv1.num_of_options = args.options
-    # net.conv2.num_of_options = args.options
-
     if not args.full_prec:
-        if args.cifar10:
+        if args.ver2:
+            net.test_mode_switch(args.options, args.tickets)
+        elif args.cifar10:
             net.conv1.test_mode_switch(args.options, args.tickets)
             net.conv2.test_mode_switch(args.options, args.tickets)
             net.conv3.test_mode_switch(args.options, args.tickets)
@@ -199,13 +204,16 @@ def main_test():
         for idx in range(0, args.options):
             print("iteration: " + str(idx))
             acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode)
-            net.conv1.cntr = net.conv1.cntr + 1
-            net.conv2.cntr = net.conv2.cntr + 1
-            if args.cifar10:
-                net.conv3.cntr = net.conv3.cntr + 1
-                net.conv4.cntr = net.conv4.cntr + 1
-                net.conv5.cntr = net.conv5.cntr + 1
-                net.conv6.cntr = net.conv6.cntr + 1
+            if args.ver2:
+                net.inc_cntr()
+            else:
+                net.conv1.cntr = net.conv1.cntr + 1
+                net.conv2.cntr = net.conv2.cntr + 1
+                if args.cifar10:
+                    net.conv3.cntr = net.conv3.cntr + 1
+                    net.conv4.cntr = net.conv4.cntr + 1
+                    net.conv5.cntr = net.conv5.cntr + 1
+                    net.conv6.cntr = net.conv6.cntr + 1
             if (acc > best_acc):
                 best_acc = acc
                 dataset_name = 'mnist' if args.mnist else 'cifar10'
@@ -214,13 +222,16 @@ def main_test():
                            "trained_models/" + str(dataset_name) + "_lrnet" + str(isBinary) + ".pt")
         print ("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
 
-        net.conv1.cntr = 0
-        net.conv2.cntr = 0
-        if args.cifar10:
-            net.conv3.cntr = 0
-            net.conv4.cntr = 0
-            net.conv5.cntr = 0
-            net.conv6.cntr = 0
+        if args.ver2:
+            net.rst_cntr()
+        else:
+            net.conv1.cntr = 0
+            net.conv2.cntr = 0
+            if args.cifar10:
+                net.conv3.cntr = 0
+                net.conv4.cntr = 0
+                net.conv5.cntr = 0
+                net.conv6.cntr = 0
         print ("train Data Set")
         # test(net, trainloader)
         test(net, criterion, 0, device, trainloader, args, 0, None, test_mode)
