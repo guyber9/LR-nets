@@ -269,7 +269,7 @@ class LRNet_CIFAR10_ver2(nn.Module):
         self.bn3 = lrnet_nn.LRBatchNorm2d(256)
         self.bn4 = lrnet_nn.LRBatchNorm2d(256)
         self.bn5 = lrnet_nn.LRBatchNorm2d(512)
-        self.bn6 = lrnet_nn.LRBatchNorm2d(512)
+        self.bn6 = nn.BatchNorm2d(512)
         # self.conv1 = nn.Conv2d(3, 128, 3, stride=1, padding=1)
         # self.conv2 = nn.Conv2d(128, 128, 3, stride=2, padding=1)
         # self.conv3 = nn.Conv2d(128, 256, 3, stride=1, padding=1)
