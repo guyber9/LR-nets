@@ -476,3 +476,56 @@ class NewLRnetConv2d(nn.Module):
                 return m1 + epsilon * v1
             else:
                 return m1, v1
+
+
+class LRBatchNorm2d(nn.Module):
+
+    def __init__(
+        self,
+        channels: int,
+        eps: int = 1e-05,
+        test_forward: bool = False
+    ):
+        super(LRBatchNorm2d, self).__init__()
+        self.channels, self.eps, self.test_forward = channels, eps, test_forward
+        self.test_forward = test_forward
+        if torch.cuda.is_available():
+            self.device = 'cuda'
+        else:
+            self.device = 'cpu'
+        # self.tensor_dtype = torch.float32
+
+        self.weight = torch.nn.Parameter(torch.ones([self.channels], dtype=torch.float32, device=self.device))
+        self.bias = torch.nn.Parameter(torch.zeros([self.channels], dtype=self.tensor_dtype, device=self.device))
+
+        self.reset_parameters()
+
+    def reset_parameters(self) -> None:
+        torch.nn.init.ones_(self.weight)
+        if self.bias is not None:
+            init.nn.zeros_(self.bias)
+
+    def initialize_weights(self, alpha, betta) -> None:
+        print ("Initialize Weights")
+        self.weight = nn.Parameter(torch.tensor(alpha, dtype=self.tensor_dtype, device=self.device))
+        self.bias = nn.Parameter(torch.tensor(betta, dtype=self.tensor_dtype, device=self.device))
+
+    def test_mode_switch(self, num_of_options, tickets=10) -> None:
+        return
+
+    def forward(self, input: Tensor) -> Tensor:
+        if self.test_forward:
+            return
+        else:
+            m, v = input
+
+            mean = torch.mean(m)
+            mean_square = torch.mean(m * m)
+            sigma_square = torch.mean(v * v)
+            variance = sigma_square + mean_square - (mean * mean) + self.eps
+            std = torch.sqrt(variance)
+
+            norm_m = (m - mean) / std
+            norm_v = v / variance
+
+            return norm_m, norm_v
