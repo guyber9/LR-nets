@@ -518,14 +518,26 @@ class LRBatchNorm2d(nn.Module):
             return
         else:
             m, v = input
+            print("m: " + str(m))
+            print("v: " + str(v))
 
             mean = torch.mean(m)
+            print("mean: " + str(mean))
             mean_square = torch.mean(m * m)
+            print("mean: " + str(mean))
             sigma_square = torch.mean(v * v)
+            print("mean: " + str(mean))
             variance = sigma_square + mean_square - (mean * mean) + self.eps
+            print("mean: " + str(mean))
             std = torch.sqrt(variance)
+            print("mean: " + str(mean))
 
             norm_m = (m - mean) / std
             norm_v = v / variance
+
+            print("norm_m: " + str(norm_m))
+            print("norm_v: " + str(norm_v))
+
+            exit(1)
 
             return norm_m, norm_v
