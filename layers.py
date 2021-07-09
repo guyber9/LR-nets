@@ -501,7 +501,7 @@ class LRBatchNorm2d(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self) -> None:
-        torch.nn.init.ones_(self.weight)
+        nn.init.ones_(self.weight)
         if self.bias is not None:
             init.nn.zeros_(self.bias)
 
