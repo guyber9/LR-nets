@@ -493,7 +493,7 @@ class LRBatchNorm2d(nn.Module):
             self.device = 'cuda'
         else:
             self.device = 'cpu'
-        # self.tensor_dtype = torch.float32
+        self.tensor_dtype = torch.float32
 
         self.weight = torch.nn.Parameter(torch.ones([self.channels], dtype=torch.float32, device=self.device))
         self.bias = torch.nn.Parameter(torch.zeros([self.channels], dtype=self.tensor_dtype, device=self.device))
