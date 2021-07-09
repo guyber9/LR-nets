@@ -503,7 +503,7 @@ class LRBatchNorm2d(nn.Module):
     def reset_parameters(self) -> None:
         nn.init.ones_(self.weight)
         if self.bias is not None:
-            init.nn.zeros_(self.bias)
+            nn.init.zeros_(self.bias)
 
     def initialize_weights(self, alpha, betta) -> None:
         print ("Initialize Weights")
