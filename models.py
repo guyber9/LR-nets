@@ -129,7 +129,7 @@ class LRNet_sign(nn.Module):
     def inc_cntr(self):
         self.conv1.cntr = self.conv1.cntr + 1
         self.conv2.cntr = self.conv2.cntr + 1
-        self.conv3.cntr = self.conv2.cntr + 1
+        self.conv3.cntr = self.conv3.cntr + 1
 
     def rst_cntr(self):
         self.conv1.cntr = 0
