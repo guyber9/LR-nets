@@ -50,6 +50,7 @@ def main_test():
 
     parser.add_argument('--options', type=int, default=30, metavar='N', help='num_of_options for rand')
     parser.add_argument('--tickets', type=int, default=10, metavar='N', help='num of tickets')
+    parser.add_argument('--ver2', action='store_true', default=False, help='discretization for layer output')
 
     args = parser.parse_args()
 
