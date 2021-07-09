@@ -518,38 +518,37 @@ class LRBatchNorm2d(nn.Module):
             return
         else:
             m, v = input
-            print("m: " + str(m))
-            print("v: " + str(v))
+            # print("m: " + str(m))
+            # print("v: " + str(v))
 
-            epsilon = torch.rand(v.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
-            sampled_input = m + epsilon * v
+            # epsilon = torch.rand(v.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
+            # sampled_input = m + epsilon * v
 
             mean = torch.mean(m)
-            print("mean: " + str(mean))
+            # print("mean: " + str(mean))
             mean_square = torch.mean(m * m)
-            print("mean_square: " + str(mean_square))
+            # print("mean_square: " + str(mean_square))
             sigma_square = torch.mean(v * v)
-            print("sigma_square: " + str(sigma_square))
+            # print("sigma_square: " + str(sigma_square))
             variance = sigma_square + mean_square - (mean * mean) + self.eps
-            print("variance: " + str(variance))
+            # print("variance: " + str(variance))
             std = torch.sqrt(variance)
-            print("std: " + str(std))
+            # print("std: " + str(std))
 
             norm_m = (m - mean) / std
             norm_v = v / variance
 
-            print("norm_m: " + str(norm_m))
-            print("norm_v: " + str(norm_v))
+            # print("norm_m: " + str(norm_m))
+            # print("norm_v: " + str(norm_v))
 
-            print("mean of norm_m: " + str(torch.mean(norm_m)))
-            print("var of norm_m: " + str(torch.var(norm_m)))
-            epsilon1 = torch.rand(v.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
-            sampled_output = norm_m + epsilon1 * norm_v
-            print("\n\nmean of sampled_input: " + str(torch.mean(sampled_input)))
-            print("var of sampled_input: " + str(torch.var(sampled_input)))
-            print("mean of sampled_output: " + str(torch.mean(sampled_output)))
-            print("var of sampled_output: " + str(torch.var(sampled_output)))
-
-            exit(1)
+            # print("mean of norm_m: " + str(torch.mean(norm_m)))
+            # print("var of norm_m: " + str(torch.var(norm_m)))
+            # epsilon1 = torch.rand(v.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
+            # sampled_output = norm_m + epsilon1 * norm_v
+            # print("\n\nmean of sampled_input: " + str(torch.mean(sampled_input)))
+            # print("var of sampled_input: " + str(torch.var(sampled_input)))
+            # print("mean of sampled_output: " + str(torch.mean(sampled_output)))
+            # print("var of sampled_output: " + str(torch.var(sampled_output)))
+            # exit(1)
 
             return norm_m, norm_v
