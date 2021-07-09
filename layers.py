@@ -523,8 +523,6 @@ class LRBatchNorm2d(nn.Module):
 
             epsilon = torch.rand(v.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
             sampled_input = m + epsilon * v
-            print("mean of sampled_input: " + str(torch.mean(sampled_input)))
-            print("var of sampled_input: " + str(torch.var(sampled_input)))
 
             mean = torch.mean(m)
             print("mean: " + str(mean))
@@ -547,6 +545,8 @@ class LRBatchNorm2d(nn.Module):
             print("var of norm_m: " + str(torch.var(norm_m)))
             epsilon1 = torch.rand(v.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
             sampled_output = norm_m + epsilon1 * norm_v
+            print("mean of sampled_input: " + str(torch.mean(sampled_input)))
+            print("var of sampled_input: " + str(torch.var(sampled_input)))
             print("mean of sampled_output: " + str(torch.mean(sampled_output)))
             print("var of sampled_output: " + str(torch.var(sampled_output)))
 
