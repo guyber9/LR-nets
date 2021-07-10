@@ -511,8 +511,11 @@ class LRBatchNorm2d(nn.Module):
             std = torch.sqrt(variance)
             # print("std: " + str(std))
 
-            norm_m = (self.weight * ((m - mean) / std)) + self.bias
-            norm_v = self.weight * (v / std)
+            # norm_m = (self.weight * ((m - mean) / std)) + self.bias
+            # norm_v = self.weight * (v / std)
+
+            norm_m = (m - mean) / std
+            norm_v = v / std
 
             # weight = torch.unsqueeze(self.weight, 1)
             # weight = weight.repeat(1, 16)
