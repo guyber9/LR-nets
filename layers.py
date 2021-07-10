@@ -474,8 +474,10 @@ class LRBatchNorm2d(nn.Module):
             self.device = 'cpu'
         self.tensor_dtype = torch.float32
 
-        self.weight = torch.nn.Parameter(torch.ones([self.channels], dtype=torch.float32, device=self.device))
-        self.bias = torch.nn.Parameter(torch.zeros([self.channels], dtype=self.tensor_dtype, device=self.device))
+        # self.weight = torch.nn.Parameter(torch.ones([self.channels], dtype=torch.float32, device=self.device))
+        # self.bias = torch.nn.Parameter(torch.zeros([self.channels], dtype=self.tensor_dtype, device=self.device))
+        self.weight = torch.nn.Parameter(torch.ones(1, dtype=torch.float32, device=self.device))
+        self.bias = torch.nn.Parameter(torch.zeros(1, dtype=self.tensor_dtype, device=self.device))
 
         self.reset_parameters()
 
@@ -483,11 +485,6 @@ class LRBatchNorm2d(nn.Module):
         nn.init.ones_(self.weight)
         if self.bias is not None:
             nn.init.zeros_(self.bias)
-
-    def initialize_weights(self, alpha, betta) -> None:
-        print ("Initialize Weights")
-        self.weight = nn.Parameter(torch.tensor(alpha, dtype=self.tensor_dtype, device=self.device))
-        self.bias = nn.Parameter(torch.tensor(betta, dtype=self.tensor_dtype, device=self.device))
 
     def test_mode_switch(self, num_of_options, tickets=10) -> None:
         return
@@ -514,8 +511,12 @@ class LRBatchNorm2d(nn.Module):
             std = torch.sqrt(variance)
             # print("std: " + str(std))
 
-            norm_m = (m - mean) / std
-            norm_v = v / variance
+            norm_m = (self.weight * ((m - mean) / std)) + self.bias
+            norm_v = self.weight * (v / std)
+
+            # weight = torch.unsqueeze(self.weight, 1)
+            # weight = weight.repeat(1, 16)
+            # weight = torch.reshape(weight, (self.channels, 4, 4))
 
             # print("norm_m: " + str(norm_m))
             # print("norm_v: " + str(norm_v))
