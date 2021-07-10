@@ -130,7 +130,7 @@ def main_test():
             net = FPNet().to(device)
         elif args.ver2:
             print("Testing LR-Net for MNIST | ver2")
-            net = LRNet_sign().to(device)
+            net = LRNet_ver2().to(device)
         else:
             print ("Testing LR-Net for MNIST")
             net = LRNet().to(device)

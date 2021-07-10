@@ -180,7 +180,7 @@ def main_train():
         else:
             if args.ver2:
                 print ("Training LR-Net for MNIST | ver2")
-                net = LRNet_sign().to(device)
+                net = LRNet_ver2().to(device)
             else:
                 print ("Training LR-Net for MNIST")
                 net = LRNet().to(device)
