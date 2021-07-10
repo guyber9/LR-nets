@@ -352,8 +352,11 @@ class NewLRnetConv2d(nn.Module):
             return F.conv2d(sign_input, self.test_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
         else:
             m, v = input
+            print ("m: " + str(m.size()))
+            print ("v: " + str(v.size()))
             print ("m: " + str(m))
             print ("v: " + str(v))
+
             print ("alpha: " + str(self.alpha))
             print ("betta: " + str(self.betta))
             prob_alpha = self.sigmoid(self.alpha)
