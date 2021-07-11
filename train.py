@@ -230,13 +230,15 @@ def main_train():
         elif args.mnist:
             if args.ver2:
                 # TODO
-                optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
-                # optimizer = optim.Adam([
-                #     {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
-                #     {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
-                #     {'params': net.fc1.parameters(), 'weight_decay': weight_decay},
-                #     {'params': net.fc2.parameters(), 'weight_decay': weight_decay}
-                # ], lr=args.lr, weight_decay=weight_decay)
+                # optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
+                optimizer = optim.Adam([
+                    {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
+                    {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
+                    {'params': net.fc1.parameters(), 'weight_decay': weight_decay},
+                    {'params': net.fc2.parameters(), 'weight_decay': weight_decay},
+                    {'params': net.bn1.parameters()},
+                    {'params': net.bn2.parameters()}
+                ], lr=args.lr, weight_decay=weight_decay)
             else:
                 optimizer = optim.Adam([
                     {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
