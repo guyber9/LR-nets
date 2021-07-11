@@ -105,74 +105,74 @@ class LRNet(nn.Module):
 
 class LRNet_ver2(nn.Module):
 
-    def __init__(self):
-        super(LRNet_ver2, self).__init__()
-        self.conv1 = lrnet_nn.LRnetConv2d(1, 32, 5, 1)
-        self.conv2 = lrnet_nn.LRnetConv2d(32, 64, 5, 1)
-        # self.conv1 = MyBinaryConv2d(1, 32, 5, 1)
-        # self.conv2 = MyBinaryConv2d(32, 64, 5, 1)
-        self.dropout1 = nn.Dropout(0.5)
-        self.dropout2 = nn.Dropout(0.5)
-        self.fc1 = nn.Linear(1024, 512)
-        self.fc2 = nn.Linear(512, 10)
-        self.bn1 = nn.BatchNorm2d(32)
-        self.bn2 = nn.BatchNorm2d(64)
-
-    def forward(self, x):
-        x = self.conv1(x)  # 32 x 24 x 24
-        x = self.bn1(x)
-        x = F.max_pool2d(x, 2) # 32 x 12 x 12
-        x = F.relu(x)
-        x = self.conv2(x) # 64 x 8 x 8
-        x = self.bn2(x)
-        x = F.max_pool2d(x, 2) # 64 x 4 x 4
-        x = F.relu(x)
-        x = torch.flatten(x, 1) # 1024
-        x = self.dropout1(x)
-        x = self.fc1(x)
-        x = F.relu(x)
-        x = self.dropout2(x)
-        x = self.fc2(x)
-        output = x
-        return output
-
     # def __init__(self):
     #     super(LRNet_ver2, self).__init__()
-    #     # self.conv1 = lrnet_nn.LRnetConv2d_not_sample(1, 1, 5, 1)
-    #     # self.conv2 = lrnet_nn.NewLRnetConv2d(1, 1, 5, 1, output_sample=False)
-    #     # self.conv3 = lrnet_nn.NewLRnetConv2d(1, 64, 5, 1, output_sample=True)
-    #
     #     self.conv1 = lrnet_nn.LRnetConv2d(1, 32, 5, 1)
-    #     self.conv2 = lrnet_nn.LRnetConv2d(32, 32, 5, 1)
-    #     self.conv3 = lrnet_nn.LRnetConv2d(32, 64, 5, 1)
-    #
-    #     self.bn1 = nn.BatchNorm2d(32)
-    #     self.bn2 = nn.BatchNorm2d(32)
-    #     self.bn3 = nn.BatchNorm2d(64)
-    #
-    #     self.fc1 = nn.Linear(4096, 512)
-    #     # self.fc1 = nn.Linear(6400, 512)
+    #     self.conv2 = lrnet_nn.LRnetConv2d(32, 64, 5, 1)
+    #     # self.conv1 = MyBinaryConv2d(1, 32, 5, 1)
+    #     # self.conv2 = MyBinaryConv2d(32, 64, 5, 1)
+    #     self.dropout1 = nn.Dropout(0.5)
+    #     self.dropout2 = nn.Dropout(0.5)
+    #     self.fc1 = nn.Linear(1024, 512)
     #     self.fc2 = nn.Linear(512, 10)
-    #
-    #     # self.bn1 = lrnet_nn.LRBatchNorm2d(32)
-    #     # self.bn2 = lrnet_nn.LRBatchNorm2d(32)
-    #     # self.bn3 = nn.BatchNorm2d(64)
+    #     self.bn1 = nn.BatchNorm2d(32)
+    #     self.bn2 = nn.BatchNorm2d(64)
     #
     # def forward(self, x):
     #     x = self.conv1(x)  # 32 x 24 x 24
     #     x = self.bn1(x)
-    #     x = self.conv2(x)  # 32 x 20 x 20
-    #     x = self.bn2(x)
-    #     x = self.conv3(x)  # 64 x 16 x 16
-    #     x = self.bn3(x)
+    #     x = F.max_pool2d(x, 2) # 32 x 12 x 12
     #     x = F.relu(x)
-    #     x = F.max_pool2d(x, 2)  # 64 x 8 x 8
-    #     x = torch.flatten(x, 1)  # 1024
+    #     x = self.conv2(x) # 64 x 8 x 8
+    #     x = self.bn2(x)
+    #     x = F.max_pool2d(x, 2) # 64 x 4 x 4
+    #     x = F.relu(x)
+    #     x = torch.flatten(x, 1) # 1024
+    #     x = self.dropout1(x)
     #     x = self.fc1(x)
     #     x = F.relu(x)
+    #     x = self.dropout2(x)
     #     x = self.fc2(x)
     #     output = x
     #     return output
+
+    def __init__(self):
+        super(LRNet_ver2, self).__init__()
+        # self.conv1 = lrnet_nn.LRnetConv2d_not_sample(1, 1, 5, 1)
+        # self.conv2 = lrnet_nn.NewLRnetConv2d(1, 1, 5, 1, output_sample=False)
+        # self.conv3 = lrnet_nn.NewLRnetConv2d(1, 64, 5, 1, output_sample=True)
+
+        self.conv1 = lrnet_nn.LRnetConv2d(1, 32, 5, 1)
+        self.conv2 = lrnet_nn.LRnetConv2d(32, 32, 5, 1)
+        self.conv3 = lrnet_nn.LRnetConv2d(32, 64, 5, 1)
+
+        # self.bn1 = nn.BatchNorm2d(32)
+        # self.bn2 = nn.BatchNorm2d(32)
+        # self.bn3 = nn.BatchNorm2d(64)
+
+        self.fc1 = nn.Linear(4096, 512)
+        # self.fc1 = nn.Linear(6400, 512)
+        self.fc2 = nn.Linear(512, 10)
+
+        # self.bn1 = lrnet_nn.LRBatchNorm2d(32)
+        # self.bn2 = lrnet_nn.LRBatchNorm2d(32)
+        # self.bn3 = nn.BatchNorm2d(64)
+
+    def forward(self, x):
+        x = self.conv1(x)  # 32 x 24 x 24
+        x = self.bn1(x)
+        x = self.conv2(x)  # 32 x 20 x 20
+        x = self.bn2(x)
+        x = self.conv3(x)  # 64 x 16 x 16
+        x = self.bn3(x)
+        x = F.relu(x)
+        x = F.max_pool2d(x, 2)  # 64 x 8 x 8
+        x = torch.flatten(x, 1)  # 1024
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.fc2(x)
+        output = x
+        return output
 
     def train_mode_switch(self):
         self.conv1.train_mode_switch()
