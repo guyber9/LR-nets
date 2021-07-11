@@ -91,6 +91,17 @@ class LRNet(nn.Module):
         output = x
         return output
 
+    def test_mode_switch(self, options, tickets):
+        self.conv1.test_mode_switch(options, tickets)
+        self.conv2.test_mode_switch(options, tickets)
+
+    def inc_cntr(self):
+        self.conv1.cntr = self.conv1.cntr + 1
+        self.conv2.cntr = self.conv2.cntr + 1
+
+    def rst_cntr(self):
+        self.conv1.cntr = 0
+        self.conv2.cntr = 0
 
 class LRNet_ver2(nn.Module):
 
