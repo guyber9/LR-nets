@@ -133,6 +133,8 @@ class LRnetConv2d(nn.Module):
             z1 = F.conv2d((input * input), sigma_square, None, self.stride, self.padding, self.dilation, self.groups)
             if torch.cuda.is_available():
                 torch.backends.cudnn.deterministic = False
+            if(self.in_channels == 128) and (self.out_channels == 128):
+                print_full_tensor(z1, "z1")
             v = torch.sqrt(z1)
 
             print ("m: " + str(m))
