@@ -187,7 +187,10 @@ def main_test():
 
     if not args.full_prec:
         if args.ver2:
-            net.test_mode_switch(args.options, args.tickets)
+            # net.test_mode_switch(args.options, args.tickets)
+            net.conv1.test_mode_switch(args.options, args.tickets)
+            net.conv2.test_mode_switch(args.options, args.tickets)
+            net.conv3.test_mode_switch(args.options, args.tickets)
         elif args.cifar10:
             net.conv1.test_mode_switch(args.options, args.tickets)
             net.conv2.test_mode_switch(args.options, args.tickets)
@@ -207,7 +210,10 @@ def main_test():
             print("iteration: " + str(idx))
             acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode)
             if args.ver2:
-                net.inc_cntr()
+                # net.inc_cntr()
+                net.conv1.cntr = net.conv1.cntr + 1
+                net.conv2.cntr = net.conv2.cntr + 1
+                net.conv3.cntr = net.conv3.cntr + 1
             else:
                 net.conv1.cntr = net.conv1.cntr + 1
                 net.conv2.cntr = net.conv2.cntr + 1
@@ -220,8 +226,9 @@ def main_test():
                 best_acc = acc
                 dataset_name = 'mnist' if args.mnist else 'cifar10'
                 isBinary = '_binary' if args.binary_mode else '_ternary'
+                isVer2 = '_ver2' if args.ver2 else ''
                 torch.save(net.state_dict(),
-                           "trained_models/" + str(dataset_name) + "_lrnet" + str(isBinary) + ".pt")
+                           "trained_models/" + str(dataset_name) + "_lrnet" + str(isBinary) + str(isVer2) + ".pt")
         print ("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
 
         if args.ver2:
