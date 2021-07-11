@@ -130,8 +130,8 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None):
 
 def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=None):
     # global best_acc
-    # net.eval()
-    net.train()
+    net.eval()
+    # net.train()
     test_loss = 0
     correct = 0
     total = 0
