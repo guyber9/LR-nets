@@ -113,6 +113,8 @@ class LRnetConv2d(nn.Module):
         else:
             print ("alpha: " + str(self.alpha))
             print ("betta: " + str(self.betta))
+            print("alpha isnan: " + str(torch.isnan(self.alpha).any()))
+            print("betta isnan: " + str(torch.isnan(self.betta).any()))
             prob_alpha = self.sigmoid(self.alpha)
             prob_betta = self.sigmoid(self.betta) * (1 - prob_alpha)
             prob_mat = torch.cat(((1 - prob_alpha - prob_betta), prob_alpha, prob_betta), 4)
@@ -135,6 +137,8 @@ class LRnetConv2d(nn.Module):
 
             print ("m: " + str(m))
             print ("v: " + str(v))
+            print("m isnan: " + str(torch.isnan(m).any()))
+            print("v isnan: " + str(torch.isnan(v).any()))
 
             if self.output_sample:
                 epsilon = torch.rand(z1.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
