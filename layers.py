@@ -237,7 +237,7 @@ class LRnetConv2d_not_sample(nn.Module):
             # E[X] calc
             mean_tmp = prob_mat * self.discrete_mat
             mean = torch.sum(mean_tmp, dim=4)
-            m = F.conv2d(input, mean, self.bias, self.stride, self.padding, self.dilation, self.groups)
+            m = F.conv2d(input, mean, self.bias, self.stride, self.padding, self.dilation, self.groups) # TODO bias
             # E[x^2]
             mean_square_tmp = prob_mat * self.discrete_square_mat
             mean_square = torch.sum(mean_square_tmp, dim=4)
@@ -352,13 +352,13 @@ class NewLRnetConv2d(nn.Module):
             return F.conv2d(sign_input, self.test_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
         else:
             m, v = input
-            print ("m: " + str(m.size()))
-            print ("v: " + str(v.size()))
-            print ("m: " + str(m))
-            print ("v: " + str(v))
+            # print ("m: " + str(m.size()))
+            # print ("v: " + str(v.size()))
+            # print ("m: " + str(m))
+            # print ("v: " + str(v))
 
-            print ("alpha: " + str(self.alpha))
-            print ("betta: " + str(self.betta))
+            # print ("alpha: " + str(self.alpha))
+            # print ("betta: " + str(self.betta))
             prob_alpha = self.sigmoid(self.alpha)
             prob_betta = self.sigmoid(self.betta) * (1 - prob_alpha)
             prob_mat = torch.cat(((1 - prob_alpha - prob_betta), prob_alpha, prob_betta), 4)
@@ -368,10 +368,10 @@ class NewLRnetConv2d(nn.Module):
 
             # mean of input
             input_mean = 2 * (1 - torch.erf((-1) * m / v)) - 1
-            print("input_mean: " + str(input_mean))
+            # print("input_mean: " + str(input_mean))
 
-            m1 = F.conv2d(input_mean, mean, self.bias, self.stride, self.padding, self.dilation, self.groups)
-            print("m1: " + str(m1))
+            m1 = F.conv2d(input_mean, mean, self.bias, self.stride, self.padding, self.dilation, self.groups) # TODO bias
+            # print("m1: " + str(m1))
             # E[x^2]
             mean_square_tmp = prob_mat * self.discrete_square_mat
             mean_square = torch.sum(mean_square_tmp, dim=4)
@@ -379,11 +379,11 @@ class NewLRnetConv2d(nn.Module):
             mean_pow2 = mean * mean
 
             # sigma_square = mean_square - mean_pow2
-            e_h_2 = torch.ones(input_mean.size(), dtype=self.tensor_dtype, device=self.device)
+            e_h_2 = torch.ones(m.size(), dtype=self.tensor_dtype, device=self.device)
 
-            print("mean_square_tmp: " + str(mean_square_tmp))
-            print("mean_square: " + str(mean_square))
-            print("e_h_2: " + str(e_h_2))
+            # print("mean_square_tmp: " + str(mean_square_tmp))
+            # print("mean_square: " + str(mean_square))
+            # print("e_h_2: " + str(e_h_2))
 
             if torch.cuda.is_available():
                 torch.backends.cudnn.deterministic = True
@@ -396,8 +396,8 @@ class NewLRnetConv2d(nn.Module):
             if torch.cuda.is_available():
                 torch.backends.cudnn.deterministic = False
 
-            print("z2: " + str(z2))
-            print("z3: " + str(z3))
+            # print("z2: " + str(z2))
+            # print("z3: " + str(z3))
 
             # z = z1 + z2 - z3
             z = z2 - z3
@@ -406,7 +406,8 @@ class NewLRnetConv2d(nn.Module):
             # print ("m: " + str(m))
             # print ("v: " + str(v))
 
-            exit(1)
+            # print("z: " + str(z))
+            # exit(1)
 
             if self.output_sample:
                 epsilon = torch.rand(z.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
