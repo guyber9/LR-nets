@@ -321,45 +321,57 @@ def main_train():
         if args.debug:
             print("alpha " + str(net.conv1.alpha))
             print("betta " + str(net.conv1.betta))
-        if args.sampled_test:
-            net.conv1.train_mode_switch()
-            net.conv2.train_mode_switch()
-            if args.cifar10:
-                net.conv3.train_mode_switch()
-                net.conv4.train_mode_switch()
-                net.conv5.train_mode_switch()
-                net.conv6.train_mode_switch()
+        if args.ver2:
+            net.train_mode_switch()
+        else:
+            if args.sampled_test:
+                net.conv1.train_mode_switch()
+                net.conv2.train_mode_switch()
+                if args.cifar10:
+                    net.conv3.train_mode_switch()
+                    net.conv4.train_mode_switch()
+                    net.conv5.train_mode_switch()
+                    net.conv6.train_mode_switch()
         train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
         best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
         scheduler.step()
 
         if args.sampled_test:
-            net.conv1.test_mode_switch(args.options, args.tickets)
-            net.conv2.test_mode_switch(args.options, args.tickets)
-            if args.cifar10:
-                net.conv3.test_mode_switch(args.options, args.tickets)
-                net.conv4.test_mode_switch(args.options, args.tickets)
-                net.conv5.test_mode_switch(args.options, args.tickets)
-                net.conv6.test_mode_switch(args.options, args.tickets)
+             if args.ver2:
+                 net.test_mode_switch(args.options, args.tickets)
+             else:
+                net.conv1.test_mode_switch(args.options, args.tickets)
+                net.conv2.test_mode_switch(args.options, args.tickets)
+                if args.cifar10:
+                    net.conv3.test_mode_switch(args.options, args.tickets)
+                    net.conv4.test_mode_switch(args.options, args.tickets)
+                    net.conv5.test_mode_switch(args.options, args.tickets)
+                    net.conv6.test_mode_switch(args.options, args.tickets)
             if (epoch % 2) == 0:
                 t_sampled_acc = 0
                 for idx in range(0, args.options):
                     best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, True, f) # note: model is saved only in above test method
-                    net.conv1.cntr = net.conv1.cntr + 1
-                    net.conv2.cntr = net.conv2.cntr + 1
-                    if args.cifar10:
-                        net.conv3.cntr = net.conv3.cntr + 1
-                        net.conv4.cntr = net.conv4.cntr + 1
-                        net.conv5.cntr = net.conv5.cntr + 1
-                        net.conv6.cntr = net.conv6.cntr + 1
+                    if args.ver2:
+                        net.inc_cntr()
+                    else:
+                        net.conv1.cntr = net.conv1.cntr + 1
+                        net.conv2.cntr = net.conv2.cntr + 1
+                        if args.cifar10:
+                            net.conv3.cntr = net.conv3.cntr + 1
+                            net.conv4.cntr = net.conv4.cntr + 1
+                            net.conv5.cntr = net.conv5.cntr + 1
+                            net.conv6.cntr = net.conv6.cntr + 1
                     t_sampled_acc = t_sampled_acc + sampled_acc
-                net.conv1.cntr = 0
-                net.conv2.cntr = 0
-                if args.cifar10:
-                    net.conv3.cntr = 0
-                    net.conv4.cntr = 0
-                    net.conv5.cntr = 0
-                    net.conv6.cntr = 0
+                if args.ver2:
+                    net.rst_cntr()
+                else:
+                    net.conv1.cntr = 0
+                    net.conv2.cntr = 0
+                    if args.cifar10:
+                        net.conv3.cntr = 0
+                        net.conv4.cntr = 0
+                        net.conv5.cntr = 0
+                        net.conv6.cntr = 0
                 print_summary(train_acc, best_acc, best_sampled_acc, t_sampled_acc/args.options, f)
         scheduler.step()
 

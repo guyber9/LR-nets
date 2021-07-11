@@ -130,8 +130,7 @@ def main_test():
             net = FPNet().to(device)
         elif args.ver2:
             print("Testing LR-Net for MNIST | ver2")
-            # net = LRNet_ver2().to(device) #asdasd
-            net = LRNet().to(device)
+            net = LRNet_ver2().to(device)
         else:
             print ("Testing LR-Net for MNIST")
             net = LRNet().to(device)
@@ -151,7 +150,7 @@ def main_test():
     dataset_name = 'mnist' if args.mnist else 'cifar10'
     net_type = '_fp' if args.full_prec else '_lrnet'
     isBinary = '_binary' if args.binary_mode else ''
-    isVer2 = '_ver2' if args.ver2 else '' #asdasd
+    isVer2 = '_ver2' if args.ver2 else ''
     load_model_name = "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + str(isVer2) + ".pt"
     print('==> Loading model: ' + str(load_model_name))
     net.load_state_dict(torch.load(load_model_name))

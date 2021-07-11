@@ -174,6 +174,11 @@ class LRNet_ver2(nn.Module):
     #     output = x
     #     return output
 
+    def train_mode_switch(self, options, tickets):
+        self.conv1.train_mode_switch()
+        self.conv2.train_mode_switch()
+        # self.conv3.train_mode_switch()
+
     def test_mode_switch(self, options, tickets):
         self.conv1.test_mode_switch(options, tickets)
         self.conv2.test_mode_switch(options, tickets)
