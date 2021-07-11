@@ -337,9 +337,9 @@ def main_train():
         scheduler.step()
 
         if args.sampled_test:
-             if args.ver2:
-                 net.test_mode_switch(args.options, args.tickets)
-             else:
+            if args.ver2:
+                net.test_mode_switch(args.options, args.tickets)
+            else:
                 net.conv1.test_mode_switch(args.options, args.tickets)
                 net.conv2.test_mode_switch(args.options, args.tickets)
                 if args.cifar10:
