@@ -138,6 +138,8 @@ class LRnetConv2d(nn.Module):
             print ("m: " + str(m))
             print ("v: " + str(v))
             print("m isnan: " + str(torch.isnan(m).any()))
+            print("sigma_square isnan: " + str(torch.isnan(sigma_square).any()))
+            print("z1 isnan: " + str(torch.isnan(z1).any()))
             print("v isnan: " + str(torch.isnan(v).any()))
 
             if self.output_sample:
