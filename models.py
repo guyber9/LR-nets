@@ -251,6 +251,7 @@ class LRNet_CIFAR10(nn.Module):
         # print("bn1: " + str(x))
         # x = self.dropout5(x)
         print("xrelu1 isnan: " + str(torch.isnan(x).any()))
+        print("start here")
         x = self.conv2(x)  # 128 x 32 x 32
         # print_full_tensor(x, "x2 full")
         print("x2 isnan: " + str(torch.isnan(x).any()))
