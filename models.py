@@ -244,14 +244,15 @@ class LRNet_CIFAR10(nn.Module):
         x = self.conv1(x)  # input is 3 x 32 x 32, output is 128 x 32 x 32
         # print("x1: " + str(x))
         x = self.bn1(x)  # <- problematic batchnoram (?)
+        print("bn1isnan: " + str(torch.isnan(x).any()))
         x = F.relu(x)
-        print("bn1: " + str(x))
+        # print("bn1: " + str(x))
         # x = self.dropout5(x)
         x = self.conv2(x)  # 128 x 32 x 32
-        print("x2isnan: " + str(torch.isnan(x)))
+        print("x2isnan: " + str(torch.isnan(x).any()))
         print("x2: " + str(x))
         x = self.bn2(x)
-        print("bn2isnan: " + str(torch.isnan(x)))
+        print("bn2isnan: " + str(torch.isnan(x).any()))
         print("bn2: " + str(x))
         x = F.max_pool2d(x, 2)  # 128 x 16 x 16
         x = F.relu(x)
