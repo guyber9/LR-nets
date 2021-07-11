@@ -144,6 +144,10 @@ class LRnetConv2d(nn.Module):
             print("z1 isnan: " + str(torch.isnan(z1).any()))
             print("v isnan: " + str(torch.isnan(v).any()))
 
+            if(self.in_channels == 128) and (self.out_channels == 128):
+                print_full_tensor(v, "v")
+                exit(1)
+
             if self.output_sample:
                 epsilon = torch.rand(z1.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
                 return m + epsilon * v
