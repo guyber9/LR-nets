@@ -202,6 +202,10 @@ class LRnetConv2d_not_sample(nn.Module):
         self.alpha = nn.Parameter(torch.tensor(alpha, dtype=self.tensor_dtype, device=self.device))
         self.betta = nn.Parameter(torch.tensor(betta, dtype=self.tensor_dtype, device=self.device))
 
+    def train_mode_switch(self) -> None:
+        # print ("train_mode_switch")
+        self.test_forward = False
+
     def test_mode_switch(self, num_of_options=1, tickets=10) -> None:
         # print ("test_mode_switch")
         self.test_forward = True
@@ -319,6 +323,10 @@ class NewLRnetConv2d(nn.Module):
         print ("Initialize Weights")
         self.alpha = nn.Parameter(torch.tensor(alpha, dtype=self.tensor_dtype, device=self.device))
         self.betta = nn.Parameter(torch.tensor(betta, dtype=self.tensor_dtype, device=self.device))
+
+    def train_mode_switch(self) -> None:
+        # print ("train_mode_switch")
+        self.test_forward = False
 
     def test_mode_switch(self, num_of_options, tickets=10) -> None:
         self.test_forward = True
@@ -444,6 +452,10 @@ class LRBatchNorm2d(nn.Module):
         nn.init.ones_(self.weight)
         if self.bias is not None:
             nn.init.zeros_(self.bias)
+
+    def train_mode_switch(self) -> None:
+        # print ("train_mode_switch")
+        self.test_forward = False
 
     def test_mode_switch(self, num_of_options, tickets=10) -> None:
         return
