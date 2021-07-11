@@ -119,10 +119,6 @@ class LRNet_ver2(nn.Module):
         self.bn2 = nn.BatchNorm2d(64)
 
     def forward(self, x):
-        print ("##################################################")
-        print ("training this NET")
-        print ("##################################################")
-
         x = self.conv1(x)  # 32 x 24 x 24
         x = self.bn1(x)
         x = F.max_pool2d(x, 2) # 32 x 12 x 12
