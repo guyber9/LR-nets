@@ -187,10 +187,7 @@ def main_test():
 
     if not args.full_prec:
         if args.ver2:
-            # net.test_mode_switch(args.options, args.tickets)
-            net.conv1.test_mode_switch(args.options, args.tickets)
-            net.conv2.test_mode_switch(args.options, args.tickets)
-            net.conv3.test_mode_switch(args.options, args.tickets)
+            net.test_mode_switch(args.options, args.tickets)
         elif args.cifar10:
             net.conv1.test_mode_switch(args.options, args.tickets)
             net.conv2.test_mode_switch(args.options, args.tickets)
@@ -210,10 +207,7 @@ def main_test():
             print("iteration: " + str(idx))
             acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode)
             if args.ver2:
-                # net.inc_cntr()
-                net.conv1.cntr = net.conv1.cntr + 1
-                net.conv2.cntr = net.conv2.cntr + 1
-                net.conv3.cntr = net.conv3.cntr + 1
+                net.inc_cntr()
             else:
                 net.conv1.cntr = net.conv1.cntr + 1
                 net.conv2.cntr = net.conv2.cntr + 1
