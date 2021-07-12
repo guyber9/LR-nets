@@ -12,7 +12,7 @@ from torch.nn.common_types import _size_1_t, _size_2_t, _size_3_t
 from torch.nn.parallel import DistributedDataParallel as DDP
 import torch.distributed as dist
 import os
-from utils import print_full_tensor
+from utils import print_full_tensor, print_fullllll_tensor
 
 class LRnetConv2d(nn.Module):
 
@@ -137,9 +137,9 @@ class LRnetConv2d(nn.Module):
                 print("sigma_square size: " + str(sigma_square.size()))
                 print("mean_square size: " + str(mean_square.size()))
                 print("mean_pow2 size: " + str(mean_pow2.size()))
-                print_full_tensor(sigma_square, "sigma_square")
-                print_full_tensor(sigma_square, "mean_square")
-                print_full_tensor(sigma_square, "mean_pow2")
+                print_fullllll_tensor(sigma_square, "sigma_square")
+                # print_full_tensor(mean_square, "mean_square")
+                # print_full_tensor(mean_pow2, "mean_pow2")
             v = torch.sqrt(z1)
 
             print ("m: " + str(m))
