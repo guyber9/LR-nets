@@ -134,7 +134,9 @@ class LRnetConv2d(nn.Module):
             if torch.cuda.is_available():
                 torch.backends.cudnn.deterministic = False
             if(self.in_channels == 128) and (self.out_channels == 128):
-                print_full_tensor(z1, "z1")
+                print("sigma_square size: " + str(sigma_square.size()))
+                print("mean_square size: " + str(mean_square.size()))
+                print("mean_pow2 size: " + str(mean_pow2.size()))
                 print_full_tensor(sigma_square, "sigma_square")
                 print_full_tensor(sigma_square, "mean_square")
                 print_full_tensor(sigma_square, "mean_pow2")
