@@ -137,6 +137,7 @@ class LRnetConv2d(nn.Module):
                 print("sigma_square size: " + str(sigma_square.size()))
                 print_fullllll_tensor(sigma_square, "sigma_square")
                 print_full_tensor(z1, "z1")
+                print_full_tensor(torch.relu(z1), "relu(z1)")
                 print("sigma_square isnan: " + str(torch.isnan(sigma_square).any()))
                 print("z1 isnan: " + str(torch.isnan(z1).any()))
             v = torch.sqrt(z1)
