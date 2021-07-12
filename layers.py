@@ -128,26 +128,23 @@ class LRnetConv2d(nn.Module):
             # E[x] ^ 2
             mean_pow2 = mean * mean
             sigma_square = mean_square - mean_pow2
-            if torch.cuda.is_available():
-                torch.backends.cudnn.deterministic = True
+            # if torch.cuda.is_available():
+            #     torch.backends.cudnn.deterministic = True
             z1 = F.conv2d((input * input), sigma_square, None, self.stride, self.padding, self.dilation, self.groups)
-            if torch.cuda.is_available():
-                torch.backends.cudnn.deterministic = False
+            # if torch.cuda.is_available():
+            #     torch.backends.cudnn.deterministic = False
             if(self.in_channels == 128) and (self.out_channels == 128):
                 print("sigma_square size: " + str(sigma_square.size()))
-                print("mean_square size: " + str(mean_square.size()))
-                print("mean_pow2 size: " + str(mean_pow2.size()))
                 print_fullllll_tensor(sigma_square, "sigma_square")
-                # print_full_tensor(mean_square, "mean_square")
-                # print_full_tensor(mean_pow2, "mean_pow2")
+                print_full_tensor(z1, "z1")
+                print("sigma_square isnan: " + str(torch.isnan(sigma_square).any()))
+                print("z1 isnan: " + str(torch.isnan(z1).any()))
             v = torch.sqrt(z1)
 
-            print ("m: " + str(m))
-            print ("v: " + str(v))
-            print("m isnan: " + str(torch.isnan(m).any()))
-            print("sigma_square isnan: " + str(torch.isnan(sigma_square).any()))
-            print("z1 isnan: " + str(torch.isnan(z1).any()))
-            print("v isnan: " + str(torch.isnan(v).any()))
+            if(self.in_channels == 128) and (self.out_channels == 128):
+                print("v isnan: " + str(torch.isnan(v).any()))
+                print("v: " + str(v))
+                print("m isnan: " + str(torch.isnan(m).any()))
 
             if(self.in_channels == 128) and (self.out_channels == 128):
                 print_full_tensor(v, "v")
