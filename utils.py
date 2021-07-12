@@ -82,7 +82,7 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None):
     total = 0
     t0 = time.time()
     for batch_idx, (inputs, targets) in enumerate(trainloader):
-        print("batch_idx: " + str(batch_idx))
+        # print("batch_idx: " + str(batch_idx))
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
         outputs = net(inputs)
@@ -97,7 +97,6 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None):
             loss.backward()
         # print("loss1: " + str(loss))
         optimizer.step()
-        print("optim step")
 
         train_loss += loss.item()
         _, predicted = outputs.max(1)
