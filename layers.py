@@ -131,6 +131,7 @@ class LRnetConv2d(nn.Module):
             # if torch.cuda.is_available():
             #     torch.backends.cudnn.deterministic = True
             z1 = F.conv2d((input * input), sigma_square, None, self.stride, self.padding, self.dilation, self.groups)
+            z1 = torch.relu(z1)
             # if torch.cuda.is_available():
             #     torch.backends.cudnn.deterministic = False
             # if(self.in_channels == 128) and (self.out_channels == 128):
