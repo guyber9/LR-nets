@@ -365,7 +365,8 @@ def print_full_tensor(input, input_name):
     for i, val1 in enumerate(input):
         for j, val2 in enumerate(val1):
             for m, val3 in enumerate(val2):
-                print (str(input_name) + "(" + str(i) + ", " + str(j) + ", " + str(m) + ": " + str(val3))
+                if (i == 67) and (j == 0) and (m == 14):
+                    print (str(input_name) + "(" + str(i) + ", " + str(j) + ", " + str(m) + ": " + str(val3))
 
 def print_summary(train_acc, best_acc, best_sampled_acc, t_sampled_acc, f):
     print("#################################")
