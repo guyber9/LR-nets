@@ -113,8 +113,8 @@ class LRnetConv2d(nn.Module):
         else:
             # print ("alpha: " + str(self.alpha))
             # print ("betta: " + str(self.betta))
-            print("alpha isnan: " + str(torch.isnan(self.alpha).any()))
-            print("betta isnan: " + str(torch.isnan(self.betta).any()))
+            # print("alpha isnan: " + str(torch.isnan(self.alpha).any()))
+            # print("betta isnan: " + str(torch.isnan(self.betta).any()))
             prob_alpha = self.sigmoid(self.alpha)
             prob_betta = self.sigmoid(self.betta) * (1 - prob_alpha)
             prob_mat = torch.cat(((1 - prob_alpha - prob_betta), prob_alpha, prob_betta), 4)
@@ -133,23 +133,23 @@ class LRnetConv2d(nn.Module):
             z1 = F.conv2d((input * input), sigma_square, None, self.stride, self.padding, self.dilation, self.groups)
             # if torch.cuda.is_available():
             #     torch.backends.cudnn.deterministic = False
-            if(self.in_channels == 128) and (self.out_channels == 128):
-                print("sigma_square size: " + str(sigma_square.size()))
-                print_fullllll_tensor(sigma_square, "sigma_square")
-                print_full_tensor(z1, "z1")
-                print_full_tensor(torch.relu(z1), "relu(z1)")
-                print("sigma_square isnan: " + str(torch.isnan(sigma_square).any()))
-                print("z1 isnan: " + str(torch.isnan(z1).any()))
+            # if(self.in_channels == 128) and (self.out_channels == 128):
+            #     print("sigma_square size: " + str(sigma_square.size()))
+            #     print_fullllll_tensor(sigma_square, "sigma_square")
+            #     print_full_tensor(z1, "z1")
+            #     print_full_tensor(torch.relu(z1), "relu(z1)")
+            #     print("sigma_square isnan: " + str(torch.isnan(sigma_square).any()))
+            #     print("z1 isnan: " + str(torch.isnan(z1).any()))
             v = torch.sqrt(z1)
 
-            if(self.in_channels == 128) and (self.out_channels == 128):
-                print("v isnan: " + str(torch.isnan(v).any()))
-                print("v: " + str(v))
-                print("m isnan: " + str(torch.isnan(m).any()))
+            # if(self.in_channels == 128) and (self.out_channels == 128):
+            #     print("v isnan: " + str(torch.isnan(v).any()))
+            #     print("v: " + str(v))
+            #     print("m isnan: " + str(torch.isnan(m).any()))
 
-            if(self.in_channels == 128) and (self.out_channels == 128):
-                print_full_tensor(v, "v")
-                exit(1)
+            # if(self.in_channels == 128) and (self.out_channels == 128):
+            #     print_full_tensor(v, "v")
+            #     exit(1)
 
             if self.output_sample:
                 epsilon = torch.rand(z1.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
