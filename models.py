@@ -99,9 +99,9 @@ class LRNet_ver2(nn.Module):
 
     def __init__(self):
         super(LRNet_ver2, self).__init__()
-        self.conv1 = lrnet_nn.LRnetConv2d_not_sample(1, 32, 5, 1)
-        self.conv2 = lrnet_nn.RnetConv2d_ver2(32, 32, 5, 1, output_sample=False)
-        self.conv3 = lrnet_nn.RnetConv2d_ver2(32, 64, 5, 1, output_sample=True)
+        self.conv1 = lrnet_nn.LRnetConv2d(1, 32, 5, 1 ,output_sample=False)
+        self.conv2 = lrnet_nn.LRnetConv2d_ver2(32, 32, 5, 1, output_sample=False)
+        self.conv3 = lrnet_nn.LRnetConv2d_ver2(32, 64, 5, 1, output_sample=True)
 
         # self.conv1 = lrnet_nn.LRnetConv2d(1, 32, 5, 1)
         # self.conv2 = lrnet_nn.LRnetConv2d(32, 32, 5, 1)
@@ -121,11 +121,11 @@ class LRNet_ver2(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)  # 32 x 24 x 24
-        x = self.bn1(x)
+        # x = self.bn1(x)
         x = self.conv2(x)  # 32 x 20 x 20
-        x = self.bn2(x)
+        # x = self.bn2(x)
         x = self.conv3(x)  # 64 x 16 x 16
-        x = self.bn3(x)
+        # x = self.bn3(x)
         x = F.relu(x)
         x = F.max_pool2d(x, 2)  # 64 x 8 x 8
         x = torch.flatten(x, 1)  # 1024
