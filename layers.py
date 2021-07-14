@@ -134,8 +134,9 @@ class LRnetConv2d(nn.Module):
             # z1 = torch.relu(z1) ##TODO
             # if torch.cuda.is_available():
             #     torch.backends.cudnn.deterministic = False
-            # if(self.in_channels == 128) and (self.out_channels == 128):
-                # print("sigma_square size: " + str(sigma_square.size()))
+            if(self.in_channels == 128) and (self.out_channels == 128):
+                print("sigma_square size: " + str(sigma_square.size()))
+                print("sigma_square: " + str(sigma_square))
             #     print_fullllll_tensor(sigma_square, "sigma_square")
             #     print_full_tensor(z1, "z1")
             #     print_full_tensor(torch.relu(z1), "relu(z1)")
@@ -151,6 +152,7 @@ class LRnetConv2d(nn.Module):
                     # print("sigma_square: " + str(sigma_square))
                     x = input*input
                     w = sigma_square
+                    print("sigma_square: " + str(sigma_square))
                     print("x: " + str(x))
                     print("w: " + str(w))
                     m = {'x': x, 'w': w}
