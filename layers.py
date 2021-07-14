@@ -111,11 +111,11 @@ class LRnetConv2d(nn.Module):
             self.test_weight = torch.tensor(self.test_weight_arr[self.cntr],dtype=self.tensor_dtype,device=self.device)
             return F.conv2d(input, self.test_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
         else:
-            if(self.in_channels == 128) and (self.out_channels == 128):
-                print ("alpha: " + str(self.alpha))
-                print ("betta: " + str(self.betta))
-                print("alpha isnan: " + str(torch.isnan(self.alpha).any()))
-                print("betta isnan: " + str(torch.isnan(self.betta).any()))
+            # if(self.in_channels == 128) and (self.out_channels == 128):
+            #     print ("alpha: " + str(self.alpha))
+            #     print ("betta: " + str(self.betta))
+            #     print("alpha isnan: " + str(torch.isnan(self.alpha).any()))
+            #     print("betta isnan: " + str(torch.isnan(self.betta).any()))
             prob_alpha = self.sigmoid(self.alpha)
             prob_betta = self.sigmoid(self.betta) * (1 - prob_alpha)
             prob_mat = torch.cat(((1 - prob_alpha - prob_betta), prob_alpha, prob_betta), 4)
