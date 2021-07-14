@@ -132,44 +132,45 @@ class LRnetConv2d(nn.Module):
             # if torch.cuda.is_available():
             #     torch.backends.cudnn.deterministic = True
 
-            if(self.in_channels == 128) and (self.out_channels == 128):
-                file2 = {'w': sigma_square}
-                torch.save(file2, 'my_tensors2.pt')
-                w = sigma_square
-                print("sigma_square bfr conv: " + str(sigma_square))
+            # if(self.in_channels == 128) and (self.out_channels == 128):
+            #     file2 = {'w': sigma_square}
+            #     torch.save(file2, 'my_tensors2.pt')
+            #     w = sigma_square
+            #     print("sigma_square bfr conv: " + str(sigma_square))
 
             z1 = F.conv2d((input * input), sigma_square, None, self.stride, self.padding, self.dilation, self.groups)
-            # z1 = torch.relu(z1) ##TODO
+            z1 = torch.relu(z1) ##TODO
             # if torch.cuda.is_available():
             #     torch.backends.cudnn.deterministic = False
-            if(self.in_channels == 128) and (self.out_channels == 128):
-                print("sigma_square size: " + str(sigma_square.size()))
-                print("sigma_square: " + str(sigma_square))
-                file2 = {'w': sigma_square}
-                torch.save(file2, 'my_tensors2.pt')
+            # if(self.in_channels == 128) and (self.out_channels == 128):
+            #     print("sigma_square size: " + str(sigma_square.size()))
+            #     print("sigma_square: " + str(sigma_square))
+            #     file2 = {'w': sigma_square}
+            #     torch.save(file2, 'my_tensors2.pt')
             #     print_fullllll_tensor(sigma_square, "sigma_square")
             #     print_full_tensor(z1, "z1")
             #     print_full_tensor(torch.relu(z1), "relu(z1)")
             #     print("sigma_square isnan: " + str(torch.isnan(sigma_square).any()))
             #     print("z1 isnan: " + str(torch.isnan(z1).any()))
+
             v = torch.sqrt(z1)
 
-            if(self.in_channels == 128) and (self.out_channels == 128):
-                if torch.isnan(v).any():
-                    print("v isnan: " + str(torch.isnan(v).any()))
-                    torch.set_printoptions(threshold=10_000)
-                    # print ("input^2: " + str(input * input))
-                    # print("sigma_square: " + str(sigma_square))
-                    x = input*input
-                    print("sigma_square: " + str(sigma_square))
-                    print("x: " + str(x))
-                    m = {'x': x, 'w': sigma_square}
-                    # file1 = {'x': x}
-                    # file2 = {'w': sigma_square}
-                    # torch.save(file1, 'my_tensors1.pt')
-                    # torch.save(file2, 'my_tensors2.pt')
-                    torch.save(m, 'my_tensors.pt')
-                    exit(1)
+            # if(self.in_channels == 128) and (self.out_channels == 128):
+            #     if torch.isnan(v).any():
+            #         print("v isnan: " + str(torch.isnan(v).any()))
+            #         torch.set_printoptions(threshold=10_000)
+            #         # print ("input^2: " + str(input * input))
+            #         # print("sigma_square: " + str(sigma_square))
+            #         x = input*input
+            #         print("sigma_square: " + str(sigma_square))
+            #         print("x: " + str(x))
+            #         m = {'x': x, 'w': sigma_square}
+            #         # file1 = {'x': x}
+            #         # file2 = {'w': sigma_square}
+            #         # torch.save(file1, 'my_tensors1.pt')
+            #         # torch.save(file2, 'my_tensors2.pt')
+            #         torch.save(m, 'my_tensors.pt')
+            #         exit(1)
 
             #     print("v: " + str(v))
             #     print("m isnan: " + str(torch.isnan(m).any()))
