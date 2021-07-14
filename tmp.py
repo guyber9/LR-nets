@@ -2,6 +2,7 @@ import torch
 from torch.nn import functional as F
 
 loaded = torch.load('my_tensors.pt')
+print(loaded)
 x = loaded['x']
 w = loaded['w']
 
