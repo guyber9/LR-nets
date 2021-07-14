@@ -131,20 +131,24 @@ class LRnetConv2d(nn.Module):
             # if torch.cuda.is_available():
             #     torch.backends.cudnn.deterministic = True
             z1 = F.conv2d((input * input), sigma_square, None, self.stride, self.padding, self.dilation, self.groups)
-            # z1 = torch.relu(z1) ##TODO
+            z1 = torch.relu(z1) ##TODO
             # if torch.cuda.is_available():
             #     torch.backends.cudnn.deterministic = False
-            if(self.in_channels == 128) and (self.out_channels == 128):
+            # if(self.in_channels == 128) and (self.out_channels == 128):
                 # print("sigma_square size: " + str(sigma_square.size()))
             #     print_fullllll_tensor(sigma_square, "sigma_square")
             #     print_full_tensor(z1, "z1")
             #     print_full_tensor(torch.relu(z1), "relu(z1)")
             #     print("sigma_square isnan: " + str(torch.isnan(sigma_square).any()))
-                print("z1 isnan: " + str(torch.isnan(z1).any()))
+            #     print("z1 isnan: " + str(torch.isnan(z1).any()))
             v = torch.sqrt(z1)
 
-            if(self.in_channels == 128) and (self.out_channels == 128):
-                print("v isnan: " + str(torch.isnan(v).any()))
+            # if(self.in_channels == 128) and (self.out_channels == 128):
+            #     if torch.isnan(v).any():
+            #         print("v isnan: " + str(torch.isnan(v).any()))
+            #         torch.set_printoptions(threshold=10_000)
+            #         print ("input^2: " + str(input * input))
+            #         print("sigma_square: " + str(sigma_square))
             #     print("v: " + str(v))
             #     print("m isnan: " + str(torch.isnan(m).any()))
 
