@@ -133,6 +133,7 @@ class LRnetConv2d(nn.Module):
 
             file2 = {'w': sigma_square}
             torch.save(file2, 'my_tensors2.pt')
+            print("sigma_square bfr conv: " + str(sigma_square))
 
             z1 = F.conv2d((input * input), sigma_square, None, self.stride, self.padding, self.dilation, self.groups)
             # z1 = torch.relu(z1) ##TODO
