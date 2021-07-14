@@ -135,6 +135,7 @@ class LRnetConv2d(nn.Module):
             if(self.in_channels == 128) and (self.out_channels == 128):
                 file2 = {'w': sigma_square}
                 torch.save(file2, 'my_tensors2.pt')
+                w = sigma_square
                 print("sigma_square bfr conv: " + str(sigma_square))
 
             z1 = F.conv2d((input * input), sigma_square, None, self.stride, self.padding, self.dilation, self.groups)
@@ -162,10 +163,12 @@ class LRnetConv2d(nn.Module):
                     x = input*input
                     print("sigma_square: " + str(sigma_square))
                     print("x: " + str(x))
-                    file1 = {'x': x}
+                    m = {'x': x, 'w': sigma_square}
+                    # file1 = {'x': x}
                     # file2 = {'w': sigma_square}
-                    torch.save(file1, 'my_tensors1.pt')
+                    # torch.save(file1, 'my_tensors1.pt')
                     # torch.save(file2, 'my_tensors2.pt')
+                    torch.save(m, 'my_tensors.pt')
                     exit(1)
 
             #     print("v: " + str(v))
