@@ -326,7 +326,7 @@ class LRNet_CIFAR10_ver2(nn.Module):
 
     def __init__(self):
         super(LRNet_CIFAR10_ver2, self).__init__()
-        self.conv1 = lrnet_nn.LRnetConv2d_(3, 128, 3, stride=1, padding=1, output_sample=False)
+        self.conv1 = lrnet_nn.LRnetConv2d(3, 128, 3, stride=1, padding=1, output_sample=False)
         self.conv2 = lrnet_nn.RnetConv2d_ver2(128, 128, 3, stride=2, padding=1, output_sample=False)
         self.conv3 = lrnet_nn.RnetConv2d_ver2(128, 256, 3, stride=1, padding=1, output_sample=False)
         self.conv4 = lrnet_nn.RnetConv2d_ver2(256, 256, 3, stride=2, padding=1, output_sample=False)
