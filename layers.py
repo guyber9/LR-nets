@@ -137,6 +137,8 @@ class LRnetConv2d(nn.Module):
             if(self.in_channels == 128) and (self.out_channels == 128):
                 print("sigma_square size: " + str(sigma_square.size()))
                 print("sigma_square: " + str(sigma_square))
+                file2 = {'w': sigma_square}
+                torch.save(file2, 'my_tensors2.pt')
             #     print_fullllll_tensor(sigma_square, "sigma_square")
             #     print_full_tensor(z1, "z1")
             #     print_full_tensor(torch.relu(z1), "relu(z1)")
@@ -154,9 +156,9 @@ class LRnetConv2d(nn.Module):
                     print("sigma_square: " + str(sigma_square))
                     print("x: " + str(x))
                     file1 = {'x': x}
-                    file2 = {'w': sigma_square}
+                    # file2 = {'w': sigma_square}
                     torch.save(file1, 'my_tensors1.pt')
-                    torch.save(file2, 'my_tensors2.pt')
+                    # torch.save(file2, 'my_tensors2.pt')
                     exit(1)
 
             #     print("v: " + str(v))
