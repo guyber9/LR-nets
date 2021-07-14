@@ -151,11 +151,12 @@ class LRnetConv2d(nn.Module):
                     # print ("input^2: " + str(input * input))
                     # print("sigma_square: " + str(sigma_square))
                     x = input*input
-                    w = sigma_square
                     print("sigma_square: " + str(sigma_square))
                     print("x: " + str(x))
-                    m = {'x': x, 'w': sigma_square}
-                    torch.save(m, 'my_tensors.pt')
+                    file1 = {'x': x}
+                    file2 = {'w': sigma_square}
+                    torch.save(file1, 'my_tensors1.pt')
+                    torch.save(file2, 'my_tensors2.pt')
                     exit(1)
 
             #     print("v: " + str(v))
