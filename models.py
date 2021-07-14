@@ -247,7 +247,7 @@ class LRNet_CIFAR10(nn.Module):
         x = self.bn1(x)  # <- problematic batchnoram (?)
         # print("bn1 isnan: " + str(torch.isnan(x).any()))
         x = F.relu(x)
-        x = self.dropout5(x)
+        # x = self.dropout5(x)
         # print("xrelu1 isnan: " + str(torch.isnan(x).any()))
         # print("start here")
         x = self.conv2(x)  # 128 x 32 x 32
@@ -259,17 +259,17 @@ class LRNet_CIFAR10(nn.Module):
         # print("bn2: " + str(x))
         x = F.max_pool2d(x, 2)  # 128 x 16 x 16
         x = F.relu(x)
-        x = self.dropout3(x)
+        # x = self.dropout3(x)
 
         x = self.conv3(x)  # 256 x 16 x 16
         x = self.bn3(x)
         x = F.relu(x)
-        x = self.dropout6(x)
+        # x = self.dropout6(x)
         x = self.conv4(x)  # 256 x 16 x 16
         x = self.bn4(x)
         x = F.max_pool2d(x, 2)  # 256 x 8 x 8
         x = F.relu(x)
-        x = self.dropout4(x)
+        # x = self.dropout4(x)
 
         x = self.conv5(x)  # 512 x 8 x 8
         x = self.bn5(x)
@@ -280,10 +280,10 @@ class LRNet_CIFAR10(nn.Module):
         x = F.relu(x)
 
         x = torch.flatten(x, 1)  # 8192
-        x = self.dropout1(x)
+        # x = self.dropout1(x)
         x = self.fc1(x)  # 8192 -> 1024
         x = F.relu(x)
-        x = self.dropout2(x)
+        # x = self.dropout2(x)
         x = self.fc2(x)  # 1024 -> 10
         output = x
         return output
