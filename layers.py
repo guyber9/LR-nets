@@ -147,8 +147,15 @@ class LRnetConv2d(nn.Module):
                 if torch.isnan(v).any():
                     print("v isnan: " + str(torch.isnan(v).any()))
                     torch.set_printoptions(threshold=10_000)
-                    print ("input^2: " + str(input * input))
-                    print("sigma_square: " + str(sigma_square))
+                    # print ("input^2: " + str(input * input))
+                    # print("sigma_square: " + str(sigma_square))
+                    x = input*input
+                    w = sigma_square
+                    m = {'x': x, 'w': w}
+                    torch.save(m, 'my_tensors.pt')
+                    # loaded = torch.load(file_name)
+                    # loaded['a'] == tensor_a
+                    # loaded['b'] == tensor_b
                     exit(1)
 
             #     print("v: " + str(v))
