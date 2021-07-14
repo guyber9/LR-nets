@@ -513,6 +513,10 @@ class LRBatchNorm2d(nn.Module):
             return
         else:
             m, v = input
+
+            print("m size: " + str(m.size()))
+            print("v size: " + str(v.size()))
+
             # print("m: " + str(m))
             # print("v: " + str(v))
 
@@ -535,6 +539,8 @@ class LRBatchNorm2d(nn.Module):
 
             norm_m = (m - mean) / std
             norm_v = v / std
+
+            exit(1)
 
             # weight = torch.unsqueeze(self.weight, 1)
             # weight = weight.repeat(1, 16)
