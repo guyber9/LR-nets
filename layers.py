@@ -146,9 +146,11 @@ class LRnetConv2d(nn.Module):
             if(self.in_channels == 128) and (self.out_channels == 128):
                 if torch.isnan(v).any():
                     print("v isnan: " + str(torch.isnan(v).any()))
-            #         torch.set_printoptions(threshold=10_000)
-            #         print ("input^2: " + str(input * input))
-            #         print("sigma_square: " + str(sigma_square))
+                    torch.set_printoptions(threshold=10_000)
+                    print ("input^2: " + str(input * input))
+                    print("sigma_square: " + str(sigma_square))
+                    exit(1)
+
             #     print("v: " + str(v))
             #     print("m isnan: " + str(torch.isnan(m).any()))
 
