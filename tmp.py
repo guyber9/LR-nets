@@ -5,7 +5,7 @@ import torch.backends.cudnn as cudnn
 loaded = torch.load('my_tensors.pt')
 x = loaded['x']
 w = loaded['w']
-cudnn.benchmark = True
+# cudnn.benchmark = True
 if torch.cuda.is_available():
     torch.backends.cudnn.deterministic = True
 z = F.conv2d(x, w, None, 1, 1, 1, 1)
