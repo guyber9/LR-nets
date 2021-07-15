@@ -16,3 +16,8 @@ print("w is negative: " + str((w < 0).any()))
 print("z (= Wx) is negative: " + str((z < 0).any()))
 print("v is negative: " + str((v < 0).any()))
 print("v isnan: " + str(torch.isnan(v).any()))
+
+
+print(torch.__version__)
+print(torch.cuda.get_device_name(0))
+print("CUDA Version 10.1.105")
