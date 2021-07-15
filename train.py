@@ -184,7 +184,7 @@ def main_train():
             else:
                 print ("Training LR-Net for MNIST")
                 net = LRNet().to(device)
-                net_s = LRNet().to(device)
+                net_s = LRNet_nodo().to(device)
 
             if args.load_pre_trained:
                 print("Loading Parameters for MNIST")

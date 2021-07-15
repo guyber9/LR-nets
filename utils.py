@@ -397,5 +397,5 @@ def copy_net2net(net_s, net):
     dict_params2 = dict(params2)
     for name1, param1 in params1:
         if (name1 in dict_params2) and any(x in name1 for x in ('conv', 'fc')):
-            print("dict_params2[" + str(name1) + "].data.copy_(param1.data)")
+            # print("dict_params2[" + str(name1) + "].data.copy_(param1.data)")
             dict_params2[name1].data.copy_(param1.data)
