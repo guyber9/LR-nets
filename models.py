@@ -151,17 +151,17 @@ class LRNet_ver2(nn.Module):
         # self.conv2 = lrnet_nn.LRnetConv2d(32, 32, 5, 1)
         # self.conv3 = lrnet_nn.LRnetConv2d(32, 64, 5, 1)
 
-        self.bn1 = nn.BatchNorm2d(32)
-        self.bn2 = nn.BatchNorm2d(32)
-        self.bn3 = nn.BatchNorm2d(64)
+        # self.bn1 = nn.BatchNorm2d(32)
+        # self.bn2 = nn.BatchNorm2d(32)
+        # self.bn3 = nn.BatchNorm2d(64)
 
         self.fc1 = nn.Linear(4096, 512)
         # self.fc1 = nn.Linear(6400, 512)
         self.fc2 = nn.Linear(512, 10)
 
-        # self.bn1 = lrnet_nn.LRBatchNorm2d(32)
-        # self.bn2 = lrnet_nn.LRBatchNorm2d(32)
-        # self.bn3 = nn.BatchNorm2d(64)
+        self.bn1 = lrnet_nn.LRBatchNorm2d(32)
+        self.bn2 = lrnet_nn.LRBatchNorm2d(32)
+        self.bn3 = nn.BatchNorm2d(64)
 
     def forward(self, x):
         x = self.conv1(x)  # 32 x 24 x 24
