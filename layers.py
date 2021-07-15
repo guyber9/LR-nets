@@ -129,8 +129,8 @@ class LRnetConv2d(nn.Module):
             # E[x] ^ 2
             mean_pow2 = mean * mean
             sigma_square = mean_square - mean_pow2
-            # if torch.cuda.is_available():
-            #     torch.backends.cudnn.deterministic = True
+            if torch.cuda.is_available():
+                torch.backends.cudnn.deterministic = True
 
             # if(self.in_channels == 128) and (self.out_channels == 128):
             #     file2 = {'w': sigma_square}
@@ -139,9 +139,11 @@ class LRnetConv2d(nn.Module):
             #     print("sigma_square bfr conv: " + str(sigma_square))
 
             z1 = F.conv2d((input * input), sigma_square, None, self.stride, self.padding, self.dilation, self.groups)
-            z1 = torch.relu(z1) ##TODO
-            # if torch.cuda.is_available():
-            #     torch.backends.cudnn.deterministic = False
+            # z1 = torch.relu(z1) ##TODO
+
+            if torch.cuda.is_available():
+                torch.backends.cudnn.deterministic = False
+
             # if(self.in_channels == 128) and (self.out_channels == 128):
             #     print("sigma_square size: " + str(sigma_square.size()))
             #     print("sigma_square: " + str(sigma_square))
