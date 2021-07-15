@@ -344,8 +344,20 @@ def main_train():
                     # best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, True, f) # note: model is saved only in above test method
                     net.inc_cntr()
                     t_sampled_acc = t_sampled_acc + sampled_acc
+
                 net.rst_cntr()
                 print_summary(train_acc, best_acc, best_sampled_acc, t_sampled_acc/args.options, f)
+
+                print("***********************************************************************************")
+                print("***********************************************************************************")
+                for var_name in net.state_dict():
+                    if any(x in var_name for x in ('bn1')):
+                        print("net: ", var_name, "\t", net.state_dict()[var_name])
+                print("***********************************************************************************")
+                print("***********************************************************************************")
+                for var_name in net_s.state_dict():
+                    if any(x in var_name for x in ('bn1')):
+                        print("net: ", var_name, "\t", net_s.state_dict()[var_name])
         scheduler.step()
 
     if args.save_file != 'no_need_to_save':
