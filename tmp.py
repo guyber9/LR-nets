@@ -1,11 +1,13 @@
 import torch
 from torch.nn import functional as F
+import torch.backends.cudnn as cudnn
 
 loaded = torch.load('my_tensors.pt')
 x = loaded['x']
 w = loaded['w']
-# if torch.cuda.is_available():
-#     torch.backends.cudnn.deterministic = True
+cudnn.benchmark = True
+if torch.cuda.is_available():
+    torch.backends.cudnn.deterministic = True
 z = F.conv2d(x, w, None, 1, 1, 1, 1)
 v = torch.sqrt(z)
 
