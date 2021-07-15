@@ -79,6 +79,23 @@ class LRNet(nn.Module):
         output = x
         return output
 
+    def train_mode_switch(self):
+        self.conv1.train_mode_switch()
+        self.conv2.train_mode_switch()
+
+    def test_mode_switch(self, options, tickets):
+        self.conv1.test_mode_switch(options, tickets)
+        self.conv2.test_mode_switch(options, tickets)
+
+    def inc_cntr(self):
+        self.conv1.cntr = self.conv1.cntr + 1
+        self.conv2.cntr = self.conv2.cntr + 1
+
+    def rst_cntr(self):
+        self.conv1.cntr = 0
+        self.conv2.cntr = 0
+
+
 class LRNet_nodo(nn.Module):
 
     def __init__(self):
@@ -105,7 +122,6 @@ class LRNet_nodo(nn.Module):
         x = self.fc2(x)
         output = x
         return output
-
 
     def train_mode_switch(self):
         self.conv1.train_mode_switch()
