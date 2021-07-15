@@ -139,7 +139,7 @@ class LRnetConv2d(nn.Module):
             #     print("sigma_square bfr conv: " + str(sigma_square))
 
             z1 = F.conv2d((input * input), sigma_square, None, self.stride, self.padding, self.dilation, self.groups)
-            # z1 = torch.relu(z1) ##TODO
+            z1 = torch.relu(z1) ##TODO
 
             if torch.cuda.is_available():
                 torch.backends.cudnn.deterministic = False
