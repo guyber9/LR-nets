@@ -51,7 +51,7 @@ def main_train():
     parser.add_argument('--debug', action='store_true', default=False, help='run with adam')
 
     parser.add_argument('--options', type=int, default=1, metavar='N', help='num_of_options for rand')
-    parser.add_argument('--tickets', type=int, default=5, metavar='N', help='num of tickets')
+    parser.add_argument('--tickets', type=int, default=1, metavar='N', help='num of tickets')
     parser.add_argument('--sampled-test', action='store_true', default=False, help='sampled validation in training')
 
     parser.add_argument('--ver2', action='store_true', default=False, help='discretization for layer output')
@@ -335,12 +335,10 @@ def main_train():
         scheduler.step()
 
         if args.sampled_test:
-            net.test_mode_switch(args.options, args.tickets)
+            copy_net2net(net_s, net)
+            net_s.test_mode_switch(args.options, args.tickets)
             if (epoch % 1) == 0:
                 t_sampled_acc = 0
-
-                copy_net2net(net_s, net)
-
                 for idx in range(0, args.options):
                     best_sampled_acc, best_sampled_epoch, sampled_acc = test(net_s, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, True, f, False) # note: model is saved only in above test method
                     # best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, True, f) # note: model is saved only in above test method
