@@ -11,7 +11,7 @@ from torchvision import datasets, transforms
 import os
 
 from models import *
-from utils import find_sigm_weights, train, test, print_summary
+from utils import find_sigm_weights, train, test, print_summary, copy_net2net
 
 
 def main_train():
@@ -184,6 +184,7 @@ def main_train():
             else:
                 print ("Training LR-Net for MNIST")
                 net = LRNet().to(device)
+                net_s = LRNet().to(device)
 
             if args.load_pre_trained:
                 print("Loading Parameters for MNIST")
@@ -321,21 +322,28 @@ def main_train():
     else:
         f = None
 
+    if args.sampled_test:
+        copy_net2net(net_s, net)
+
     for epoch in range(start_epoch, start_epoch+args.epochs):
         if args.debug:
             print("alpha " + str(net.conv1.alpha))
             print("betta " + str(net.conv1.betta))
         net.train_mode_switch()
         train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
-        best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f)
+        best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f, True)
         scheduler.step()
 
         if args.sampled_test:
             net.test_mode_switch(args.options, args.tickets)
-            if (epoch % 2) == 0:
+            if (epoch % 1) == 0:
                 t_sampled_acc = 0
+
+                copy_net2net(net_s, net)
+
                 for idx in range(0, args.options):
-                    best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, True, f) # note: model is saved only in above test method
+                    best_sampled_acc, best_sampled_epoch, sampled_acc = test(net_s, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, True, f, False) # note: model is saved only in above test method
+                    # best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, True, f) # note: model is saved only in above test method
                     net.inc_cntr()
                     t_sampled_acc = t_sampled_acc + sampled_acc
                 net.rst_cntr()

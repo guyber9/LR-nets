@@ -129,10 +129,12 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None):
     return (100.*correct/total)
 
 
-def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=None):
+def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=None, eval_mode=True):
     # global best_acc
-    net.eval()
-    # net.train()
+    if eval_mode:
+        net.eval()
+    else:
+        net.train()
     test_loss = 0
     correct = 0
     total = 0
@@ -387,3 +389,13 @@ def print_summary(train_acc, best_acc, best_sampled_acc, t_sampled_acc, f):
         print('best_sampled_acc:\t{:.3f}'.format(best_sampled_acc), file=f)
         print('curr_sampled_acc:\t{:.3f}'.format(t_sampled_acc), file=f)
         print("#################################", file=f)
+
+
+def copy_net2net(net_s, net):
+    params1 = net.named_parameters()
+    params2 = net_s.named_parameters()
+    dict_params2 = dict(params2)
+    for name1, param1 in params1:
+        if (name1 in dict_params2) and any(x in name1 for x in ('conv', 'fc')):
+            print("dict_params2[" + str(name1) + "].data.copy_(param1.data)")
+            dict_params2[name1].data.copy_(param1.data)
