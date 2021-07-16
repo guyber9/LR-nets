@@ -516,6 +516,8 @@ class LRBatchNorm2d(nn.Module):
             m, v = input
 
             print("#################################")
+            print("m: \n" + str(m))
+            print("#################################")
             print("mean:")
             mean = mean_over_channel(m)
             print("#################################")
