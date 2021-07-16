@@ -186,18 +186,7 @@ def main_test():
     test(net, criterion, 0, device, trainloader, args, 0, None, test_mode)
 
     if not args.full_prec:
-        if args.ver2:
-            net.test_mode_switch(args.options, args.tickets)
-        elif args.cifar10:
-            net.conv1.test_mode_switch(args.options, args.tickets)
-            net.conv2.test_mode_switch(args.options, args.tickets)
-            net.conv3.test_mode_switch(args.options, args.tickets)
-            net.conv4.test_mode_switch(args.options, args.tickets)
-            net.conv5.test_mode_switch(args.options, args.tickets)
-            net.conv6.test_mode_switch(args.options, args.tickets)
-        elif args.mnist:
-            net.conv1.test_mode_switch(args.options, args.tickets)
-            net.conv2.test_mode_switch(args.options, args.tickets)
+        net.test_mode_switch(args.options, args.tickets)
 
         print ("###################################")
         print ("Ternary Model")
@@ -206,16 +195,7 @@ def main_test():
         for idx in range(0, args.options):
             print("iteration: " + str(idx))
             acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode)
-            if args.ver2:
-                net.inc_cntr()
-            else:
-                net.conv1.cntr = net.conv1.cntr + 1
-                net.conv2.cntr = net.conv2.cntr + 1
-                if args.cifar10:
-                    net.conv3.cntr = net.conv3.cntr + 1
-                    net.conv4.cntr = net.conv4.cntr + 1
-                    net.conv5.cntr = net.conv5.cntr + 1
-                    net.conv6.cntr = net.conv6.cntr + 1
+            net.inc_cntr()
             if (acc > best_acc):
                 best_acc = acc
                 dataset_name = 'mnist' if args.mnist else 'cifar10'
@@ -225,16 +205,7 @@ def main_test():
                            "trained_models/" + str(dataset_name) + "_lrnet" + str(isBinary) + str(isVer2) + ".pt")
         print ("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
 
-        if args.ver2:
-            net.rst_cntr()
-        else:
-            net.conv1.cntr = 0
-            net.conv2.cntr = 0
-            if args.cifar10:
-                net.conv3.cntr = 0
-                net.conv4.cntr = 0
-                net.conv5.cntr = 0
-                net.conv6.cntr = 0
+        net.rst_cntr()
         print ("train Data Set")
         # test(net, trainloader)
         test(net, criterion, 0, device, trainloader, args, 0, None, test_mode)

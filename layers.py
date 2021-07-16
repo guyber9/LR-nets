@@ -495,6 +495,8 @@ class LRBatchNorm2d(nn.Module):
         self.weight = torch.nn.Parameter(torch.ones([self.channels], dtype=torch.float32, device=self.device))
         self.bias = torch.nn.Parameter(torch.zeros([self.channels], dtype=self.tensor_dtype, device=self.device))
 
+        self.bn = nn.BatchNorm2d(self.channels)
+
         self.reset_parameters()
 
     def reset_parameters(self) -> None:
@@ -511,7 +513,7 @@ class LRBatchNorm2d(nn.Module):
 
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
-            return
+            return self.bn(input)
         else:
             m, v = input
 
