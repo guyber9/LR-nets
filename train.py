@@ -335,6 +335,7 @@ def main_train():
         scheduler.step()
 
         if args.sampled_test:
+            print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
             copy_net2net(net_s, net)
             net_s.test_mode_switch(args.options, args.tickets)
             if (epoch % 1) == 0:

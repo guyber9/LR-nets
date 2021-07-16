@@ -434,3 +434,47 @@ class LRNet_CIFAR10_ver2(nn.Module):
         x = self.fc2(x)  # 1024 -> 10
         output = x
         return output
+
+    def train_mode_switch(self):
+        self.conv1.train_mode_switch()
+        self.conv2.train_mode_switch()
+        self.conv3.train_mode_switch()
+        self.conv4.train_mode_switch()
+        self.conv5.train_mode_switch()
+        self.conv6.train_mode_switch()
+        self.bn1.train_mode_switch()
+        self.bn2.train_mode_switch()
+        self.bn3.train_mode_switch()
+        self.bn4.train_mode_switch()
+        self.bn5.train_mode_switch()
+        self.bn6.train_mode_switch()
+
+    def test_mode_switch(self, options, tickets):
+        self.conv1.test_mode_switch(options, tickets)
+        self.conv2.test_mode_switch(options, tickets)
+        self.conv3.test_mode_switch(options, tickets)
+        self.conv4.test_mode_switch(options, tickets)
+        self.conv5.test_mode_switch(options, tickets)
+        self.conv6.test_mode_switch(options, tickets)
+        self.bn1.test_mode_switch()
+        self.bn2.test_mode_switch()
+        self.bn3.test_mode_switch()
+        self.bn4.test_mode_switch()
+        self.bn5.test_mode_switch()
+        self.bn6.test_mode_switch()
+
+    def inc_cntr(self):
+        self.conv1.cntr = self.conv1.cntr + 1
+        self.conv2.cntr = self.conv2.cntr + 1
+        self.conv3.cntr = self.conv3.cntr + 1
+        self.conv4.cntr = self.conv4.cntr + 1
+        self.conv5.cntr = self.conv5.cntr + 1
+        self.conv6.cntr = self.conv6.cntr + 1
+
+    def rst_cntr(self):
+        self.conv1.cntr = 0
+        self.conv2.cntr = 0
+        self.conv3.cntr = 0
+        self.conv4.cntr = 0
+        self.conv5.cntr = 0
+        self.conv6.cntr = 0
