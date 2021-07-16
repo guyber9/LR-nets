@@ -327,8 +327,21 @@ def main_train():
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
         if args.debug:
-            print("alpha " + str(net.conv1.alpha))
-            print("betta " + str(net.conv1.betta))
+            # print("alpha " + str(net.conv1.alpha))
+            # print("betta " + str(net.conv1.betta))
+            print("conv1.alpha isnan: " + str(torch.isnan(net.conv1.alpha).any()))
+            print("conv1.betta isnan: " + str(torch.isnan(net.conv1.betta).any()))
+            print("conv2.alpha isnan: " + str(torch.isnan(net.conv2.alpha).any()))
+            print("conv2.betta isnan: " + str(torch.isnan(net.conv2.betta).any()))
+            print("conv3.alpha isnan: " + str(torch.isnan(net.conv3.alpha).any()))
+            print("conv3.betta isnan: " + str(torch.isnan(net.conv3.betta).any()))
+            print("conv4.alpha isnan: " + str(torch.isnan(net.conv4.alpha).any()))
+            print("conv4.betta isnan: " + str(torch.isnan(net.conv4.betta).any()))
+            print("conv5.alpha isnan: " + str(torch.isnan(net.conv5.alpha).any()))
+            print("conv5.betta isnan: " + str(torch.isnan(net.conv5.betta).any()))
+            print("conv6.alpha isnan: " + str(torch.isnan(net.conv6.alpha).any()))
+            print("conv6.betta isnan: " + str(torch.isnan(net.conv7.betta).any()))
+
         net.train_mode_switch()
         train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
         best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f, True)
