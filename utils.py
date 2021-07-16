@@ -399,3 +399,11 @@ def copy_net2net(net_s, net):
         if (name1 in dict_params2) and any(x in name1 for x in ('conv', 'fc')):
             # print("dict_params2[" + str(name1) + "].data.copy_(param1.data)")
             dict_params2[name1].data.copy_(param1.data)
+
+
+def mean_over_channel(input):
+    batch = input.view(input.size(0), input.size(1), -1)
+    nsize = batch.size(0)
+    mean = batch.mean(2).sum(0)
+    mean /= nsize
+    return mean

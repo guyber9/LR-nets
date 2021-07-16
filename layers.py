@@ -12,7 +12,7 @@ from torch.nn.common_types import _size_1_t, _size_2_t, _size_3_t
 from torch.nn.parallel import DistributedDataParallel as DDP
 import torch.distributed as dist
 import os
-from utils import print_full_tensor, print_fullllll_tensor
+from utils import mean_over_channel, print_full_tensor, print_fullllll_tensor
 
 class LRnetConv2d(nn.Module):
 
@@ -520,6 +520,10 @@ class LRBatchNorm2d(nn.Module):
             print("m size: " + str(m.size()))
             print("v size: " + str(v.size()))
 
+            new_mean = mean_over_channel(m)
+
+            print("new_mean size: " + str(new_mean.size()))
+
             # print("m: " + str(m))
             # print("v: " + str(v))
 
@@ -543,7 +547,7 @@ class LRBatchNorm2d(nn.Module):
             norm_m = (m - mean) / std
             norm_v = v / std
 
-            exit(1)
+            # exit(1)
 
             # weight = torch.unsqueeze(self.weight, 1)
             # weight = weight.repeat(1, 16)
