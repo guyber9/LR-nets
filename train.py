@@ -340,7 +340,7 @@ def main_train():
             print("conv5.alpha isnan: " + str(torch.isnan(net.conv5.alpha).any()))
             print("conv5.betta isnan: " + str(torch.isnan(net.conv5.betta).any()))
             print("conv6.alpha isnan: " + str(torch.isnan(net.conv6.alpha).any()))
-            print("conv6.betta isnan: " + str(torch.isnan(net.conv7.betta).any()))
+            print("conv6.betta isnan: " + str(torch.isnan(net.conv6.betta).any()))
 
         net.train_mode_switch()
         train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
