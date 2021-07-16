@@ -351,21 +351,14 @@ def main_train():
 
                 print("***********************************************************************************")
                 print("***********************************************************************************")
-                params1 = net.named_parameters()
-                params2 = net_s.named_parameters()
-                dict_params1 = dict(params1)
-                dict_params2 = dict(params2)
-                for name1, param1 in params1:
-                    if any(x in name1 for x in 'bn1'):
-                        print("net: ", name1, param1.data)
-                # for var_name in net.state_dict():
-                #     if any(x in var_name for x in ('bn1')):
-                #         print("net: ", var_name, "\t", net.state_dict()[var_name])
+                for var_name in net.state_dict():
+                    if any(x in var_name for x in ('bn1', 'bn1')):
+                        print("net: ", var_name, "\n", net.state_dict()[var_name])
                 print("***********************************************************************************")
                 print("***********************************************************************************")
-                # for var_name in net_s.state_dict():
-                #     if any(x in var_name for x in ('bn1')):
-                #         print("net_s: ", var_name, "\t", net_s.state_dict()[var_name])
+                for var_name in net_s.state_dict():
+                    if any(x in var_name for x in ('bn1', 'bn1')):
+                        print("net_s: ", var_name, "\n", net_s.state_dict()[var_name])
         scheduler.step()
 
     if args.save_file != 'no_need_to_save':
