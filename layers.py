@@ -519,30 +519,22 @@ class LRBatchNorm2d(nn.Module):
             mean_square = mean_over_channel(m * m)
             sigma_square = mean_over_channel(v * v)
 
-
-            print("mean size: " + str(mean.size()))
-            print("mean_square size: " + str(mean_square.size()))
-            print("sigma_square size: " + str(sigma_square.size()))
-
             weights_tmp = self.weight.repeat(m.size(0), 1)
-            weights = weights_tmp.view(m.size(0), m.size(1), 1, 1)
+            iweights = weights_tmp.view(m.size(0), m.size(1), 1, 1)
             bias_tmp = self.weight.repeat(m.size(0), 1)
-            bias = bias_tmp.view(m.size(0), m.size(1), 1, 1)
+            ibias = bias_tmp.view(m.size(0), m.size(1), 1, 1)
 
-            print("weights size: " + str(weights.size()))
-            print("bias size: " + str(bias.size()))
+            # print("mean size: " + str(mean.size()))
+            # print("mean_square size: " + str(mean_square.size()))
+            # print("sigma_square size: " + str(sigma_square.size()))
+            # print("iweights size: " + str(iweights.size()))
+            # print("ibias size: " + str(ibias.size()))
 
-            exit(1)
-
-            mean = torch.mean(m)
-            mean_square = torch.mean(m * m)
-            sigma_square = torch.mean(v * v)
             variance = sigma_square + mean_square - (mean * mean) + self.eps
             std = torch.sqrt(variance)
 
-            norm_m = (self.weight * ((m - mean) / std)) + self.bias
-            norm_v = self.weight * (v / std)
-
+            norm_m = (iweights * ((m - mean) / std)) + ibias
+            norm_v = iweights * (v / std)
 
             # print("m size: " + str(m.size()))
             # print("v size: " + str(v.size()))
