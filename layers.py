@@ -524,14 +524,17 @@ class LRBatchNorm2d(nn.Module):
             bias_tmp = self.weight.repeat(m.size(0), 1)
             ibias = bias_tmp.view(m.size(0), m.size(1), 1, 1)
 
-            # print("mean size: " + str(mean.size()))
-            # print("mean_square size: " + str(mean_square.size()))
-            # print("sigma_square size: " + str(sigma_square.size()))
-            # print("iweights size: " + str(iweights.size()))
-            # print("ibias size: " + str(ibias.size()))
+            print("mean size: " + str(mean.size()))
+            print("mean_square size: " + str(mean_square.size()))
+            print("sigma_square size: " + str(sigma_square.size()))
+            print("iweights size: " + str(iweights.size()))
+            print("ibias size: " + str(ibias.size()))
 
+            guy = sigma_square + mean_square
             variance = sigma_square + mean_square - (mean * mean) + self.eps
             std = torch.sqrt(variance)
+
+            print("std size: " + str(std.size()))
 
             norm_m = ((m - mean) / std)
             norm_v = (v / std)
@@ -553,6 +556,8 @@ class LRBatchNorm2d(nn.Module):
                 exit(1)
 
             if torch.isnan(std).any():
+                print("variance: \n" + str(variance))
+                print("guy is negative: " + str((guy < 0).any()))
                 print("variance is negative: " + str((variance < 0).any()))
                 print("m isnan: " + str(torch.isnan(m).any()))
                 print("v isnan: " + str(torch.isnan(v).any()))
