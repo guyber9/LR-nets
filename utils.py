@@ -401,7 +401,9 @@ def copy_net2net(net_s, net):
             dict_params2[name1].data.copy_(param1.data)
 
 def mean_over_channel(input):
+    batch_size = input.size(0)
     input1 = input.view(input.size(0), input.size(1), -1).mean(2).sum(0)
+    input1 = input1 / batch_size
     print("input1: \n" + str(input1))
     print("input1 size: \n" + str(input1.size()))
     print("#################################")
