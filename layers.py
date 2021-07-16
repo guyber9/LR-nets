@@ -553,6 +553,7 @@ class LRBatchNorm2d(nn.Module):
                 exit(1)
 
             if torch.isnan(std).any():
+                print("variance is negative: " + str((variance < 0).any()))
                 print("m isnan: " + str(torch.isnan(m).any()))
                 print("v isnan: " + str(torch.isnan(v).any()))
                 print("variance isnan: " + str(torch.isnan(variance).any()))
