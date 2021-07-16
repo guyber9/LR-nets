@@ -527,6 +527,12 @@ class LRBatchNorm2d(nn.Module):
             print("sigma_square size: " + str(sigma_square.size()))
 
             weights_tmp = self.weight.repeat(m.size(0), 1)
+            print("self.weight size: " + str(self.weight.size()))
+            print("weights_tmp size: " + str(weights_tmp.size()))
+
+
+            exit(1)
+
             weights = weights_tmp.view(m.size(0), m.size(1), 1, 1)
             bias_tmp = self.weight.repeat(m.size(0), 1)
             bias = bias_tmp.view(m.size(0), m.size(1), 1, 1)
