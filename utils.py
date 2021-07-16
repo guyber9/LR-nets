@@ -404,9 +404,9 @@ def mean_over_channel(input):
     batch_size = input.size(0)
     input1 = input.view(input.size(0), input.size(1), -1).mean(2).sum(0)
     input1 = input1 / batch_size
-    print("input1: \n" + str(input1))
-    print("input1 size: \n" + str(input1.size()))
-    print("#################################")
+    # print("input1: \n" + str(input1))
+    # print("input1 size: \n" + str(input1.size()))
+    # print("#################################")
     mean = input1.repeat(input.size(0), 1).view(input.size(0), input.size(1), 1, 1)
     return mean
 
