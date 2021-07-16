@@ -533,8 +533,11 @@ class LRBatchNorm2d(nn.Module):
             variance = sigma_square + mean_square - (mean * mean) + self.eps
             std = torch.sqrt(variance)
 
-            norm_m = (iweights * ((m - mean) / std)) + ibias
-            norm_v = iweights * (v / std)
+            norm_m = ((m - mean) / std)
+            norm_v = (v / std)
+
+            # norm_m = (iweights * ((m - mean) / std)) + ibias
+            # norm_v = iweights * (v / std)
 
             # print("m size: " + str(m.size()))
             # print("v size: " + str(v.size()))
