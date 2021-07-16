@@ -183,11 +183,15 @@ class LRNet_ver2(nn.Module):
         self.conv1.train_mode_switch()
         self.conv2.train_mode_switch()
         self.conv3.train_mode_switch()
+        self.bn1.train_mode_switch()
+        self.bn2.train_mode_switch()
 
     def test_mode_switch(self, options, tickets):
         self.conv1.test_mode_switch(options, tickets)
         self.conv2.test_mode_switch(options, tickets)
         self.conv3.test_mode_switch(options, tickets)
+        self.bn1.test_mode_switch()
+        self.bn2.test_mode_switch()
 
     def inc_cntr(self):
         self.conv1.cntr = self.conv1.cntr + 1

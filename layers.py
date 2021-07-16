@@ -505,11 +505,10 @@ class LRBatchNorm2d(nn.Module):
             nn.init.zeros_(self.bias)
 
     def train_mode_switch(self) -> None:
-        # print ("train_mode_switch")
         self.test_forward = False
 
     def test_mode_switch(self, num_of_options, tickets=10) -> None:
-        return
+        self.test_forward = True
 
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
