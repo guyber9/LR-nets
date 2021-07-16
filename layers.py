@@ -492,10 +492,8 @@ class LRBatchNorm2d(nn.Module):
             self.device = 'cpu'
         self.tensor_dtype = torch.float32
 
-        # self.weight = torch.nn.Parameter(torch.ones([self.channels], dtype=torch.float32, device=self.device))
-        # self.bias = torch.nn.Parameter(torch.zeros([self.channels], dtype=self.tensor_dtype, device=self.device))
-        self.weight = torch.nn.Parameter(torch.ones(1, dtype=torch.float32, device=self.device))
-        self.bias = torch.nn.Parameter(torch.zeros(1, dtype=self.tensor_dtype, device=self.device))
+        self.weight = torch.nn.Parameter(torch.ones([self.channels], dtype=torch.float32, device=self.device))
+        self.bias = torch.nn.Parameter(torch.zeros([self.channels], dtype=self.tensor_dtype, device=self.device))
 
         self.reset_parameters()
 
@@ -527,12 +525,6 @@ class LRBatchNorm2d(nn.Module):
             print("sigma_square size: " + str(sigma_square.size()))
 
             weights_tmp = self.weight.repeat(m.size(0), 1)
-            print("self.weight size: " + str(self.weight.size()))
-            print("weights_tmp size: " + str(weights_tmp.size()))
-
-
-            exit(1)
-
             weights = weights_tmp.view(m.size(0), m.size(1), 1, 1)
             bias_tmp = self.weight.repeat(m.size(0), 1)
             bias = bias_tmp.view(m.size(0), m.size(1), 1, 1)
