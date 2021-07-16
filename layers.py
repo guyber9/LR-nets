@@ -536,6 +536,31 @@ class LRBatchNorm2d(nn.Module):
             norm_m = ((m - mean) / std)
             norm_v = (v / std)
 
+            if torch.isnan(mean).any():
+                print("m isnan: " + str(torch.isnan(m).any()))
+                print("v isnan: " + str(torch.isnan(v).any()))
+                print("mean isnan: " + str(torch.isnan(mean).any()))
+                print("norm_m isnan: " + str(torch.isnan(norm_m).any()))
+                print("norm_v isnan: " + str(torch.isnan(norm_v).any()))
+                exit(1)
+
+            if torch.isnan(variance).any():
+                print("m isnan: " + str(torch.isnan(m).any()))
+                print("v isnan: " + str(torch.isnan(v).any()))
+                print("variance isnan: " + str(torch.isnan(variance).any()))
+                print("norm_m isnan: " + str(torch.isnan(norm_m).any()))
+                print("norm_v isnan: " + str(torch.isnan(norm_v).any()))
+                exit(1)
+
+            if torch.isnan(std).any():
+                print("m isnan: " + str(torch.isnan(m).any()))
+                print("v isnan: " + str(torch.isnan(v).any()))
+                print("variance isnan: " + str(torch.isnan(variance).any()))
+                print("std isnan: " + str(torch.isnan(std).any()))
+                print("norm_m isnan: " + str(torch.isnan(norm_m).any()))
+                print("norm_v isnan: " + str(torch.isnan(norm_v).any()))
+                exit(1)
+
             # norm_m = (iweights * ((m - mean) / std)) + ibias
             # norm_v = iweights * (v / std)
 
