@@ -542,10 +542,10 @@ class LRBatchNorm2d(nn.Module):
             variance = sigma_square + mean_square - (mean * mean) + self.eps
             std = torch.sqrt(variance)
 
-            # norm_m = ((m - mean) / std)
-            # norm_v = (v / std)
-            norm_m = (iweights * ((m - mean) / std)) + ibias
-            norm_v = iweights * (v / std)
+            norm_m = ((m - mean) / std)
+            norm_v = (v / std)
+            # norm_m = (iweights * ((m - mean) / std)) + ibias
+            # norm_v = iweights * (v / std)
 
             if torch.isnan(mean).any():
                 print("m isnan: " + str(torch.isnan(m).any()))
