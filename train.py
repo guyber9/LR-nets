@@ -357,7 +357,7 @@ def main_train():
                 print("***********************************************************************************")
                 for var_name in net_s.state_dict():
                     if any(x in var_name for x in ('bn1')):
-                        print("net: ", var_name, "\t", net_s.state_dict()[var_name])
+                        print("net_s: ", var_name, "\t", net_s.state_dict()[var_name])
         scheduler.step()
 
     if args.save_file != 'no_need_to_save':
