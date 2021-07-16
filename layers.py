@@ -515,8 +515,14 @@ class LRBatchNorm2d(nn.Module):
         else:
             m, v = input
 
+            print("#################################")
+            print("mean:")
             mean = mean_over_channel(m)
+            print("#################################")
+            print("mean_square:")
             mean_square = mean_over_channel(m * m)
+            print("#################################")
+            print("sigma_square:")
             sigma_square = mean_over_channel(v * v)
 
             weights_tmp = self.weight.repeat(m.size(0), 1)
