@@ -447,7 +447,7 @@ class LRNet_CIFAR10_ver2(nn.Module):
         self.bn3.train_mode_switch()
         self.bn4.train_mode_switch()
         self.bn5.train_mode_switch()
-        self.bn6.train_mode_switch()
+        # self.bn6.train_mode_switch()
 
     def test_mode_switch(self, options, tickets):
         self.conv1.test_mode_switch(options, tickets)
@@ -461,7 +461,7 @@ class LRNet_CIFAR10_ver2(nn.Module):
         self.bn3.test_mode_switch()
         self.bn4.test_mode_switch()
         self.bn5.test_mode_switch()
-        self.bn6.test_mode_switch()
+        # self.bn6.test_mode_switch()
 
     def inc_cntr(self):
         self.conv1.cntr = self.conv1.cntr + 1
