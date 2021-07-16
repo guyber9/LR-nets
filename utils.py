@@ -400,10 +400,15 @@ def copy_net2net(net_s, net):
             # print("dict_params2[" + str(name1) + "].data.copy_(param1.data)")
             dict_params2[name1].data.copy_(param1.data)
 
-
 def mean_over_channel(input):
-    batch = input.view(input.size(0), input.size(1), -1)
-    nsize = batch.size(0)
-    mean = batch.mean(2).sum(0)
-    mean /= nsize
+    input1 = input.view(input.size(0), input.size(1), -1).mean(2).sum(0)
+    mean = input1.repeat(input.size(0), 1).view(input.size(0), input.size(1), 1, 1)
     return mean
+
+
+# def mean_over_channel(input):
+#     batch = input.view(input.size(0), input.size(1), -1)
+#     nsize = batch.size(0)
+#     mean = batch.mean(2).sum(0)
+#     mean /= nsize
+#     return mean

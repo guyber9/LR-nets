@@ -517,53 +517,93 @@ class LRBatchNorm2d(nn.Module):
         else:
             m, v = input
 
-            print("m size: " + str(m.size()))
-            print("v size: " + str(v.size()))
+            mean = mean_over_channel(m)
+            mean_square = mean_over_channel(m * m)
+            sigma_square = mean_over_channel(v * v)
 
-            new_mean = mean_over_channel(m)
 
-            print("new_mean size: " + str(new_mean.size()))
+            print("mean size: " + str(mean.size()))
+            print("mean_square size: " + str(mean_square.size()))
+            print("sigma_square size: " + str(sigma_square.size()))
 
-            # print("m: " + str(m))
-            # print("v: " + str(v))
+            weights_tmp = self.weight.repeat(m.size(0), 1)
+            weights = weights_tmp.view(m.size(0), m.size(1), 1, 1)
+            bias_tmp = self.weight.repeat(m.size(0), 1)
+            bias = bias_tmp.view(m.size(0), m.size(1), 1, 1)
 
-            # epsilon = torch.rand(v.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
-            # sampled_input = m + epsilon * v
+            print("weights size: " + str(weights.size()))
+            print("bias size: " + str(bias.size()))
+
+            exit(1)
 
             mean = torch.mean(m)
-            # print("mean: " + str(mean))
             mean_square = torch.mean(m * m)
-            # print("mean_square: " + str(mean_square))
             sigma_square = torch.mean(v * v)
-            # print("sigma_square: " + str(sigma_square))
             variance = sigma_square + mean_square - (mean * mean) + self.eps
-            # print("variance: " + str(variance))
             std = torch.sqrt(variance)
-            # print("std: " + str(std))
 
-            # norm_m = (self.weight * ((m - mean) / std)) + self.bias
-            # norm_v = self.weight * (v / std)
+            norm_m = (self.weight * ((m - mean) / std)) + self.bias
+            norm_v = self.weight * (v / std)
 
-            norm_m = (m - mean) / std
-            norm_v = v / std
 
+            # print("m size: " + str(m.size()))
+            # print("v size: " + str(v.size()))
+            #
+            # mean = mean_over_channel(m)
+            # mean_square = mean_over_channel(m * m)
+            # sigma_square = mean_over_channel(v * v)
+            # variance = sigma_square + mean_square - (mean * mean) + self.eps
+            # std = torch.sqrt(variance)
+            #
+            # print("mean size: " + str(mean.size()))
+            # print("new_mean_square size: " + str(mean_square.size()))
+            # print("new_sigma_square size: " + str(sigma_square.size()))
+            # print("variance size: " + str(variance.size()))
+            # print("std size: " + str(std.size()))
+            #
+            #
             # exit(1)
-
-            # weight = torch.unsqueeze(self.weight, 1)
-            # weight = weight.repeat(1, 16)
-            # weight = torch.reshape(weight, (self.channels, 4, 4))
-
-            # print("norm_m: " + str(norm_m))
-            # print("norm_v: " + str(norm_v))
-
-            # print("mean of norm_m: " + str(torch.mean(norm_m)))
-            # print("var of norm_m: " + str(torch.var(norm_m)))
-            # epsilon1 = torch.rand(v.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
-            # sampled_output = norm_m + epsilon1 * norm_v
-            # print("\n\nmean of sampled_input: " + str(torch.mean(sampled_input)))
-            # print("var of sampled_input: " + str(torch.var(sampled_input)))
-            # print("mean of sampled_output: " + str(torch.mean(sampled_output)))
-            # print("var of sampled_output: " + str(torch.var(sampled_output)))
-            # exit(1)
+            #
+            # # print("m: " + str(m))
+            # # print("v: " + str(v))
+            #
+            # # epsilon = torch.rand(v.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
+            # # sampled_input = m + epsilon * v
+            #
+            # mean = torch.mean(m)
+            # # print("mean: " + str(mean))
+            # mean_square = torch.mean(m * m)
+            # # print("mean_square: " + str(mean_square))
+            # sigma_square = torch.mean(v * v)
+            # # print("sigma_square: " + str(sigma_square))
+            # variance = sigma_square + mean_square - (mean * mean) + self.eps
+            # # print("variance: " + str(variance))
+            # std = torch.sqrt(variance)
+            # # print("std: " + str(std))
+            #
+            # # norm_m = (self.weight * ((m - mean) / std)) + self.bias
+            # # norm_v = self.weight * (v / std)
+            #
+            # norm_m = (m - mean) / std
+            # norm_v = v / std
+            #
+            # # exit(1)
+            #
+            # # weight = torch.unsqueeze(self.weight, 1)
+            # # weight = weight.repeat(1, 16)
+            # # weight = torch.reshape(weight, (self.channels, 4, 4))
+            #
+            # # print("norm_m: " + str(norm_m))
+            # # print("norm_v: " + str(norm_v))
+            #
+            # # print("mean of norm_m: " + str(torch.mean(norm_m)))
+            # # print("var of norm_m: " + str(torch.var(norm_m)))
+            # # epsilon1 = torch.rand(v.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
+            # # sampled_output = norm_m + epsilon1 * norm_v
+            # # print("\n\nmean of sampled_input: " + str(torch.mean(sampled_input)))
+            # # print("var of sampled_input: " + str(torch.var(sampled_input)))
+            # # print("mean of sampled_output: " + str(torch.mean(sampled_output)))
+            # # print("var of sampled_output: " + str(torch.var(sampled_output)))
+            # # exit(1)
 
             return norm_m, norm_v
