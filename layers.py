@@ -553,6 +553,7 @@ class LRBatchNorm2d(nn.Module):
             # norm_v = iweights * (v / std)
 
             if torch.isnan(mean).any():
+                print("channels are: " + str(self.channels))
                 print("m isnan: " + str(torch.isnan(m).any()))
                 print("v isnan: " + str(torch.isnan(v).any()))
                 print("mean isnan: " + str(torch.isnan(mean).any()))
@@ -561,6 +562,7 @@ class LRBatchNorm2d(nn.Module):
                 exit(1)
 
             if torch.isnan(variance).any():
+                print("channels are: " + str(self.channels))
                 print("m isnan: " + str(torch.isnan(m).any()))
                 print("v isnan: " + str(torch.isnan(v).any()))
                 print("variance isnan: " + str(torch.isnan(variance).any()))
@@ -569,6 +571,7 @@ class LRBatchNorm2d(nn.Module):
                 exit(1)
 
             if torch.isnan(std).any():
+                print("channels are: " + str(self.channels))
                 print("variance: \n" + str(variance))
                 print("variance is negative: " + str((variance < 0).any()))
                 print("m isnan: " + str(torch.isnan(m).any()))
