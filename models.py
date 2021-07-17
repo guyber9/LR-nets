@@ -165,7 +165,9 @@ class LRNet_ver2(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)  # 32 x 24 x 24
-        print("x1 isnan: " + str(torch.isnan(x).any()))
+        m,v = x
+        print("x1 isnan: " + str(torch.isnan(m).any()))
+        print("x1 isnan: " + str(torch.isnan(v).any()))
         x = self.bn1(x)
         print("bn1 isnan: " + str(torch.isnan(x).any()))
         x = self.conv2(x)  # 32 x 20 x 20
