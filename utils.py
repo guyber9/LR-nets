@@ -89,6 +89,9 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None):
         # print("output: " + str(outputs))
         # print("targets: " + str(targets))
         loss = criterion(outputs, targets)
+        print("loss isnan: " + str(torch.isnan(loss).any()))
+        if torch.isnan(loss).any():
+            exit(1)
         # print("loss1: " + str(loss))
         if args.debug_mode:
             torch.autograd.set_detect_anomaly(True)
