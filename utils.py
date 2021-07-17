@@ -98,8 +98,11 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None):
             loss.backward(retain_graph=True)
         else:
             loss.backward()
-        # print("loss1: " + str(loss))
+        if args.debug:
+            print("was backward")
         optimizer.step()
+        if args.debug:
+            print("was optimizer step")
 
         train_loss += loss.item()
         _, predicted = outputs.max(1)

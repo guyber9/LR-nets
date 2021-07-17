@@ -119,7 +119,7 @@ class LRnetConv2d(nn.Module):
             if torch.isnan(self.alpha).any():
                 print("alpha isnan: " + str(torch.isnan(self.alpha).any()))
             if torch.isnan(self.betta).any():
-                print("alpha isnan: " + str(torch.isnan(self.betta).any()))
+                print("betta isnan: " + str(torch.isnan(self.betta).any()))
 
             prob_alpha = self.sigmoid(self.alpha)
             prob_betta = self.sigmoid(self.betta) * (1 - prob_alpha)
