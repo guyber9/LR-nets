@@ -376,7 +376,13 @@ def main_train():
                 print("***********************************************************************************")
                 for var_name in net.state_dict():
                     if any(x in var_name for x in ('bn1', 'bn1')):
-                        print("net: ", var_name, "\n", net.state_dict()[var_name])
+                        print("net train: ", var_name, "\n", net.state_dict()[var_name])
+                net.eval()
+                print("***********************************************************************************")
+                print("***********************************************************************************")
+                for var_name in net.state_dict():
+                    if any(x in var_name for x in ('bn1', 'bn1')):
+                        print("net test: ", var_name, "\n", net.state_dict()[var_name])
                 print("***********************************************************************************")
                 print("***********************************************************************************")
                 for var_name in net_s.state_dict():
