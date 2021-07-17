@@ -358,7 +358,6 @@ def main_train():
         scheduler.step()
 
         if args.sampled_test:
-            print("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
             copy_net2net(net_s, net)
             net_s.test_mode_switch(args.options, args.tickets)
             if (epoch % 1) == 0:
@@ -372,22 +371,31 @@ def main_train():
                 net.rst_cntr()
                 print_summary(train_acc, best_acc, best_sampled_acc, t_sampled_acc/args.options, f)
 
-                print("***********************************************************************************")
-                print("***********************************************************************************")
-                for var_name in net.state_dict():
-                    if any(x in var_name for x in ('bn1', 'bn1')):
-                        print("net train: ", var_name, "\n", net.state_dict()[var_name])
-                net.eval()
-                print("***********************************************************************************")
-                print("***********************************************************************************")
-                for var_name in net.state_dict():
-                    if any(x in var_name for x in ('bn1', 'bn1')):
-                        print("net test: ", var_name, "\n", net.state_dict()[var_name])
-                print("***********************************************************************************")
-                print("***********************************************************************************")
-                for var_name in net_s.state_dict():
-                    if any(x in var_name for x in ('bn1', 'bn1')):
-                        print("net_s: ", var_name, "\n", net_s.state_dict()[var_name])
+                last_epoch = epoch == (args.epochs)
+                if last_epoch:
+                    load_model_name = "saved_models/mnist_lrnet.pt"
+                    print('==> Loading model: ' + str(load_model_name))
+                    net.load_state_dict(torch.load(load_model_name))
+                    copy_net2net(net_s, net)
+                    torch.save(net.state_dict(), "saved_models/mnist_lrnet.pt")
+
+                # print("***********************************************************************************")
+                # print("***********************************************************************************")
+                # for var_name in net.state_dict():
+                #     if any(x in var_name for x in ('bn1', 'bn1')):
+                #         print("net train: ", var_name, "\n", net.state_dict()[var_name])
+                # net.eval()
+                # print("***********************************************************************************")
+                # print("***********************************************************************************")
+                # for var_name in net.state_dict():
+                #     if any(x in var_name for x in ('bn1', 'bn1')):
+                #         print("net test: ", var_name, "\n", net.state_dict()[var_name])
+                # print("***********************************************************************************")
+                # print("***********************************************************************************")
+                # for var_name in net_s.state_dict():
+                #     if any(x in var_name for x in ('bn1', 'bn1')):
+                #         print("net_s: ", var_name, "\n", net_s.state_dict()[var_name])
+
         scheduler.step()
 
     if args.save_file != 'no_need_to_save':
