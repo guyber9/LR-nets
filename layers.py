@@ -469,9 +469,9 @@ class LRnetConv2d_ver2(nn.Module):
             # print("z: " + str(z))
             # exit(1)
 
-            print("m1 isnan: " + str(torch.isnan(m1).any()))
-            print("v1 isnan: " + str(torch.isnan(v1).any()))
-            print("z is negative: " + str((z < 0).any()))
+            # print("m1 isnan: " + str(torch.isnan(m1).any()))
+            # print("v1 isnan: " + str(torch.isnan(v1).any()))
+            # print("z is negative: " + str((z < 0).any()))
 
             if self.output_sample:
                 epsilon = torch.rand(z.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
