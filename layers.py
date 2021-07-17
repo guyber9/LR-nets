@@ -460,6 +460,7 @@ class LRnetConv2d_ver2(nn.Module):
 
             # z = z1 + z2 - z3
             z = z2 - z3
+            z = torch.relu(z) # TODO
             v1 = torch.sqrt(z)
 
             # print ("m: " + str(m))
