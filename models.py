@@ -166,18 +166,28 @@ class LRNet_ver2(nn.Module):
     def forward(self, x):
         x = self.conv1(x)  # 32 x 24 x 24
         m,v = x
-        print("x1 isnan: " + str(torch.isnan(m).any()))
-        print("x1 isnan: " + str(torch.isnan(v).any()))
+        print("m1 isnan: " + str(torch.isnan(m).any()))
+        print("v1 isnan: " + str(torch.isnan(v).any()))
         x = self.bn1(x)
-        print("bn1 isnan: " + str(torch.isnan(x).any()))
+        m,v = x
+        print("mbn1 isnan: " + str(torch.isnan(m).any()))
+        print("vbn1 isnan: " + str(torch.isnan(v).any()))
         x = self.conv2(x)  # 32 x 20 x 20
-        print("x2 isnan: " + str(torch.isnan(x).any()))
+        m,v = x
+        print("m2 isnan: " + str(torch.isnan(m).any()))
+        print("v2 isnan: " + str(torch.isnan(v).any()))
         x = self.bn2(x)
-        print("bn2 isnan: " + str(torch.isnan(x).any()))
+        m,v = x
+        print("mbn2 isnan: " + str(torch.isnan(m).any()))
+        print("vbn2 isnan: " + str(torch.isnan(v).any()))
         x = self.conv3(x)  # 64 x 16 x 16
-        print("x3 isnan: " + str(torch.isnan(x).any()))
+        m,v = x
+        print("m3 isnan: " + str(torch.isnan(m).any()))
+        print("v3 isnan: " + str(torch.isnan(v).any()))
         x = self.bn3(x)
-        print("bn3 isnan: " + str(torch.isnan(x).any()))
+        m,v = x
+        print("mbn3 isnan: " + str(torch.isnan(m).any()))
+        print("vbn3 isnan: " + str(torch.isnan(v).any()))
         x = F.relu(x)
         x = F.max_pool2d(x, 2)  # 64 x 8 x 8
         x = torch.flatten(x, 1)  # 1024
