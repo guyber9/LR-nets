@@ -190,6 +190,14 @@ class LRnetConv2d(nn.Module):
             #     print_full_tensor(v, "v")
             #     exit(1)
 
+            if torch.isnan(v).any():
+                print("channels are: ", str(self.in_channels), str(self.out_channels))
+                print("input isnan: " + str(torch.isnan(input).any()))
+                print("alpha isnan: " + str(torch.isnan(self.alpha).any()))
+                print("betta isnan: " + str(torch.isnan(self.betta).any()))
+                print("v isnan: " + str(torch.isnan(m).any()))
+                exit(1)
+
             if self.output_sample:
                 epsilon = torch.rand(z1.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
                 return m + epsilon * v
@@ -480,8 +488,8 @@ class LRnetConv2d_ver2(nn.Module):
                 print("v isnan: " + str(torch.isnan(m).any()))
                 print("alpha isnan: " + str(torch.isnan(self.alpha).any()))
                 print("betta isnan: " + str(torch.isnan(self.betta).any()))
-                print("variance is negative: " + str((z < 0).any()))
-                print("m isnan: " + str(torch.isnan(m).any()))
+                print("m1 isnan: " + str(torch.isnan(m1).any()))
+                print("z is negative: " + str((z < 0).any()))
                 print("v1 isnan: " + str(torch.isnan(v1).any()))
                 exit(1)
 
