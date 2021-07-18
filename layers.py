@@ -496,6 +496,10 @@ class LRnetConv2d_ver2(nn.Module):
                 print("z2 < z3: " + str((z2 < z3).any()))
                 print("v1 isnan: " + str(torch.isnan(v1).any()))
                 print_neg_val(z_bfr, "z_bfr")
+                print_neg_val("e_h_2: \n" +str(e_h_2.size()))
+                print_neg_val("mean_square: \n" +str(mean_square.size()))
+                print_neg_val("(input_mean*input_mean): \n" +str((input_mean*input_mean).size()))
+                print_neg_val("mean_pow2: \n" +str(mean_pow2.size()))
                 exit(1)
 
             # print ("m: " + str(m))
