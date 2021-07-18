@@ -491,6 +491,8 @@ class LRnetConv2d_ver2(nn.Module):
                 print("betta isnan: " + str(torch.isnan(self.betta).any()))
                 print("m1 isnan: " + str(torch.isnan(m1).any()))
                 print("z is negative: " + str((z < 0).any()))
+                print("z2 is negative: " + str((z2 < 0).any()))
+                print("z3 is negative: " + str((z3 < 0).any()))
                 print("z2 < z3: " + str((z2 < z3).any()))
                 print("v1 isnan: " + str(torch.isnan(v1).any()))
                 print_neg_val(z_bfr, "z_bfr")
