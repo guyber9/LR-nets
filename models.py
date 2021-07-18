@@ -181,7 +181,7 @@ class LRNet_ver2(nn.Module):
         assertnan(m, "mbn2")
         assertnan(v, "vbn2")
         x = self.conv3(x)  # 64 x 16 x 16
-        assertnan(x, "bn3")
+        assertnan(x, "x3")
         x = self.bn3(x)
         assertnan(x, "bn3")
         x = F.relu(x)
