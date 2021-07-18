@@ -550,7 +550,8 @@ class LRBatchNorm2d(nn.Module):
 
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
-            return self.bn(input)
+            return input
+            # return self.bn(input)
         else:
             m, v = input
 
