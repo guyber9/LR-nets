@@ -8,7 +8,7 @@ from torch.nn import functional as F
 import torch.nn as nn
 import time
 import layers as lrnet_nn
-from utils import print_full_tensor
+from utils import print_full_tensor, assertnan
 
 ################
 ## MNIST nets ##
@@ -166,24 +166,24 @@ class LRNet_ver2(nn.Module):
     def forward(self, x):
         x = self.conv1(x)  # 32 x 24 x 24
         m,v = x
-        print("m1 isnan: " + str(torch.isnan(m).any()))
-        print("v1 isnan: " + str(torch.isnan(v).any()))
+        assertnan(m, "m1")
+        assertnan(v, "v1")
         x = self.bn1(x)
         m,v = x
-        print("mbn1 isnan: " + str(torch.isnan(m).any()))
-        print("vbn1 isnan: " + str(torch.isnan(v).any()))
+        assertnan(m, "mbn1")
+        assertnan(v, "vbn1")
         x = self.conv2(x)  # 32 x 20 x 20
         m,v = x
-        print("m2 isnan: " + str(torch.isnan(m).any()))
-        print("v2 isnan: " + str(torch.isnan(v).any()))
+        assertnan(m, "m2")
+        assertnan(v, "v2")
         x = self.bn2(x)
         m,v = x
-        print("mbn2 isnan: " + str(torch.isnan(m).any()))
-        print("vbn2 isnan: " + str(torch.isnan(v).any()))
+        assertnan(m, "mbn2")
+        assertnan(v, "vbn2")
         x = self.conv3(x)  # 64 x 16 x 16
-        print("x3 isnan: " + str(torch.isnan(x).any()))
+        assertnan(x, "bn3")
         x = self.bn3(x)
-        print("bn3 isnan: " + str(torch.isnan(x).any()))
+        assertnan(x, "bn3")
         x = F.relu(x)
         x = F.max_pool2d(x, 2)  # 64 x 8 x 8
         x = torch.flatten(x, 1)  # 1024

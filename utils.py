@@ -423,3 +423,8 @@ def mean_over_channel(input):
 #     mean = batch.mean(2).sum(0)
 #     mean /= nsize
 #     return mean
+
+def mean_over_channel(x, name):
+    if torch.isnan(x).any():
+        print(str(name) + " isnan: " + str(torch.isnan(x).any()))
+        exit(1)
