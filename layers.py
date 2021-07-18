@@ -479,6 +479,7 @@ class LRnetConv2d_ver2(nn.Module):
             # z = z1 + z2 - z3
             z = z2 - z3
             # z = torch.relu(z) # TODO
+            z_bfr = z # TODO
             z = z + self.eps # TODO
             v1 = torch.sqrt(z)
 
@@ -490,7 +491,9 @@ class LRnetConv2d_ver2(nn.Module):
                 print("betta isnan: " + str(torch.isnan(self.betta).any()))
                 print("m1 isnan: " + str(torch.isnan(m1).any()))
                 print("z is negative: " + str((z < 0).any()))
+                print("z2 < z3: " + str((z2 < z3).any()))
                 print("v1 isnan: " + str(torch.isnan(v1).any()))
+                print_neg_val(z_bfr, "z_bfr")
                 exit(1)
 
             # print ("m: " + str(m))
