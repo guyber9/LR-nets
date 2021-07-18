@@ -474,6 +474,17 @@ class LRnetConv2d_ver2(nn.Module):
             z = z + self.eps # TODO
             v1 = torch.sqrt(z)
 
+            if torch.isnan(v1).any() or (z < 0).any():
+                print("channels are: ", str(self.in_channels), str(self.out_channels))
+                print("m isnan: " + str(torch.isnan(m).any()))
+                print("v isnan: " + str(torch.isnan(m).any()))
+                print("alpha isnan: " + str(torch.isnan(self.alpha).any()))
+                print("betta isnan: " + str(torch.isnan(self.betta).any()))
+                print("variance is negative: " + str((z < 0).any()))
+                print("m isnan: " + str(torch.isnan(m).any()))
+                print("v1 isnan: " + str(torch.isnan(v1).any()))
+                exit(1)
+
             # print ("m: " + str(m))
             # print ("v: " + str(v))
 
