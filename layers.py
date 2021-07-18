@@ -30,11 +30,13 @@ class LRnetConv2d(nn.Module):
         test_forward: bool = False,
         output_sample: bool = True,
         binary_mode: bool = False,
+        eps: int = 1e-05,
     ):
         super(LRnetConv2d, self).__init__()
         self.in_channels, self.out_channels, self.kernel_size, self.stride, self.padding, self.dilation, self.groups, self.clusters = in_channels, out_channels, kernel_size, stride, padding, dilation, groups, clusters
         self.test_forward, self.output_sample, self.binary_mode = test_forward, output_sample, binary_mode
         self.transposed = transposed
+        self.eps = eps
         if torch.cuda.is_available():
             self.device = 'cuda'
         else:
@@ -145,7 +147,8 @@ class LRnetConv2d(nn.Module):
             #     print("sigma_square bfr conv: " + str(sigma_square))
 
             z1 = F.conv2d((input * input), sigma_square, None, self.stride, self.padding, self.dilation, self.groups)
-            z1 = torch.relu(z1) ##TODO
+            # z1 = torch.relu(z1) ##TODO
+            z1 = z1 + self.eps ##TODO
 
             # if torch.cuda.is_available():
             #     torch.backends.cudnn.deterministic = False
@@ -331,12 +334,14 @@ class LRnetConv2d_ver2(nn.Module):
         transposed: bool = True,
         test_forward: bool = False,
         output_sample: bool = False,
+        eps: int = 1e-05,
     ):
         super(LRnetConv2d_ver2, self).__init__()
         self.in_channels, self.out_channels, self.kernel_size, self.stride, self.padding, self.dilation, self.groups, self.clusters = in_channels, out_channels, kernel_size, stride, padding, dilation, groups, clusters
         self.test_forward = test_forward
         self.transposed = transposed
         self.output_sample = output_sample
+        self.eps = eps
         if torch.cuda.is_available():
             self.device = 'cuda'
         else:
@@ -465,7 +470,8 @@ class LRnetConv2d_ver2(nn.Module):
 
             # z = z1 + z2 - z3
             z = z2 - z3
-            z = torch.relu(z) # TODO
+            # z = torch.relu(z) # TODO
+            z = z + self.eps # TODO
             v1 = torch.sqrt(z)
 
             # print ("m: " + str(m))
