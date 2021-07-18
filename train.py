@@ -206,9 +206,13 @@ def main_train():
                 net.fc2.weight = test_model.fc2.weight
                 net.fc2.bias = test_model.fc2.bias
 
+    # if device == 'cuda':
+    # # TODO    net = torch.nn.DataParallel(net)
+    #     cudnn.benchmark = True
+
     if device == 'cuda':
-    # TODO    net = torch.nn.DataParallel(net)
-        cudnn.benchmark = True
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
 
     if args.resume:
         # Load checkpoint.
