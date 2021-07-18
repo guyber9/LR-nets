@@ -424,7 +424,7 @@ def mean_over_channel(input):
 #     mean /= nsize
 #     return mean
 
-def mean_over_channel(x, name):
+def assertnan(x, name):
     if torch.isnan(x).any():
         print(str(name) + " isnan: " + str(torch.isnan(x).any()))
         exit(1)
