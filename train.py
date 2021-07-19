@@ -56,6 +56,7 @@ def main_train():
 
     parser.add_argument('--ver2', action='store_true', default=False, help='discretization for layer output')
     parser.add_argument('--cudnn', action='store_true', default=False, help='using cudnn benchmark=True')
+    parser.add_argument('--collect_stats', action='store_true', default=False, help='collect_stats for test')
 
     args = parser.parse_args()
     torch.manual_seed(args.seed)
@@ -367,6 +368,16 @@ def main_train():
         best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f, True)
         scheduler.step()
 
+        if args.collect_stats:
+            copy_net2net(net_s, net)
+            net_s.test_mode_switch(1, args.tickets)
+            best_sampled_acc, best_sampled_epoch, sampled_acc = test(net_s, criterion, epoch, device, testloader, args,
+                                                                     best_sampled_acc, best_sampled_epoch, True, f, False)
+            # net_s.inc_cntr()
+            net_s.rst_cntr()
+            print_summary(train_acc, best_acc, best_sampled_acc, sampled_acc, f)
+            torch.save(net_s.state_dict(), "saved_models/mnist_lrnet_sampled.pt")
+
         if args.sampled_test:
             copy_net2net(net_s, net)
             net_s.test_mode_switch(args.options, args.tickets)
@@ -375,10 +386,10 @@ def main_train():
                 for idx in range(0, args.options):
                     best_sampled_acc, best_sampled_epoch, sampled_acc = test(net_s, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, True, f, False) # note: model is saved only in above test method
                     # best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, True, f) # note: model is saved only in above test method
-                    net.inc_cntr()
+                    net_s.inc_cntr()
                     t_sampled_acc = t_sampled_acc + sampled_acc
 
-                net.rst_cntr()
+                net_s.rst_cntr()
                 print_summary(train_acc, best_acc, best_sampled_acc, t_sampled_acc/args.options, f)
 
                 last_epoch = epoch == (args.epochs)
@@ -387,7 +398,7 @@ def main_train():
                     print('==> Loading model: ' + str(load_model_name))
                     net.load_state_dict(torch.load(load_model_name))
                     copy_net2net(net_s, net)
-                    torch.save(net.state_dict(), "saved_models/mnist_lrnet.pt")
+                    torch.save(net_s.state_dict(), "saved_models/mnist_lrnet_sampled.pt")
 
                 # print("***********************************************************************************")
                 # print("***********************************************************************************")
