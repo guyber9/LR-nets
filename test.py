@@ -52,7 +52,7 @@ def main_test():
     parser.add_argument('--tickets', type=int, default=1, metavar='N', help='num of tickets')
     parser.add_argument('--ver2', action='store_true', default=False, help='discretization for layer output')
 
-    parser.add_argument('--train_mode', action='store_true', default=False, help='train_mode also for test (collect stats')
+    parser.add_argument('--train-mode', action='store_true', default=False, help='train_mode also for test (collect stats')
 
     args = parser.parse_args()
 
