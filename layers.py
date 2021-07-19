@@ -506,6 +506,9 @@ class LRnetConv2d_ver2(nn.Module):
                 print("mean_square: \n" +str(mean_square.size()))
                 print("(input_mean*input_mean): \n" +str((input_mean*input_mean).size()))
                 print("mean_pow2: \n" +str(mean_pow2.size()))
+                print("alpha: \n" + str(self.alpha[31]))
+                print("betta: \n" + str(self.betta[31]))
+                print("input_mean: \n" + str(input_mean[99]))
                 exit(1)
 
             # print ("m: " + str(m))
