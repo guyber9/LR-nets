@@ -52,6 +52,8 @@ def main_test():
     parser.add_argument('--tickets', type=int, default=1, metavar='N', help='num of tickets')
     parser.add_argument('--ver2', action='store_true', default=False, help='discretization for layer output')
 
+    parser.add_argument('--train_mode', action='store_true', default=False, help='train_mode also for test (collect stats')
+
     args = parser.parse_args()
 
     use_cuda = torch.cuda.is_available()
@@ -177,13 +179,14 @@ def main_test():
     # exit(1)
     # ######################################################################
 
+
     print ("###################################")
     print ("Original Trained Model (no ternary)")
     print ("###################################")
     print ("test Data Set")
-    test(net, criterion, 0, device, testloader, args, 0, None, test_mode)
+    test(net, criterion, 0, device, testloader, args, 0, None, test_mode, eval_mode=True)
     print ("train Data Set")
-    test(net, criterion, 0, device, trainloader, args, 0, None, test_mode)
+    test(net, criterion, 0, device, trainloader, args, 0, None, test_mode, eval_mode=True)
 
     if not args.full_prec:
         net.test_mode_switch(args.options, args.tickets)
@@ -194,7 +197,7 @@ def main_test():
         print ("test Data Set")
         for idx in range(0, args.options):
             print("iteration: " + str(idx))
-            acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode)
+            acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode, args.train_mode)
             net.inc_cntr()
             if (acc > best_acc):
                 best_acc = acc
@@ -208,7 +211,7 @@ def main_test():
         net.rst_cntr()
         print ("train Data Set")
         # test(net, trainloader)
-        test(net, criterion, 0, device, trainloader, args, 0, None, test_mode)
+        test(net, criterion, 0, device, trainloader, args, 0, None, test_mode, args.train_mode)
 
         print ("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
 
