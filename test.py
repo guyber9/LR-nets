@@ -184,9 +184,9 @@ def main_test():
     print ("Original Trained Model (no ternary)")
     print ("###################################")
     print ("test Data Set")
-    test(net, criterion, 0, device, testloader, args, 0, None, test_mode, eval_mode=True)
+    test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=True)
     print ("train Data Set")
-    test(net, criterion, 0, device, trainloader, args, 0, None, test_mode, eval_mode=True)
+    test(net, criterion, 0, device, trainloader, args, 0, None, test_mode, None, eval_mode=True)
 
     if not args.full_prec:
         net.test_mode_switch(args.options, args.tickets)
@@ -197,7 +197,7 @@ def main_test():
         print ("test Data Set")
         for idx in range(0, args.options):
             print("iteration: " + str(idx))
-            acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode, args.train_mode)
+            acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=args.train_mode)
             net.inc_cntr()
             if (acc > best_acc):
                 best_acc = acc
@@ -211,7 +211,7 @@ def main_test():
         net.rst_cntr()
         print ("train Data Set")
         # test(net, trainloader)
-        test(net, criterion, 0, device, trainloader, args, 0, None, test_mode, args.train_mode)
+        test(net, criterion, 0, device, trainloader, args, 0, None, test_mode, None, eval_mode=args.train_mode)
 
         print ("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
 
