@@ -53,7 +53,7 @@ def main_test():
     parser.add_argument('--ver2', action='store_true', default=False, help='discretization for layer output')
 
     parser.add_argument('--train-mode', action='store_true', default=False, help='train_mode also for test (collect stats')
-    parser.add_argument('--collect_stats', action='store_true', default=False, help='collect_stats for test')
+    parser.add_argument('--collect-stats', action='store_true', default=False, help='collect_stats for test')
 
     args = parser.parse_args()
 
