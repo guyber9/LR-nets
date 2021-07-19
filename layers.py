@@ -499,6 +499,8 @@ class LRnetConv2d_ver2(nn.Module):
                 print("z3 is negative: " + str((z3 < 0).any()))
                 print("z2 < z3: " + str((z2 < z3).any()))
                 print("v1 isnan: " + str(torch.isnan(v1).any()))
+                print_full_tensor(z2, "z2")
+                print_full_tensor(z3, "z3")
                 print_neg_val(z_bfr, "z_bfr")
                 print("e_h_2: \n" +str(e_h_2.size()))
                 print("mean_square: \n" +str(mean_square.size()))
@@ -529,10 +531,11 @@ class LRBatchNorm2d(nn.Module):
         self,
         channels: int,
         eps: int = 1e-05,
+        momentum: int = 0.9,
         test_forward: bool = False
     ):
         super(LRBatchNorm2d, self).__init__()
-        self.channels, self.eps, self.test_forward = channels, eps, test_forward
+        self.channels, self.eps, self.test_forward, self.momentum = channels, eps, test_forward, momentum
         self.test_forward = test_forward
         if torch.cuda.is_available():
             self.device = 'cuda'
@@ -581,6 +584,8 @@ class LRBatchNorm2d(nn.Module):
             iweights = weights_tmp.view(m.size(0), m.size(1), 1, 1)
             bias_tmp = self.weight.repeat(m.size(0), 1)
             ibias = bias_tmp.view(m.size(0), m.size(1), 1, 1)
+
+            # self.running_mean = self.momentum * mean + (1 - self.momentum) * self.running_mean
 
             # print("mean size: " + str(mean.size()))
             # print("mean_square size: " + str(mean_square.size()))
@@ -687,3 +692,4 @@ class LRBatchNorm2d(nn.Module):
             # # exit(1)
 
             return norm_m, norm_v
+
