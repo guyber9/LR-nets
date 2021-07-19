@@ -147,9 +147,9 @@ class LRnetConv2d(nn.Module):
             #     print("sigma_square bfr conv: " + str(sigma_square))
 
             z1 = F.conv2d((input * input), sigma_square, None, self.stride, self.padding, self.dilation, self.groups)
-            # z1 = torch.relu(z1) ##TODO
-            z_bfr = z1
-            z1 = z1 + self.eps ##TODO
+            z1 = torch.relu(z1) + self.eps  # TODO morning
+            # z_bfr = z1
+            # z1 = z1 + self.eps ##TODO
 
             # if torch.cuda.is_available():
             #     torch.backends.cudnn.deterministic = False
@@ -482,9 +482,9 @@ class LRnetConv2d_ver2(nn.Module):
 
             # z = z1 + z2 - z3
             z = z2 - z3
-            # z = torch.relu(z) # TODO
-            z_bfr = z # TODO
-            z = z + self.eps # TODO
+            z = torch.relu(z) + self.eps  # TODO morning
+            # z_bfr = z # TODO
+            # z = z + self.eps # TODO
             v1 = torch.sqrt(z)
 
             if torch.isnan(v1).any() or (z < 0).any():
@@ -597,6 +597,7 @@ class LRBatchNorm2d(nn.Module):
             # print("ibias size: " + str(ibias.size()))
 
             variance = sigma_square + mean_square - (mean * mean) + self.eps
+            variance = torch.relu(variance) + self.eps # TODO morning
             std = torch.sqrt(variance)
 
             norm_m = ((m - mean) / std)
