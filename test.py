@@ -53,6 +53,7 @@ def main_test():
     parser.add_argument('--ver2', action='store_true', default=False, help='discretization for layer output')
 
     parser.add_argument('--train-mode', action='store_true', default=False, help='train_mode also for test (collect stats')
+    parser.add_argument('--collect_stats', action='store_true', default=False, help='collect_stats for test')
 
     args = parser.parse_args()
 
@@ -153,7 +154,8 @@ def main_test():
     net_type = '_fp' if args.full_prec else '_lrnet'
     isBinary = '_binary' if args.binary_mode else ''
     isVer2 = '_ver2' if args.ver2 else ''
-    load_model_name = "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + str(isVer2) + ".pt"
+    is_sampled = "_sampled" if args.collect_stats else ''
+    load_model_name = "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + str(isVer2) + str(is_sampled) + ".pt"
     print('==> Loading model: ' + str(load_model_name))
     net.load_state_dict(torch.load(load_model_name))
     net.eval()
