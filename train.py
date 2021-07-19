@@ -55,6 +55,7 @@ def main_train():
     parser.add_argument('--sampled-test', action='store_true', default=False, help='sampled validation in training')
 
     parser.add_argument('--ver2', action='store_true', default=False, help='discretization for layer output')
+    parser.add_argument('--cudnn', action='store_true', default=False, help='using cudnn benchmark=True')
 
     args = parser.parse_args()
     torch.manual_seed(args.seed)
@@ -212,8 +213,12 @@ def main_train():
     #     cudnn.benchmark = True
 
     if device == 'cuda':
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False
+        if args.cudnn:
+            print('==> Using cudnn.benchmark = True')
+            cudnn.benchmark = True
+        else:
+            torch.backends.cudnn.deterministic = True
+            torch.backends.cudnn.benchmark = False
 
     if args.resume:
         # Load checkpoint.
