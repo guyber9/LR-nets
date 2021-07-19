@@ -148,6 +148,7 @@ class LRnetConv2d(nn.Module):
 
             z1 = F.conv2d((input * input), sigma_square, None, self.stride, self.padding, self.dilation, self.groups)
             # z1 = torch.relu(z1) ##TODO
+            z_bfr = z1
             z1 = z1 + self.eps ##TODO
 
             # if torch.cuda.is_available():
@@ -195,7 +196,9 @@ class LRnetConv2d(nn.Module):
                 print("input isnan: " + str(torch.isnan(input).any()))
                 print("alpha isnan: " + str(torch.isnan(self.alpha).any()))
                 print("betta isnan: " + str(torch.isnan(self.betta).any()))
-                print("v isnan: " + str(torch.isnan(m).any()))
+                print("z1 is negative: " + str((z1 < 0).any()))
+                print_neg_val(z_bfr, "z_bfr")
+                print("v isnan: " + str(torch.isnan(v).any()))
                 exit(1)
 
             if self.output_sample:
