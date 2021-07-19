@@ -368,15 +368,23 @@ def main_train():
         best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f, True)
         scheduler.step()
 
+
         if args.collect_stats:
             copy_net2net(net_s, net)
             net_s.test_mode_switch(1, args.tickets)
-            best_sampled_acc, best_sampled_epoch, sampled_acc = test(net_s, criterion, epoch, device, testloader, args,
-                                                                     best_sampled_acc, best_sampled_epoch, True, f, False)
+            _, best_sampled_epoch, sampled_acc = test(net_s, criterion, epoch, device, testloader, args,
+                                                                     best_sampled_acc, best_sampled_epoch,
+                                                                     test_mode=True, f=None, eval_mode=False)
+            if sampled_acc > best_sampled_acc:
+                best_sampled_acc = sampled_acc
             # net_s.inc_cntr()
             net_s.rst_cntr()
             print_summary(train_acc, best_acc, best_sampled_acc, sampled_acc, f)
-            torch.save(net_s.state_dict(), "saved_models/mnist_lrnet_sampled.pt")
+            dataset_name = 'mnist' if args.mnist else 'cifar10'
+            net_type = '_fp' if args.full_prec else '_lrnet'
+            isBinary = '_binary' if args.binary_mode else ''
+            isVer2 = '_ver2' if args.ver2 else ''
+            torch.save(net.state_dict(), "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + str(isVer2) + "_sampled.pt")
 
         if args.sampled_test:
             copy_net2net(net_s, net)
