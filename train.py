@@ -58,6 +58,8 @@ def main_train():
     parser.add_argument('--cudnn', action='store_true', default=False, help='using cudnn benchmark=True')
     parser.add_argument('--collect_stats', action='store_true', default=False, help='collect_stats for test')
 
+    parser.add_argument('--suffix', action='store', default='', help='suffix for saved model name')
+
     args = parser.parse_args()
     torch.manual_seed(args.seed)
     use_cuda = torch.cuda.is_available()
