@@ -378,7 +378,7 @@ def main_train():
             net.test_mode_switch(1, args.tickets)
             _, _, net_sampled_acc = test(net, criterion, epoch, device, testloader, args,
                                                                      best_sampled_acc, best_sampled_epoch,
-                                                                     test_mode=True, f=None, eval_mode=False)
+                                                                     test_mode=True, f=None, eval_mode=True)
             if sampled_acc > best_sampled_acc:
                 best_sampled_acc = sampled_acc
             # net_s.inc_cntr()
