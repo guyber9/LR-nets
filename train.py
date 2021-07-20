@@ -375,11 +375,18 @@ def main_train():
             _, best_sampled_epoch, sampled_acc = test(net_s, criterion, epoch, device, testloader, args,
                                                                      best_sampled_acc, best_sampled_epoch,
                                                                      test_mode=True, f=None, eval_mode=False)
+            net.test_mode_switch(1, args.tickets)
+            _, _, net_sampled_acc = test(net, criterion, epoch, device, testloader, args,
+                                                                     best_sampled_acc, best_sampled_epoch,
+                                                                     test_mode=True, f=None, eval_mode=False)
             if sampled_acc > best_sampled_acc:
                 best_sampled_acc = sampled_acc
             # net_s.inc_cntr()
             net_s.rst_cntr()
+            net.rst_cntr()
             print_summary(train_acc, best_acc, best_sampled_acc, sampled_acc, f)
+            print('net_sampled_acc:\t{:.3f}'.format(net_sampled_acc))
+            print("#################################")
             dataset_name = 'mnist' if args.mnist else 'cifar10'
             net_type = '_fp' if args.full_prec else '_lrnet'
             isBinary = '_binary' if args.binary_mode else ''
