@@ -740,6 +740,7 @@ class MyBatchNorm2d(nn.BatchNorm2d):
             var = input.var([0, 2, 3], unbiased=False)
             n = input.numel() / input.size(1)
             if self.collect_stats:
+                print("branch 0")
                 with torch.no_grad():
                     self.running_mean = exponential_average_factor * mean\
                         + (1 - exponential_average_factor) * self.running_mean
@@ -748,17 +749,17 @@ class MyBatchNorm2d(nn.BatchNorm2d):
                         + (1 - exponential_average_factor) * self.running_var
         else:
             if self.collect_stats:
+                print("branch 1")
                 mean = input.mean([0, 2, 3])
                 # use biased var in train
                 var = input.var([0, 2, 3], unbiased=False)
                 n = input.numel() / input.size(1)
-                if self.collect_stats:
                     with torch.no_grad():
-                        self.running_mean = exponential_average_factor * mean\
-                            + (1 - exponential_average_factor) * self.running_mean
-                        # update running_var with unbiased var
-                        self.running_var = exponential_average_factor * var * n / (n - 1)\
-                            + (1 - exponential_average_factor) * self.running_var
+                    self.running_mean = exponential_average_factor * mean\
+                        + (1 - exponential_average_factor) * self.running_mean
+                    # update running_var with unbiased var
+                    self.running_var = exponential_average_factor * var * n / (n - 1)\
+                        + (1 - exponential_average_factor) * self.running_var
             mean = self.running_mean
             var = self.running_var
 
