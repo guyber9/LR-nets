@@ -366,13 +366,13 @@ def main_train():
             # print("conv6.betta isnan: " + str(torch.isnan(net.conv6.betta).any()))
 
         net.train_mode_switch()
-        net.collect_stats_switch_off() # TODO morning
+        # net.collect_stats_switch_off() # TODO morning
         train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
 
         best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f, True)
 
         net.test_mode_switch(1, args.tickets)
-        net.collect_stats_switch_on() # TODO morning
+        # net.collect_stats_switch_on() # TODO morning
         _, _, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, True, f, True) # note: model is saved only in above test method
         scheduler.step()
 
