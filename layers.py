@@ -108,11 +108,12 @@ class LRnetConv2d(nn.Module):
                 values = torch.argmax(sampled, dim=4) - 1
             else:
                 values = sampled - 1
-            self.test_weight_arr.append(values)
+            # self.test_weight_arr.append(values)
+            self.test_weight = values
 
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
-            self.test_weight = torch.tensor(self.test_weight_arr[self.cntr],dtype=self.tensor_dtype,device=self.device)
+            # self.test_weight = torch.tensor(self.test_weight_arr[self.cntr],dtype=self.tensor_dtype,device=self.device)
             return F.conv2d(input, self.test_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
         else:
             # if(self.in_channels == 128) and (self.out_channels == 128):
@@ -699,3 +700,43 @@ class LRBatchNorm2d(nn.Module):
 
             return norm_m, norm_v
 
+class MyBatchNorm2d(nn.BatchNorm2d):
+    def __init__(self, num_features, eps=1e-5, momentum=0.1,
+                 affine=True, track_running_stats=True):
+        super(MyBatchNorm2d, self).__init__(
+            num_features, eps, momentum, affine, track_running_stats)
+
+    def forward(self, input):
+        self._check_input_dim(input)
+
+        exponential_average_factor = 0.0
+
+        if self.training and self.track_running_stats:
+            if self.num_batches_tracked is not None:
+                self.num_batches_tracked += 1
+                if self.momentum is None:  # use cumulative moving average
+                    exponential_average_factor = 1.0 / float(self.num_batches_tracked)
+                else:  # use exponential moving average
+                    exponential_average_factor = self.momentum
+
+        # calculate running estimates
+        if self.training:
+            mean = input.mean([0, 2, 3])
+            # use biased var in train
+            var = input.var([0, 2, 3], unbiased=False)
+            n = input.numel() / input.size(1)
+            with torch.no_grad():
+                self.running_mean = exponential_average_factor * mean\
+                    + (1 - exponential_average_factor) * self.running_mean
+                # update running_var with unbiased var
+                self.running_var = exponential_average_factor * var * n / (n - 1)\
+                    + (1 - exponential_average_factor) * self.running_var
+        else:
+            mean = self.running_mean
+            var = self.running_var
+
+        input = (input - mean[None, :, None, None]) / (torch.sqrt(var[None, :, None, None] + self.eps))
+        if self.affine:
+            input = input * self.weight[None, :, None, None] + self.bias[None, :, None, None]
+
+        return input
