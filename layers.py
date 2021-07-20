@@ -705,6 +705,10 @@ class MyBatchNorm2d(nn.BatchNorm2d):
                  affine=True, track_running_stats=True):
         super(MyBatchNorm2d, self).__init__(
             num_features, eps, momentum, affine, track_running_stats)
+        self.use_batch_stats = False
+
+    def switch_use_batch_stats(self):
+        self.use_batch_stats = True
 
     def forward(self, input):
         self._check_input_dim(input)
@@ -720,7 +724,7 @@ class MyBatchNorm2d(nn.BatchNorm2d):
                     exponential_average_factor = self.momentum
 
         # calculate running estimates
-        if self.training:
+        if self.training or self.use_batch_stats:
             mean = input.mean([0, 2, 3])
             # use biased var in train
             var = input.var([0, 2, 3], unbiased=False)
