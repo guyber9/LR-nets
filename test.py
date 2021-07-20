@@ -200,6 +200,11 @@ def main_test():
             net.test_mode_switch(args.options, args.tickets)
             net.bn1.switch_use_batch_stats()
             net.bn2.switch_use_batch_stats()
+            if args.cifar10:
+                net.bn3.switch_use_batch_stats()
+                net.bn4.switch_use_batch_stats()
+                net.bn5.switch_use_batch_stats()
+                net.bn6.switch_use_batch_stats()
             print("iteration: " + str(idx))
             acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=its_eval_mode)
             net.inc_cntr()
