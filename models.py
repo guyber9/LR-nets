@@ -97,6 +97,13 @@ class LRNet(nn.Module):
         self.conv1.cntr = 0
         self.conv2.cntr = 0
 
+    def collect_stats_switch_on(self):
+        self.bn1.collect_stats_switch_on()
+        self.bn2.collect_stats_switch_on()
+
+    def collect_stats_switch_off(self):
+        self.bn1.collect_stats_switch_off()
+        self.bn2.collect_stats_switch_off()
 
 class LRNet_nodo(nn.Module):
 
@@ -398,6 +405,21 @@ class LRNet_CIFAR10(nn.Module):
         self.conv5.cntr = 0
         self.conv6.cntr = 0
 
+    def collect_stats_switch_on(self):
+        self.bn1.collect_stats_switch_on()
+        self.bn2.collect_stats_switch_on()
+        self.bn3.collect_stats_switch_on()
+        self.bn4.collect_stats_switch_on()
+        self.bn5.collect_stats_switch_on()
+        self.bn6.collect_stats_switch_on()
+
+    def collect_stats_switch_off(self):
+        self.bn1.collect_stats_switch_off()
+        self.bn2.collect_stats_switch_off()
+        self.bn3.collect_stats_switch_off()
+        self.bn4.collect_stats_switch_off()
+        self.bn5.collect_stats_switch_off()
+        self.bn6.collect_stats_switch_off()
 
 class LRNet_CIFAR10_test(nn.Module):
 

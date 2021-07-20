@@ -366,10 +366,11 @@ def main_train():
             # print("conv6.betta isnan: " + str(torch.isnan(net.conv6.betta).any()))
 
         net.train_mode_switch()
+        net.collect_stats_switch_off() # TODO morning
         train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
+        net.collect_stats_switch_on() # TODO morning
         best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f, True)
         scheduler.step()
-
 
         if args.collect_stats:
             copy_net2net(net_s, net)

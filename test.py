@@ -197,7 +197,7 @@ def main_test():
         print ("###################################")
         print ("test Data Set")
         for idx in range(0, args.options):
-            net.test_mode_switch(args.options, args.tickets)
+            # net.switch_on_use_batch_stats(args.options, args.tickets)
             net.bn1.switch_use_batch_stats()
             net.bn2.switch_use_batch_stats()
             if args.cifar10:

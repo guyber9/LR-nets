@@ -706,9 +706,19 @@ class MyBatchNorm2d(nn.BatchNorm2d):
         super(MyBatchNorm2d, self).__init__(
             num_features, eps, momentum, affine, track_running_stats)
         self.use_batch_stats = False
+        self.collect_stats = True
 
-    def switch_use_batch_stats(self):
+    def switch_on_use_batch_stats(self):
         self.use_batch_stats = True
+
+    def switch_off_use_batch_stats(self):
+        self.use_batch_stats = False
+
+    def collect_stats_switch_on(self):
+        self.collect_stats = True
+
+    def collect_stats_switch_off(self):
+        self.collect_stats = False
 
     def forward(self, input):
         self._check_input_dim(input)
@@ -729,13 +739,26 @@ class MyBatchNorm2d(nn.BatchNorm2d):
             # use biased var in train
             var = input.var([0, 2, 3], unbiased=False)
             n = input.numel() / input.size(1)
-            with torch.no_grad():
-                self.running_mean = exponential_average_factor * mean\
-                    + (1 - exponential_average_factor) * self.running_mean
-                # update running_var with unbiased var
-                self.running_var = exponential_average_factor * var * n / (n - 1)\
-                    + (1 - exponential_average_factor) * self.running_var
+            if self.collect_stats:
+                with torch.no_grad():
+                    self.running_mean = exponential_average_factor * mean\
+                        + (1 - exponential_average_factor) * self.running_mean
+                    # update running_var with unbiased var
+                    self.running_var = exponential_average_factor * var * n / (n - 1)\
+                        + (1 - exponential_average_factor) * self.running_var
         else:
+            if self.collect_stats:
+                mean = input.mean([0, 2, 3])
+                # use biased var in train
+                var = input.var([0, 2, 3], unbiased=False)
+                n = input.numel() / input.size(1)
+                if self.collect_stats:
+                    with torch.no_grad():
+                        self.running_mean = exponential_average_factor * mean\
+                            + (1 - exponential_average_factor) * self.running_mean
+                        # update running_var with unbiased var
+                        self.running_var = exponential_average_factor * var * n / (n - 1)\
+                            + (1 - exponential_average_factor) * self.running_var
             mean = self.running_mean
             var = self.running_var
 
