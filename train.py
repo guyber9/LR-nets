@@ -373,7 +373,7 @@ def main_train():
 
         net.test_mode_switch(1, args.tickets)
         net.collect_stats_switch_on() # TODO morning
-        best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f, True)
+        _, _, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, False, f, True)
         scheduler.step()
 
         if args.collect_stats:
