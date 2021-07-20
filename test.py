@@ -198,6 +198,8 @@ def main_test():
         print ("test Data Set")
         for idx in range(0, args.options):
             net.test_mode_switch(args.options, args.tickets)
+            net.bn1.switch_use_batch_stats()
+            net.bn2.switch_use_batch_stats()
             print("iteration: " + str(idx))
             acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=its_eval_mode)
             net.inc_cntr()
