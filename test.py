@@ -191,15 +191,14 @@ def main_test():
     print ("train Data Set")
     test(net, criterion, 0, device, trainloader, args, 0, None, test_mode, None, eval_mode=True)
 
-    if not args.full_prec:
-        net.test_mode_switch(args.options, args.tickets)
-
         print ("###################################")
         print ("Ternary Model")
         print ("###################################")
         print ("test Data Set")
         for idx in range(0, args.options):
             print("iteration: " + str(idx))
+            if not args.full_prec:
+                net.test_mode_switch(args.options, args.tickets)
             acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=its_eval_mode)
             net.inc_cntr()
             if (acc > best_acc):
