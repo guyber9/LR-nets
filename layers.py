@@ -109,7 +109,7 @@ class LRnetConv2d(nn.Module):
             else:
                 values = sampled - 1
             # self.test_weight_arr.append(values)
-            self.test_weight = values
+            self.test_weight = torch.tensor(values,dtype=self.tensor_dtype,device=self.device)
 
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
