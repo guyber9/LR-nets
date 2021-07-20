@@ -65,8 +65,10 @@ class LRnetConv2d(nn.Module):
         self.reset_parameters()
 
     def reset_parameters(self) -> None:
-        init.constant_(self.alpha, -0.69314)
-        init.constant_(self.betta, 0.0)
+        # init.constant_(self.alpha, -0.69314)
+        # init.constant_(self.betta, 0.0)
+        torch.nn.init.normal_(self.alpha, mean=0.0, std=1)
+        torch.nn.init.normal_(self.betta, mean=0.0, std=1)
         # init.kaiming_uniform_(self.alpha, a=math.sqrt(5))
         # init.kaiming_uniform_(self.betta, a=math.sqrt(5))
         if self.bias is not None:
@@ -384,8 +386,8 @@ class LRnetConv2d_ver2(nn.Module):
     def reset_parameters(self) -> None:
         # init.constant_(self.alpha, -0.69314)
         # init.constant_(self.betta, 0.0)
-        torch.nn.init.normal_(self.alpha, mean=0.0, std=0.01)
-        torch.nn.init.normal_(self.betta, mean=0.0, std=0.01)
+        torch.nn.init.normal_(self.alpha, mean=0.0, std=1)
+        torch.nn.init.normal_(self.betta, mean=0.0, std=1)
         if self.bias is not None:
             prob_size = torch.cat(((1 - self.alpha - self.betta), self.alpha, self.betta), 4)
             fan_in, _ = nn.init._calculate_fan_in_and_fan_out(prob_size)
