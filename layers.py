@@ -491,6 +491,9 @@ class LRnetConv2d_ver2(nn.Module):
 
             if torch.isnan(v1).any() or (z < 0).any():
                 print("channels are: ", str(self.in_channels), str(self.out_channels))
+                print("alpha: \n" + str(self.alpha[31]))
+                print("betta: \n" + str(self.betta[31]))
+                print("input_mean: \n" + str(input_mean[99]))
                 print("m isnan: " + str(torch.isnan(m).any()))
                 print("v isnan: " + str(torch.isnan(m).any()))
                 print("alpha isnan: " + str(torch.isnan(self.alpha).any()))
@@ -508,9 +511,6 @@ class LRnetConv2d_ver2(nn.Module):
                 print("mean_square: \n" +str(mean_square.size()))
                 print("(input_mean*input_mean): \n" +str((input_mean*input_mean).size()))
                 print("mean_pow2: \n" +str(mean_pow2.size()))
-                print("alpha: \n" + str(self.alpha[31]))
-                print("betta: \n" + str(self.betta[31]))
-                print("input_mean: \n" + str(input_mean[99]))
                 exit(1)
 
             # print ("m: " + str(m))
@@ -602,10 +602,10 @@ class LRBatchNorm2d(nn.Module):
             # variance = torch.relu(variance) + self.eps # TODO morning
             std = torch.sqrt(variance)
 
-            norm_m = ((m - mean) / std)
-            norm_v = (v / std)
-            # norm_m = (iweights * ((m - mean) / std)) + ibias
-            # norm_v = iweights * (v / std)
+            # norm_m = ((m - mean) / std)
+            # norm_v = (v / std)
+            norm_m = (iweights * ((m - mean) / std)) + ibias
+            norm_v = iweights * (v / std)
 
             if torch.isnan(mean).any():
                 print("channels are: " + str(self.channels))
