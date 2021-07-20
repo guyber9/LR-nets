@@ -348,7 +348,7 @@ class LRnetConv2d_ver2(nn.Module):
         transposed: bool = True,
         test_forward: bool = False,
         output_sample: bool = False,
-        eps: int = 1e-05,
+        eps: int = 1.0, #1e-05, # TODO today
     ):
         super(LRnetConv2d_ver2, self).__init__()
         self.in_channels, self.out_channels, self.kernel_size, self.stride, self.padding, self.dilation, self.groups, self.clusters = in_channels, out_channels, kernel_size, stride, padding, dilation, groups, clusters
