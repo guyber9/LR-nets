@@ -137,7 +137,7 @@ def main_train():
             else:
                 print ("Training LR-Net for CIFAR10")
                 net = LRNet_CIFAR10()
-                net_s = LRNet_CIFAR10().to(device) # TODO today
+                net_s = LRNet_CIFAR10_test().to(device) # TODO today
 
             if args.load_pre_trained:
                 print("Loading Parameters for CIFAR10")
