@@ -165,11 +165,13 @@ class LRNet_ver2(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)  # 32 x 24 x 24
-        # m,v = x
+        m,v = x
+        print("m1: ", m)
+        print("v1: ", v)
         # assertnan(m, "m1")
         # assertnan(v, "v1")
         x = self.bn1(x)
-        # m,v = x
+        m,v = x
         # assertnan(m, "mbn1")
         # assertnan(v, "vbn1")
         x = self.conv2(x)  # 32 x 20 x 20
