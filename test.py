@@ -55,6 +55,8 @@ def main_test():
     parser.add_argument('--train-mode', action='store_true', default=False, help='train_mode also for test (collect stats')
     parser.add_argument('--collect-stats', action='store_true', default=False, help='collect_stats for test')
 
+    parser.add_argument('--suffix', action='store', default='', help='suffix for saved model name')
+
     args = parser.parse_args()
 
     use_cuda = torch.cuda.is_available()
@@ -155,7 +157,7 @@ def main_test():
     isBinary = '_binary' if args.binary_mode else ''
     isVer2 = '_ver2' if args.ver2 else ''
     is_sampled = "_sampled" if args.collect_stats else ''
-    load_model_name = "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + str(isVer2) + str(is_sampled) + ".pt"
+    load_model_name = "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + str(isVer2) + str(is_sampled) + str(args.suffix) + ".pt"
     print('==> Loading model: ' + str(load_model_name))
     net.load_state_dict(torch.load(load_model_name))
     net.eval()
@@ -210,11 +212,8 @@ def main_test():
         print ("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
 
         # ######################################################################
-
-        net.update_use_batch_stats(True)
-
-        net.update_use_test_stats(True)
-
+        # net.update_use_batch_stats(True)
+        # net.update_use_test_stats(True)
         # ######################################################################
 
         net.rst_cntr()

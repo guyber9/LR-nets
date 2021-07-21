@@ -350,7 +350,7 @@ def main_train():
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
         if args.debug:
-            # print("alpha " + str(net.conv1.alpha))
+            print("alpha " + str(net.conv1.alpha))
             # print("betta " + str(net.conv1.betta))
             print("conv1.alpha isnan: " + str(torch.isnan(net.conv1.alpha).any()))
             print("conv1.betta isnan: " + str(torch.isnan(net.conv1.betta).any()))
