@@ -351,8 +351,8 @@ def main_train():
             print("conv2.betta isnan: " + str(torch.isnan(net.conv2.betta).any()))
 
         net.train_mode_switch()
-        net.update_collect_stats(False) # TODO today
-        net.update_use_test_stats(False)
+        # net.update_collect_stats(False) # TODO today
+        # net.update_use_test_stats(False)
         train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
 
         best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=f, eval_mode=True)
