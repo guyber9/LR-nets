@@ -762,6 +762,9 @@ class MyBatchNorm2d(nn.BatchNorm2d):
             # use biased var in train
             var = input.var([0, 2, 3], unbiased=False)
             n = input.numel() / input.size(1)
+            print ("mean: " + str(mean))
+            print ("var: " + str(var))
+
             with torch.no_grad():
                 self.test_running_mean = exponential_average_factor * mean\
                     + (1 - exponential_average_factor) * self.test_running_mean
