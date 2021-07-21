@@ -374,9 +374,9 @@ def main_train():
 
         net.test_mode_switch(1, args.tickets)
 
-        net.switch_on_use_batch_stats()
+        net.update_use_batch_stats(True)
         _, __, ___ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=True, f=f, eval_mode=True) # note: model is saved only in above test method
-        net.switch_off_use_batch_stats()
+        net.update_use_batch_stats(False)
 
         net.collect_stats_switch_on() # TODO morning
         # if epoch > 100:

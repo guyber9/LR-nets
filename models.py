@@ -109,6 +109,11 @@ class LRNet(nn.Module):
         self.bn1.update_use_test_stats(new_val)
         self.bn2.update_use_test_stats(new_val)
 
+    def update_use_batch_stats(self, new_val):
+        self.bn1.update_use_batch_stats(new_val)
+        self.bn2.update_use_batch_stats(new_val)
+
+
 class LRNet_nodo(nn.Module):
 
     def __init__(self):
