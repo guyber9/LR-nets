@@ -715,11 +715,8 @@ class MyBatchNorm2d(nn.BatchNorm2d):
     def update_use_batch_stats(self, new_val):
         self.use_batch_stats = new_val
 
-    def collect_stats_switch_on(self):
-        self.collect_stats = True
-
-    def collect_stats_switch_off(self):
-        self.collect_stats = False
+    def update_collect_stats(self, new_val):
+        self.collect_stats = new_val
 
     def update_use_test_stats(self, new_val):
         self.use_test_stats = new_val
