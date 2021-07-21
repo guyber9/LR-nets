@@ -199,7 +199,7 @@ def main_test():
         print ("###################################")
         print ("test Data Set")
         for idx in range(0, args.options):
-            net.update_use_batch_stats(True)
+            # net.update_use_batch_stats(True)
             print("iteration: " + str(idx))
             acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=its_eval_mode)
             net.inc_cntr()

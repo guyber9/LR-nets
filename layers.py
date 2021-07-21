@@ -736,7 +736,7 @@ class MyBatchNorm2d(nn.BatchNorm2d):
 
         # calculate running estimates
         if self.training or self.use_batch_stats:
-            print("branch 0")
+            # print("branch 0")
             mean = input.mean([0, 2, 3])
             # use biased var in train
             var = input.var([0, 2, 3], unbiased=False)
@@ -748,12 +748,12 @@ class MyBatchNorm2d(nn.BatchNorm2d):
                 self.running_var = exponential_average_factor * var * n / (n - 1)\
                     + (1 - exponential_average_factor) * self.running_var
         else:
-            print("branch 1")
+            # print("branch 1")
             mean = self.running_mean
             var = self.running_var
 
         if self.collect_stats:
-            print("branch 2")
+            # print("branch 2")
             test_mean = input.mean([0, 2, 3])
             # use biased var in train
             test_var = input.var([0, 2, 3], unbiased=False)
@@ -766,7 +766,7 @@ class MyBatchNorm2d(nn.BatchNorm2d):
                     + (1 - self.momentum) * self.test_running_var
 
         if self.use_test_stats:
-            print("branch 4")
+            # print("branch 4")
             mean = self.test_running_mean
             var = self.test_running_var
 
