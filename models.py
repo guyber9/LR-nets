@@ -97,13 +97,9 @@ class LRNet(nn.Module):
         self.conv1.cntr = 0
         self.conv2.cntr = 0
 
-    def collect_stats_switch_on(self):
-        self.bn1.collect_stats_switch_on()
-        self.bn2.collect_stats_switch_on()
-
-    def collect_stats_switch_off(self):
-        self.bn1.collect_stats_switch_off()
-        self.bn2.collect_stats_switch_off()
+    def update_collect_stats(self, new_val):
+        self.bn1.update_collect_stats(new_val)
+        self.bn2.update_collect_stats(new_val)
 
     def update_use_test_stats(self, new_val):
         self.bn1.update_use_test_stats(new_val)
@@ -414,21 +410,29 @@ class LRNet_CIFAR10(nn.Module):
         self.conv5.cntr = 0
         self.conv6.cntr = 0
 
-    def collect_stats_switch_on(self):
-        self.bn1.collect_stats_switch_on()
-        self.bn2.collect_stats_switch_on()
-        self.bn3.collect_stats_switch_on()
-        self.bn4.collect_stats_switch_on()
-        self.bn5.collect_stats_switch_on()
-        self.bn6.collect_stats_switch_on()
+    def update_collect_stats(self, new_val):
+        self.bn1.update_collect_stats(new_val)
+        self.bn2.update_collect_stats(new_val)
+        self.bn3.update_collect_stats(new_val)
+        self.bn4.update_collect_stats(new_val)
+        self.bn5.update_collect_stats(new_val)
+        self.bn6.update_collect_stats(new_val)
 
-    def collect_stats_switch_off(self):
-        self.bn1.collect_stats_switch_off()
-        self.bn2.collect_stats_switch_off()
-        self.bn3.collect_stats_switch_off()
-        self.bn4.collect_stats_switch_off()
-        self.bn5.collect_stats_switch_off()
-        self.bn6.collect_stats_switch_off()
+    def update_use_test_stats(self, new_val):
+        self.bn1.update_use_test_stats(new_val)
+        self.bn2.update_use_test_stats(new_val)
+        self.bn3.update_use_test_stats(new_val)
+        self.bn4.update_use_test_stats(new_val)
+        self.bn5.update_use_test_stats(new_val)
+        self.bn6.update_use_test_stats(new_val)
+
+    def update_use_batch_stats(self, new_val):
+        self.bn1.update_use_batch_stats(new_val)
+        self.bn2.update_use_batch_stats(new_val)
+        self.bn3.update_use_batch_stats(new_val)
+        self.bn4.update_use_batch_stats(new_val)
+        self.bn5.update_use_batch_stats(new_val)
+        self.bn6.update_use_batch_stats(new_val)
 
 class LRNet_CIFAR10_test(nn.Module):
 

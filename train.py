@@ -366,7 +366,7 @@ def main_train():
             # print("conv6.betta isnan: " + str(torch.isnan(net.conv6.betta).any()))
 
         net.train_mode_switch()
-        net.collect_stats_switch_off() # TODO morning
+        net.update_collect_stats(False) # TODO morning
         net.update_use_test_stats(False)
         train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
 
@@ -378,7 +378,7 @@ def main_train():
         _, __, ___ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=True, f=f, eval_mode=True) # note: model is saved only in above test method
         net.update_use_batch_stats(False)
 
-        net.collect_stats_switch_on() # TODO morning
+        net.update_collect_stats(True) # TODO morning
         # if epoch > 100:
         net.update_use_test_stats(True)
         _, __, ___ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=True, f=f, eval_mode=True) # note: model is saved only in above test method

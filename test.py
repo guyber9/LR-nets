@@ -197,14 +197,6 @@ def main_test():
         print ("###################################")
         print ("test Data Set")
         for idx in range(0, args.options):
-            # net.switch_on_use_batch_stats(args.options, args.tickets)
-            net.bn1.switch_use_batch_stats()
-            net.bn2.switch_use_batch_stats()
-            if args.cifar10:
-                net.bn3.switch_use_batch_stats()
-                net.bn4.switch_use_batch_stats()
-                net.bn5.switch_use_batch_stats()
-                net.bn6.switch_use_batch_stats()
             print("iteration: " + str(idx))
             acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=its_eval_mode)
             net.inc_cntr()
@@ -216,6 +208,14 @@ def main_test():
                 torch.save(net.state_dict(),
                            "trained_models/" + str(dataset_name) + "_lrnet" + str(isBinary) + str(isVer2) + ".pt")
         print ("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
+
+        # ######################################################################
+
+        net.update_use_batch_stats(True)
+
+        net.update_use_test_stats(True)
+
+        # ######################################################################
 
         net.rst_cntr()
         print ("train Data Set")
