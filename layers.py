@@ -757,14 +757,10 @@ class MyBatchNorm2d(nn.BatchNorm2d):
             var = self.running_var
 
         if self.collect_stats:
-            print ("collect_start")
             mean = input.mean([0, 2, 3])
             # use biased var in train
             var = input.var([0, 2, 3], unbiased=False)
             n = input.numel() / input.size(1)
-            print ("mean: " + str(mean))
-            print ("var: " + str(var))
-
             with torch.no_grad():
                 self.test_running_mean = self.momentum * mean\
                     + (1 - self.momentum) * self.test_running_mean
