@@ -201,6 +201,7 @@ def main_test():
         for idx in range(0, args.options):
             # net.update_use_batch_stats(True)
             print("iteration: " + str(idx))
+            net.test_mode_switch(args.options, args.tickets)
             acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=its_eval_mode)
             net.inc_cntr()
             if (acc > best_acc):
