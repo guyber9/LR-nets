@@ -374,8 +374,8 @@ def main_train():
 
         net.test_mode_switch(1, args.tickets)
         net.collect_stats_switch_on() # TODO morning
-        if epoch > 100:
-            net.update_use_test_stats(True)
+        # if epoch > 100:
+        net.update_use_test_stats(True)
         _, __, ___ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=True, f=f, eval_mode=True) # note: model is saved only in above test method
         print("net.bn1.test_running_mean: " + str(net.bn1.test_running_mean))
         print("net.bn1.test_running_var: " + str(net.bn1.test_running_var))
