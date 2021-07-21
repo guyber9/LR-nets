@@ -764,14 +764,13 @@ class MyBatchNorm2d(nn.BatchNorm2d):
             n = input.numel() / input.size(1)
             print ("mean: " + str(mean))
             print ("var: " + str(var))
-            print ("exponential_average_factor: " + str(exponential_average_factor))
 
             with torch.no_grad():
-                self.test_running_mean = exponential_average_factor * mean\
-                    + (1 - exponential_average_factor) * self.test_running_mean
+                self.test_running_mean = self.momentum * mean\
+                    + (1 - self.momentum) * self.test_running_mean
                 # update running_var with unbiased var
-                self.test_running_var = exponential_average_factor * var * n / (n - 1)\
-                    + (1 - exponential_average_factor) * self.test_running_var
+                self.test_running_var = self.momentum * var * n / (n - 1)\
+                    + (1 - self.momentum) * self.test_running_var
 
         if self.use_test_stats:
             mean = self.test_running_mean
