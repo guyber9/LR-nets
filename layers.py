@@ -764,6 +764,7 @@ class MyBatchNorm2d(nn.BatchNorm2d):
             n = input.numel() / input.size(1)
             print ("mean: " + str(mean))
             print ("var: " + str(var))
+            print ("exponential_average_factor: " + str(exponential_average_factor))
 
             with torch.no_grad():
                 self.test_running_mean = exponential_average_factor * mean\
