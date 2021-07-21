@@ -189,9 +189,9 @@ def main_test():
     print ("Original Trained Model (no ternary)")
     print ("###################################")
     print ("test Data Set")
-    # test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=True)
+    test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=True)
     print ("train Data Set")
-    # test(net, criterion, 0, device, trainloader, args, 0, None, test_mode, None, eval_mode=True)
+    test(net, criterion, 0, device, trainloader, args, 0, None, test_mode, None, eval_mode=True)
 
     if not args.full_prec:
         print ("###################################")
@@ -199,7 +199,7 @@ def main_test():
         print ("###################################")
         print ("test Data Set")
         for idx in range(0, args.options):
-            # net.update_use_batch_stats(True)
+            net.update_use_batch_stats(True)
             print("iteration: " + str(idx))
             net.test_mode_switch(args.options, args.tickets)
             acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=its_eval_mode)
