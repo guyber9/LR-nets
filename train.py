@@ -102,8 +102,6 @@ def main_train():
             root='../data', train=False, download=True, transform=transform_test)
         testloader = torch.utils.data.DataLoader(testset, **test_kwargs)
 
-        classes = ('plane', 'car', 'bird', 'cat', 'deer',
-                   'dog', 'frog', 'horse', 'ship', 'truck')
     elif args.mnist:
         print('==> Preparing MNIST data..')
         transform=transforms.Compose([
@@ -145,7 +143,6 @@ def main_train():
                 print("Loading Parameters for CIFAR10")
                 test_model = FPNet_CIFAR10().to(device)
                 test_model.load_state_dict(torch.load('saved_models/cifar10_fp.pt'))
-                # test_model.eval()
                 alpha1, betta1 = find_sigm_weights(test_model.conv1.weight, False)
                 alpha2, betta2 = find_sigm_weights(test_model.conv2.weight, False)
                 alpha3, betta3 = find_sigm_weights(test_model.conv3.weight, False)
@@ -162,10 +159,6 @@ def main_train():
 
                 def normalize_layer(w):
                     return w
-                    # if args.norm:
-                    #     return nn.Parameter(w / torch.std(w))
-                    # else:
-                    #     return w
 
                 net.conv1.bias = normalize_layer(test_model.conv1.bias)
                 net.conv2.bias = normalize_layer(test_model.conv2.bias)
@@ -350,23 +343,15 @@ def main_train():
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
         if args.debug:
-            print("alpha " + str(net.conv1.alpha))
+            # print("alpha " + str(net.conv1.alpha))
             # print("betta " + str(net.conv1.betta))
             print("conv1.alpha isnan: " + str(torch.isnan(net.conv1.alpha).any()))
             print("conv1.betta isnan: " + str(torch.isnan(net.conv1.betta).any()))
             print("conv2.alpha isnan: " + str(torch.isnan(net.conv2.alpha).any()))
             print("conv2.betta isnan: " + str(torch.isnan(net.conv2.betta).any()))
-            # print("conv3.alpha isnan: " + str(torch.isnan(net.conv3.alpha).any()))
-            # print("conv3.betta isnan: " + str(torch.isnan(net.conv3.betta).any()))
-            # print("conv4.alpha isnan: " + str(torch.isnan(net.conv4.alpha).any()))
-            # print("conv4.betta isnan: " + str(torch.isnan(net.conv4.betta).any()))
-            # print("conv5.alpha isnan: " + str(torch.isnan(net.conv5.alpha).any()))
-            # print("conv5.betta isnan: " + str(torch.isnan(net.conv5.betta).any()))
-            # print("conv6.alpha isnan: " + str(torch.isnan(net.conv6.alpha).any()))
-            # print("conv6.betta isnan: " + str(torch.isnan(net.conv6.betta).any()))
 
         net.train_mode_switch()
-        net.update_collect_stats(False) # TODO morning
+        net.update_collect_stats(False) # TODO today
         net.update_use_test_stats(False)
         train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
 
@@ -374,46 +359,41 @@ def main_train():
 
         net.test_mode_switch(1, args.tickets)
 
-        net.update_use_batch_stats(True)
-        _, __, ___ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=True, f=f, eval_mode=True) # note: model is saved only in above test method
-        net.update_use_batch_stats(False)
+        if args.collect_stats:
+            net.update_use_batch_stats(True)
+            _, __, ___ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=True, f=f, eval_mode=True) # note: model is saved only in above test method
+            net.update_use_batch_stats(False)
 
-        net.update_collect_stats(True) # TODO morning
-        # if epoch > 100:
-        net.update_use_test_stats(True)
-        _, __, ___ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=True, f=f, eval_mode=True) # note: model is saved only in above test method
+            net.update_collect_stats(True) # TODO today
+            # if epoch > 100:
+            net.update_use_test_stats(True)
+            _, __, ___ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=True, f=f, eval_mode=True) # note: model is saved only in above test method
 
-        # print("net.bn1.collect_stats: " + str(net.bn1.collect_stats))
-        # print("net.bn2.collect_stats: " + str(net.bn2.collect_stats))
-        # print("net.bn1.test_running_mean: " + str(net.bn1.test_running_mean))
-        # print("net.bn1.test_running_var: " + str(net.bn1.test_running_var))
-        # print("net.bn2.test_running_mean: " + str(net.bn2.test_running_mean))
-        # print("net.bn2.test_running_var: " + str(net.bn2.test_running_var))
         scheduler.step()
 
-        if args.collect_stats:
-            copy_net2net(net_s, net)
-            net_s.test_mode_switch(1, args.tickets)
-            _, best_sampled_epoch, sampled_acc = test(net_s, criterion, epoch, device, testloader, args,
-                                                                     best_sampled_acc, best_sampled_epoch,
-                                                                     test_mode=True, f=None, eval_mode=False)
-            net.test_mode_switch(1, args.tickets)
-            _, _, net_sampled_acc = test(net, criterion, epoch, device, testloader, args,
-                                                                     best_sampled_acc, best_sampled_epoch,
-                                                                     test_mode=True, f=None, eval_mode=True)
-            if sampled_acc > best_sampled_acc:
-                best_sampled_acc = sampled_acc
-            # net_s.inc_cntr()
-            net_s.rst_cntr()
-            net.rst_cntr()
-            print_summary(train_acc, best_acc, best_sampled_acc, sampled_acc, f)
-            print('net_sampled_acc:\t{:.3f}'.format(net_sampled_acc))
-            print("#################################")
-            dataset_name = 'mnist' if args.mnist else 'cifar10'
-            net_type = '_fp' if args.full_prec else '_lrnet'
-            isBinary = '_binary' if args.binary_mode else ''
-            isVer2 = '_ver2' if args.ver2 else ''
-            torch.save(net.state_dict(), "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + str(isVer2) + "_sampled.pt")
+        # if args.collect_stats:
+        #     copy_net2net(net_s, net)
+        #     net_s.test_mode_switch(1, args.tickets)
+        #     _, best_sampled_epoch, sampled_acc = test(net_s, criterion, epoch, device, testloader, args,
+        #                                                              best_sampled_acc, best_sampled_epoch,
+        #                                                              test_mode=True, f=None, eval_mode=False)
+        #     net.test_mode_switch(1, args.tickets)
+        #     _, _, net_sampled_acc = test(net, criterion, epoch, device, testloader, args,
+        #                                                              best_sampled_acc, best_sampled_epoch,
+        #                                                              test_mode=True, f=None, eval_mode=True)
+        #     if sampled_acc > best_sampled_acc:
+        #         best_sampled_acc = sampled_acc
+        #     # net_s.inc_cntr()
+        #     net_s.rst_cntr()
+        #     net.rst_cntr()
+        #     print_summary(train_acc, best_acc, best_sampled_acc, sampled_acc, f)
+        #     print('net_sampled_acc:\t{:.3f}'.format(net_sampled_acc))
+        #     print("#################################")
+        #     dataset_name = 'mnist' if args.mnist else 'cifar10'
+        #     net_type = '_fp' if args.full_prec else '_lrnet'
+        #     isBinary = '_binary' if args.binary_mode else ''
+        #     isVer2 = '_ver2' if args.ver2 else ''
+        #     torch.save(net.state_dict(), "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + str(isVer2) + "_sampled.pt")
 
         if args.sampled_test:
             copy_net2net(net_s, net)
