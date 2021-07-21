@@ -706,7 +706,7 @@ class MyBatchNorm2d(nn.BatchNorm2d):
         super(MyBatchNorm2d, self).__init__(
             num_features, eps, momentum, affine, track_running_stats)
         self.use_batch_stats = False
-        self.collect_stats = True
+        self.collect_stats = False
         self.use_test_stats = False
 
         self.test_running_mean = 0.0
@@ -751,15 +751,15 @@ class MyBatchNorm2d(nn.BatchNorm2d):
             var = self.running_var
 
         if self.collect_stats:
-            mean = input.mean([0, 2, 3])
+            test_mean = input.mean([0, 2, 3])
             # use biased var in train
-            var = input.var([0, 2, 3], unbiased=False)
+            test_var = input.var([0, 2, 3], unbiased=False)
             n = input.numel() / input.size(1)
             with torch.no_grad():
-                self.test_running_mean = self.momentum * mean\
+                self.test_running_mean = self.momentum * test_mean\
                     + (1 - self.momentum) * self.test_running_mean
                 # update running_var with unbiased var
-                self.test_running_var = self.momentum * var * n / (n - 1)\
+                self.test_running_var = self.momentum * test_var * n / (n - 1)\
                     + (1 - self.momentum) * self.test_running_var
 
         if self.use_test_stats:
