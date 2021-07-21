@@ -707,6 +707,10 @@ class MyBatchNorm2d(nn.BatchNorm2d):
             num_features, eps, momentum, affine, track_running_stats)
         self.use_batch_stats = False
         self.collect_stats = True
+        self.use_test_stats = False
+
+        self.test_running_mean = 0.0
+        self.test_running_var = 0.0
 
     def switch_on_use_batch_stats(self):
         self.use_batch_stats = True
@@ -719,6 +723,9 @@ class MyBatchNorm2d(nn.BatchNorm2d):
 
     def collect_stats_switch_off(self):
         self.collect_stats = False
+
+    def update_use_test_stats(self, new_val):
+        self.use_test_stats = new_val
 
     def forward(self, input):
         self._check_input_dim(input)
@@ -739,27 +746,31 @@ class MyBatchNorm2d(nn.BatchNorm2d):
             # use biased var in train
             var = input.var([0, 2, 3], unbiased=False)
             n = input.numel() / input.size(1)
-            if self.collect_stats:
-                with torch.no_grad():
-                    self.running_mean = exponential_average_factor * mean\
-                        + (1 - exponential_average_factor) * self.running_mean
-                    # update running_var with unbiased var
-                    self.running_var = exponential_average_factor * var * n / (n - 1)\
-                        + (1 - exponential_average_factor) * self.running_var
+            with torch.no_grad():
+                self.running_mean = exponential_average_factor * mean\
+                    + (1 - exponential_average_factor) * self.running_mean
+                # update running_var with unbiased var
+                self.running_var = exponential_average_factor * var * n / (n - 1)\
+                    + (1 - exponential_average_factor) * self.running_var
         else:
-            if self.collect_stats:
-                mean = input.mean([0, 2, 3])
-                # use biased var in train
-                var = input.var([0, 2, 3], unbiased=False)
-                n = input.numel() / input.size(1)
-                with torch.no_grad():
-                    self.running_mean = exponential_average_factor * mean\
-                        + (1 - exponential_average_factor) * self.running_mean
-                    # update running_var with unbiased var
-                    self.running_var = exponential_average_factor * var * n / (n - 1)\
-                        + (1 - exponential_average_factor) * self.running_var
             mean = self.running_mean
             var = self.running_var
+
+        if self.collect_stats:
+            mean = input.mean([0, 2, 3])
+            # use biased var in train
+            var = input.var([0, 2, 3], unbiased=False)
+            n = input.numel() / input.size(1)
+            with torch.no_grad():
+                self.test_running_mean = exponential_average_factor * mean\
+                    + (1 - exponential_average_factor) * self.test_running_mean
+                # update running_var with unbiased var
+                self.test_running_var = exponential_average_factor * var * n / (n - 1)\
+                    + (1 - exponential_average_factor) * self.test_running_var
+
+        if self.use_test_stats:
+            mean = self.test_running_mean
+            var = self.test_running_var
 
         input = (input - mean[None, :, None, None]) / (torch.sqrt(var[None, :, None, None] + self.eps))
         if self.affine:

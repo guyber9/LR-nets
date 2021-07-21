@@ -105,6 +105,10 @@ class LRNet(nn.Module):
         self.bn1.collect_stats_switch_off()
         self.bn2.collect_stats_switch_off()
 
+    def update_use_test_stats(self, new_val):
+        self.bn1.update_use_test_stats(new_val)
+        self.bn2.update_use_test_stats(new_val)
+
 class LRNet_nodo(nn.Module):
 
     def __init__(self):
