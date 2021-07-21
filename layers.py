@@ -757,6 +757,7 @@ class MyBatchNorm2d(nn.BatchNorm2d):
             var = self.running_var
 
         if self.collect_stats:
+            print ("collect_start")
             mean = input.mean([0, 2, 3])
             # use biased var in train
             var = input.var([0, 2, 3], unbiased=False)

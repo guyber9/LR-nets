@@ -377,6 +377,9 @@ def main_train():
         # if epoch > 100:
         net.update_use_test_stats(True)
         _, __, ___ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=True, f=f, eval_mode=True) # note: model is saved only in above test method
+
+        print("net.bn1.collect_stats: " + str(net.bn1.collect_stats))
+        print("net.bn2.collect_stats: " + str(net.bn2.collect_stats))
         print("net.bn1.test_running_mean: " + str(net.bn1.test_running_mean))
         print("net.bn1.test_running_var: " + str(net.bn1.test_running_var))
         print("net.bn2.test_running_mean: " + str(net.bn2.test_running_mean))
