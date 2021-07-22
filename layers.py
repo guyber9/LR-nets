@@ -207,7 +207,7 @@ class LRnetConv2d(nn.Module):
 
             if self.output_sample:
                 # epsilon = torch.rand(z1.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
-                epsilon = torch.normal(0, 1, size=z1.size(), dtype=self.tensor_dtype, requires_grad=False)
+                epsilon = torch.normal(0, 1, size=z1.size(), dtype=self.tensor_dtype, requires_grad=False, device=self.device)
                 return m + epsilon * v
             else:
                 return m, v
