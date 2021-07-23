@@ -216,10 +216,8 @@ def main_test():
                            "trained_models/" + str(dataset_name) + "_lrnet" + str(isBinary) + str(isVer2) + ".pt")
         print ("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
 
-        for var_name in net.state_dict():
-            if any(x in var_name for x in ('conv1', 'conv')):
-                print(net.var_name.bias)
-                # print(var_name, "\t", net.state_dict()[var_name])
+        print("conv1: " + str(net.conv1.test_weight))
+        print("conv2: " + str(net.conv2.test_weight))
 
         net.rst_cntr()
         print ("train Data Set")
