@@ -155,9 +155,8 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
             correct += predicted.eq(targets).sum().item()
 
             if args.nohup:
-                if batch_idx % args.log_interval == 0:
-                    print('Test Average loss: {:.4f}, Accuracy: {}/{} ({:.3f}%)'.format(
-                        test_loss, correct, total, 100. * correct / total))
+                print('Test Average loss: {:.4f}, Accuracy: {}/{} ({:.3f}%)'.format(
+                    test_loss, correct, total, 100. * correct / total))
                 if f is not None:
                     print('Test Average loss: {:.4f}, Accuracy: {}/{} ({:.3f}%)'.format(
                         test_loss, correct, total, 100. * correct / total), file=f)
