@@ -110,49 +110,6 @@ class LRNet(nn.Module):
         self.bn2.update_use_batch_stats(new_val)
 
 
-class LRNet_nodo(nn.Module):
-
-    def __init__(self):
-        super(LRNet_nodo, self).__init__()
-        self.conv1 = lrnet_nn.LRnetConv2d(1, 32, 5, 1)
-        self.conv2 = lrnet_nn.LRnetConv2d(32, 64, 5, 1)
-        self.fc1 = nn.Linear(1024, 512)
-        self.fc2 = nn.Linear(512, 10)
-        self.bn1 = nn.BatchNorm2d(32)
-        self.bn2 = nn.BatchNorm2d(64)
-
-    def forward(self, x):
-        x = self.conv1(x)  # 32 x 24 x 24
-        x = self.bn1(x)
-        x = F.max_pool2d(x, 2)  # 32 x 12 x 12
-        x = F.relu(x)
-        x = self.conv2(x)  # 64 x 8 x 8
-        x = self.bn2(x)
-        x = F.max_pool2d(x, 2)  # 64 x 4 x 4
-        x = F.relu(x)
-        x = torch.flatten(x, 1)  # 1024
-        x = self.fc1(x)
-        x = F.relu(x)
-        x = self.fc2(x)
-        output = x
-        return output
-
-    def train_mode_switch(self):
-        self.conv1.train_mode_switch()
-        self.conv2.train_mode_switch()
-
-    def test_mode_switch(self, options, tickets):
-        self.conv1.test_mode_switch(options, tickets)
-        self.conv2.test_mode_switch(options, tickets)
-
-    def inc_cntr(self):
-        self.conv1.cntr = self.conv1.cntr + 1
-        self.conv2.cntr = self.conv2.cntr + 1
-
-    def rst_cntr(self):
-        self.conv1.cntr = 0
-        self.conv2.cntr = 0
-
 class LRNet_ver2(nn.Module):
 
     def __init__(self):
@@ -322,11 +279,11 @@ class LRNet_CIFAR10(nn.Module):
         self.dropout2 = nn.Dropout(0.5)
         self.fc1 = nn.Linear(8192, 1024)
         self.fc2 = nn.Linear(1024, 10)
-        self.dropout3 = nn.Dropout(0.2) # 0.2 was 93.13
-        self.dropout4 = nn.Dropout(0.2) # 0.2 was 93.13
-        self.dropout5 = nn.Dropout(0.2) # 0.2 was 93.13
-        self.dropout6 = nn.Dropout(0.2) # 0.2 was 93.13
-        self.dropout7 = nn.Dropout(0.2) # 0.2 was 93.13
+        # self.dropout3 = nn.Dropout(0.2) # 0.2 was 93.13
+        # self.dropout4 = nn.Dropout(0.2) # 0.2 was 93.13
+        # self.dropout5 = nn.Dropout(0.2) # 0.2 was 93.13
+        # self.dropout6 = nn.Dropout(0.2) # 0.2 was 93.13
+        # self.dropout7 = nn.Dropout(0.2) # 0.2 was 93.13
 
     def forward(self, x):
         x = self.conv1(x)  # input is 3 x 32 x 32, output is 128 x 32 x 32
@@ -335,7 +292,7 @@ class LRNet_CIFAR10(nn.Module):
         x = self.bn1(x)  # <- problematic batchnoram (?)
         # print("bn1 isnan: " + str(torch.isnan(x).any()))
         x = F.relu(x)
-        x = self.dropout3(x)
+        # x = self.dropout3(x)
         # print("xrelu1 isnan: " + str(torch.isnan(x).any()))
         # print("start here")
         x = self.conv2(x)  # 128 x 32 x 32
@@ -347,22 +304,22 @@ class LRNet_CIFAR10(nn.Module):
         # print("bn2: " + str(x))
         x = F.max_pool2d(x, 2)  # 128 x 16 x 16
         x = F.relu(x)
-        x = self.dropout4(x)
+        # x = self.dropout4(x)
 
         x = self.conv3(x)  # 256 x 16 x 16
         x = self.bn3(x)
         x = F.relu(x)
-        x = self.dropout5(x)
+        # x = self.dropout5(x)
         x = self.conv4(x)  # 256 x 16 x 16
         x = self.bn4(x)
         x = F.max_pool2d(x, 2)  # 256 x 8 x 8
         x = F.relu(x)
-        x = self.dropout6(x)
+        # x = self.dropout6(x)
 
         x = self.conv5(x)  # 512 x 8 x 8
         x = self.bn5(x)
         x = F.relu(x)
-        x = self.dropout7(x)
+        # x = self.dropout7(x)
         x = self.conv6(x)  # 512 x 8 x 8
         x = self.bn6(x)
         x = F.max_pool2d(x, 2)  # 512 x 4 x 4 (= 8192)
