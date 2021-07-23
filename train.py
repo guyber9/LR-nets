@@ -138,7 +138,6 @@ def main_train():
             else:
                 print ("Training LR-Net for CIFAR10")
                 net = LRNet_CIFAR10()
-                net_s = LRNet_CIFAR10_test().to(device) # TODO today
 
             if args.load_pre_trained:
                 print("Loading Parameters for CIFAR10")
@@ -213,6 +212,7 @@ def main_train():
             print('==> Using cudnn.benchmark = True')
             cudnn.benchmark = True
         else:
+            print('==> Using cudnn.benchmark = False && torch.backends.cudnn.deterministic = True')
             torch.backends.cudnn.deterministic = True
             torch.backends.cudnn.benchmark = False
 
@@ -340,9 +340,6 @@ def main_train():
         f = open(file_name, "w")
     else:
         f = None
-
-    if args.sampled_test:
-        copy_net2net(net_s, net)
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
         net.train_mode_switch()
