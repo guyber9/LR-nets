@@ -357,7 +357,9 @@ def main_train():
 
         best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=f, eval_mode=True)
 
-        net.test_mode_switch(1, args.tickets)
+        net.test_mode_switch(1, 1)
+
+        _, __, ___ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=True, f=f, eval_mode=True)  # note: model is saved only in above test method
 
         if args.collect_stats:
             net.update_use_batch_stats(True)
