@@ -342,99 +342,13 @@ def main_train():
         copy_net2net(net_s, net)
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
-        if args.debug:
-            # print("alpha " + str(net.conv1.alpha))
-            # print("betta " + str(net.conv1.betta))
-            print("conv1.alpha isnan: " + str(torch.isnan(net.conv1.alpha).any()))
-            print("conv1.betta isnan: " + str(torch.isnan(net.conv1.betta).any()))
-            print("conv2.alpha isnan: " + str(torch.isnan(net.conv2.alpha).any()))
-            print("conv2.betta isnan: " + str(torch.isnan(net.conv2.betta).any()))
-
         net.train_mode_switch()
-        # net.update_collect_stats(False) # TODO today
-        # net.update_use_test_stats(False)
         train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
-
         best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=f, eval_mode=True)
-
-        net.test_mode_switch(1, 1)
-
-        _, __, ___ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=True, f=f, eval_mode=True)  # note: model is saved only in above test method
-
-        if args.collect_stats:
-            net.update_use_batch_stats(True)
-            _, __, ___ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=True, f=f, eval_mode=True) # note: model is saved only in above test method
-            net.update_use_batch_stats(False)
-
-            net.update_collect_stats(True) # TODO today
-            # if epoch > 100:
-            net.update_use_test_stats(True)
-            _, __, ___ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=True, f=f, eval_mode=True) # note: model is saved only in above test method
-
-        scheduler.step()
-
-        # if args.collect_stats:
-        #     copy_net2net(net_s, net)
-        #     net_s.test_mode_switch(1, args.tickets)
-        #     _, best_sampled_epoch, sampled_acc = test(net_s, criterion, epoch, device, testloader, args,
-        #                                                              best_sampled_acc, best_sampled_epoch,
-        #                                                              test_mode=True, f=None, eval_mode=False)
-        #     net.test_mode_switch(1, args.tickets)
-        #     _, _, net_sampled_acc = test(net, criterion, epoch, device, testloader, args,
-        #                                                              best_sampled_acc, best_sampled_epoch,
-        #                                                              test_mode=True, f=None, eval_mode=True)
-        #     if sampled_acc > best_sampled_acc:
-        #         best_sampled_acc = sampled_acc
-        #     # net_s.inc_cntr()
-        #     net_s.rst_cntr()
-        #     net.rst_cntr()
-        #     print_summary(train_acc, best_acc, best_sampled_acc, sampled_acc, f)
-        #     print('net_sampled_acc:\t{:.3f}'.format(net_sampled_acc))
-        #     print("#################################")
-        #     dataset_name = 'mnist' if args.mnist else 'cifar10'
-        #     net_type = '_fp' if args.full_prec else '_lrnet'
-        #     isBinary = '_binary' if args.binary_mode else ''
-        #     isVer2 = '_ver2' if args.ver2 else ''
-        #     torch.save(net.state_dict(), "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + str(isVer2) + "_sampled.pt")
-
         if args.sampled_test:
-            copy_net2net(net_s, net)
-            net_s.test_mode_switch(args.options, args.tickets)
-            if (epoch % 1) == 0:
-                t_sampled_acc = 0
-                for idx in range(0, args.options):
-                    best_sampled_acc, best_sampled_epoch, sampled_acc = test(net_s, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, True, f, False) # note: model is saved only in above test method
-                    # best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, True, f) # note: model is saved only in above test method
-                    net_s.inc_cntr()
-                    t_sampled_acc = t_sampled_acc + sampled_acc
-
-                net_s.rst_cntr()
-                print_summary(train_acc, best_acc, best_sampled_acc, t_sampled_acc/args.options, f)
-
-                last_epoch = epoch == (args.epochs)
-                if last_epoch:
-                    load_model_name = "saved_models/mnist_lrnet.pt"
-                    print('==> Loading model: ' + str(load_model_name))
-                    net.load_state_dict(torch.load(load_model_name))
-                    copy_net2net(net_s, net)
-                    torch.save(net_s.state_dict(), "saved_models/mnist_lrnet_sampled.pt")
-
-                # print("***********************************************************************************")
-                # print("***********************************************************************************")
-                # for var_name in net.state_dict():
-                #     if any(x in var_name for x in ('bn1', 'bn1')):
-                #         print("net train: ", var_name, "\n", net.state_dict()[var_name])
-                # net.eval()
-                # print("***********************************************************************************")
-                # print("***********************************************************************************")
-                # for var_name in net.state_dict():
-                #     if any(x in var_name for x in ('bn1', 'bn1')):
-                #         print("net test: ", var_name, "\n", net.state_dict()[var_name])
-                # print("***********************************************************************************")
-                # print("***********************************************************************************")
-                # for var_name in net_s.state_dict():
-                #     if any(x in var_name for x in ('bn1', 'bn1')):
-                #         print("net_s: ", var_name, "\n", net_s.state_dict()[var_name])
+            net.test_mode_switch(1, 1)
+            best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, test_mode=True, f=f, eval_mode=True)  # note: model is saved only in above test method
+            print_summary(train_acc, best_acc, best_sampled_acc, sampled_acc, f)
 
         scheduler.step()
 

@@ -69,8 +69,6 @@ class LRnetConv2d(nn.Module):
         # init.constant_(self.betta, 0.0)
         torch.nn.init.normal_(self.alpha, mean=0.0, std=1)
         torch.nn.init.normal_(self.betta, mean=0.0, std=1)
-        # init.kaiming_uniform_(self.alpha, a=math.sqrt(5))
-        # init.kaiming_uniform_(self.betta, a=math.sqrt(5))
         if self.bias is not None:
             prob_size = torch.cat(((1 - self.alpha - self.betta), self.alpha, self.betta), 4)
             fan_in, _ = nn.init._calculate_fan_in_and_fan_out(prob_size)
@@ -83,11 +81,9 @@ class LRnetConv2d(nn.Module):
         self.betta = nn.Parameter(torch.tensor(betta, dtype=self.tensor_dtype, device=self.device))
 
     def train_mode_switch(self) -> None:
-        # print ("train_mode_switch")
         self.test_forward = False
 
     def test_mode_switch(self, num_of_options=1, tickets=10) -> None:
-        # print ("test_mode_switch")
         self.test_forward = True
         sigmoid_func = torch.nn.Sigmoid()
         alpha_prob = sigmoid_func(self.alpha)
@@ -402,12 +398,10 @@ class LRnetConv2d_ver2(nn.Module):
         self.betta = nn.Parameter(torch.tensor(betta, dtype=self.tensor_dtype, device=self.device))
 
     def train_mode_switch(self) -> None:
-        # print ("train_mode_switch")
         self.test_forward = False
 
     def test_mode_switch(self, num_of_options, tickets=10) -> None:
         self.test_forward = True
-        # print("Initializing Test Weights: \n")
         sigmoid_func = torch.nn.Sigmoid()
         alpha_prob = sigmoid_func(self.alpha)
         betta_prob = sigmoid_func(self.betta) * (1 - alpha_prob)
@@ -526,7 +520,7 @@ class LRnetConv2d_ver2(nn.Module):
             # print("z is negative: " + str((z < 0).any()))
 
             if self.output_sample:
-                epsilon = torch.rand(z.size(), requires_grad=False, dtype=self.tensor_dtype, device=self.device)
+                epsilon = torch.normal(0, 1, size=z.size(), dtype=self.tensor_dtype, requires_grad=False, device=self.device)
                 return m1 + epsilon * v1
             else:
                 return m1, v1

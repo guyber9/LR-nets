@@ -216,9 +216,6 @@ def main_test():
                            "trained_models/" + str(dataset_name) + "_lrnet" + str(isBinary) + str(isVer2) + ".pt")
         print ("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
 
-        print("conv1: " + str(net.conv1.test_weight))
-        print("conv2: " + str(net.conv2.test_weight))
-
         net.rst_cntr()
         print ("train Data Set")
         # test(net, trainloader)
