@@ -202,7 +202,7 @@ def main_test():
         print ("###################################")
         print ("test Data Set")
         for idx in range(0, args.options):
-            # net.update_use_batch_stats(True)
+            # .update_use_batch_stats(True)
             print("iteration: " + str(idx))
             net.test_mode_switch(args.options, args.tickets)
             acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=its_eval_mode)
@@ -216,13 +216,8 @@ def main_test():
                            "trained_models/" + str(dataset_name) + "_lrnet" + str(isBinary) + str(isVer2) + ".pt")
         print ("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
 
-        # ######################################################################
-        # net.update_use_batch_stats(True)
-        # net.update_use_test_stats(True)
-        # ######################################################################
-
         for var_name in net.state_dict():
-            if any(x in var_name for x in ('bn1', 'bn1')):
+            if any(x in var_name for x in ('conv1', 'conv')):
                 print(var_name, "\t", net.state_dict()[var_name])
 
         net.rst_cntr()
