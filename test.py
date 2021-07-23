@@ -218,7 +218,8 @@ def main_test():
 
         for var_name in net.state_dict():
             if any(x in var_name for x in ('conv1', 'conv')):
-                print(var_name, "\t", net.state_dict()[var_name])
+                print(net.var_name.bias)
+                # print(var_name, "\t", net.state_dict()[var_name])
 
         net.rst_cntr()
         print ("train Data Set")
