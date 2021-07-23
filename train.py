@@ -59,7 +59,7 @@ def main_train():
     parser.add_argument('--collect_stats', action='store_true', default=False, help='collect_stats for test')
 
     parser.add_argument('--suffix', action='store', default='', help='suffix for saved model name')
-    parser.add_argument('--anealling-sched', action='store_true', default=False, help='using CosineAnnealingLR')
+    parser.add_argument('--annealing-sched', action='store_true', default=False, help='using CosineAnnealingLR')
 
     args = parser.parse_args()
     torch.manual_seed(args.seed)
@@ -294,7 +294,7 @@ def main_train():
                     {'params': net.bn5.parameters()},
                     {'params': net.bn6.parameters()}
                 ], lr=args.lr, weight_decay=weight_decay)
-        if args.anealling_sched:
+        if args.annealing_sched:
             scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
         else:
             scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
