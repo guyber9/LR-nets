@@ -221,6 +221,10 @@ def main_test():
         # net.update_use_test_stats(True)
         # ######################################################################
 
+        for var_name in net.state_dict():
+            if any(x in var_name for x in ('bn1', 'bn1')):
+                print(var_name, "\t", net.state_dict()[var_name])
+
         net.rst_cntr()
         print ("train Data Set")
         # test(net, trainloader)
