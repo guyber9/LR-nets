@@ -63,9 +63,6 @@ def main_train():
 
     args = parser.parse_args()
 
-    print(args)
-    exit(1)
-
     torch.manual_seed(args.seed)
     use_cuda = torch.cuda.is_available()
     device = 'cuda' if use_cuda else 'cpu'
@@ -343,7 +340,9 @@ def main_train():
     if args.save_file != 'no_need_to_save':
         file_name = "tmp_logs/" + str(args.save_file) + ".log"
         f = open(file_name, "w")
+        print(args, file=f)
     else:
+        print(args)
         f = None
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
