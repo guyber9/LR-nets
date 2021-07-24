@@ -342,12 +342,6 @@ def main_train():
         f = None
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
-#         if epoch < 5:
-#             for g in optimizer.param_groups:
-#                 g['lr'] = 0.001
-#         else:
-#             for g in optimizer.param_groups:
-#                 g['lr'] = args.lr            
         net.train_mode_switch()
         train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
         best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=f, eval_mode=True)
