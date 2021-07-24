@@ -285,15 +285,16 @@ def main_train():
                     {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
                     {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
                     {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.fc1.parameters()},
-                    {'params': net.fc2.parameters()},
-                    {'params': net.bn1.parameters()}, # TODO
+                    {'params': net.fc1.parameters(), 'weight_decay': weight_decay}, # TODO
+                    {'params': net.fc2.parameters(), 'weight_decay': weight_decay}, # TODO
+                    {'params': net.bn1.parameters()},
                     {'params': net.bn2.parameters()},
                     {'params': net.bn3.parameters()},
                     {'params': net.bn4.parameters()},
                     {'params': net.bn5.parameters()},
                     {'params': net.bn6.parameters()}
-                ], lr=args.lr, weight_decay=weight_decay)
+                ], lr=args.lr)
+                # ], lr = args.lr, weight_decay = weight_decay)
         if args.annealing_sched:
             scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
         else:
