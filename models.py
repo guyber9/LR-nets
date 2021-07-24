@@ -262,27 +262,27 @@ class LRNet_CIFAR10(nn.Module):
         self.conv4 = lrnet_nn.LRnetConv2d(256, 256, 3, 1, padding=1)
         self.conv5 = lrnet_nn.LRnetConv2d(256, 512, 3, 1, padding=1)
         self.conv6 = lrnet_nn.LRnetConv2d(512, 512, 3, 1, padding=1)
-        # self.bn1 = nn.BatchNorm2d(128)
-        # self.bn2 = nn.BatchNorm2d(128)
-        # self.bn3 = nn.BatchNorm2d(256)
-        # self.bn4 = nn.BatchNorm2d(256)
-        # self.bn5 = nn.BatchNorm2d(512)
-        # self.bn6 = nn.BatchNorm2d(512)
-        self.bn1 = lrnet_nn.MyBatchNorm2d(num_features=128, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
-        self.bn2 = lrnet_nn.MyBatchNorm2d(num_features=128, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
-        self.bn3 = lrnet_nn.MyBatchNorm2d(num_features=256, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
-        self.bn4 = lrnet_nn.MyBatchNorm2d(num_features=256, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
-        self.bn5 = lrnet_nn.MyBatchNorm2d(num_features=512, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
-        self.bn6 = lrnet_nn.MyBatchNorm2d(num_features=512, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
+        self.bn1 = nn.BatchNorm2d(128)
+        self.bn2 = nn.BatchNorm2d(128)
+        self.bn3 = nn.BatchNorm2d(256)
+        self.bn4 = nn.BatchNorm2d(256)
+        self.bn5 = nn.BatchNorm2d(512)
+        self.bn6 = nn.BatchNorm2d(512)
+#         self.bn1 = lrnet_nn.MyBatchNorm2d(num_features=128, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
+#         self.bn2 = lrnet_nn.MyBatchNorm2d(num_features=128, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
+#         self.bn3 = lrnet_nn.MyBatchNorm2d(num_features=256, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
+#         self.bn4 = lrnet_nn.MyBatchNorm2d(num_features=256, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
+#         self.bn5 = lrnet_nn.MyBatchNorm2d(num_features=512, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
+#         self.bn6 = lrnet_nn.MyBatchNorm2d(num_features=512, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
         self.dropout1 = nn.Dropout(0.5)
         self.dropout2 = nn.Dropout(0.5)
         self.fc1 = nn.Linear(8192, 1024)
         self.fc2 = nn.Linear(1024, 10)
-        self.dropout3 = nn.Dropout(0.15) # 0.2 was 93.13
-        self.dropout4 = nn.Dropout(0.15) # 0.2 was 93.13
-        self.dropout5 = nn.Dropout(0.15) # 0.2 was 93.13
-        self.dropout6 = nn.Dropout(0.15) # 0.2 was 93.13
-        self.dropout7 = nn.Dropout(0.15) # 0.2 was 93.13
+        self.dropout3 = nn.Dropout(0.2) # 0.2 was 93.13
+        self.dropout4 = nn.Dropout(0.2) # 0.2 was 93.13
+        self.dropout5 = nn.Dropout(0.2) # 0.2 was 93.13
+        self.dropout6 = nn.Dropout(0.2) # 0.2 was 93.13
+        self.dropout7 = nn.Dropout(0.2) # 0.2 was 93.13
 
     def forward(self, x):
         x = self.conv1(x)  # input is 3 x 32 x 32, output is 128 x 32 x 32
