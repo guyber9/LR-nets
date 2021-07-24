@@ -252,7 +252,6 @@ class FPNet_CIFAR10(nn.Module):
         output = x
         return output
 
-
 class LRNet_CIFAR10(nn.Module):
 
     def __init__(self):
