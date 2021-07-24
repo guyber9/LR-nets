@@ -62,6 +62,10 @@ def main_train():
     parser.add_argument('--annealing-sched', action='store_true', default=False, help='using CosineAnnealingLR')
 
     args = parser.parse_args()
+
+    print(args)
+    exit(1)
+
     torch.manual_seed(args.seed)
     use_cuda = torch.cuda.is_available()
     device = 'cuda' if use_cuda else 'cpu'
