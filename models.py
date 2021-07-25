@@ -292,9 +292,9 @@ class LRNet_CIFAR10(nn.Module):
         x = self.dropout3(x)
         x = self.conv2(x)  # 128 x 32 x 32
         x = self.bn2(x)
-        x = F.relu(x)
         x = F.max_pool2d(x, 2)  # 128 x 16 x 16
-        x = self.dropout4(x)
+        x = F.relu(x)
+        # x = self.dropout4(x)
 
         x = self.conv3(x)  # 256 x 16 x 16
         x = self.bn3(x)
@@ -302,9 +302,9 @@ class LRNet_CIFAR10(nn.Module):
         x = self.dropout5(x)
         x = self.conv4(x)  # 256 x 16 x 16
         x = self.bn4(x)
-        x = F.relu(x)
         x = F.max_pool2d(x, 2)  # 256 x 8 x 8
-        x = self.dropout6(x)
+        x = F.relu(x)
+        # x = self.dropout6(x)
 
         x = self.conv5(x)  # 512 x 8 x 8
         x = self.bn5(x)
@@ -312,8 +312,8 @@ class LRNet_CIFAR10(nn.Module):
         x = self.dropout7(x)
         x = self.conv6(x)  # 512 x 8 x 8
         x = self.bn6(x)
-        x = F.relu(x)
         x = F.max_pool2d(x, 2)  # 512 x 4 x 4 (= 8192)
+        x = F.relu(x)
 
         x = torch.flatten(x, 1)  # 8192
         x = self.dropout1(x)
