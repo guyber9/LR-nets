@@ -294,8 +294,8 @@ def main_train():
                     {'params': net.bn4.parameters()},
                     {'params': net.bn5.parameters()},
                     {'params': net.bn6.parameters()}
-                ], lr=args.lr)
-                # ], lr = args.lr, weight_decay = weight_decay)
+                # ], lr=args.lr)
+                ], lr = args.lr, weight_decay = weight_decay)
         if args.annealing_sched:
             scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
         else:
