@@ -284,8 +284,7 @@ class LRNet_CIFAR10(nn.Module):
         self.dropout6 = nn.Dropout(0.2) # 0.2 was 93.13
         self.dropout7 = nn.Dropout(0.2) # 0.2 was 93.13
 
-    def forward(self, x):
-
+    def forward(self, x):        
         x = self.conv1(x)  # input is 3 x 32 x 32, output is 128 x 32 x 32
         x = self.bn1(x)  # <- problematic batchnoram (?)
         x = F.relu(x)
