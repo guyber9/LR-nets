@@ -279,7 +279,23 @@ def main_train():
                     {'params': net.bn6.parameters()}
                 ], lr=args.lr, weight_decay=weight_decay)
             else:
-                optimizer = optim.Adam(net.parameters(), lr=args.lr)
+                parameters = list(net.named_parameters())
+                # bn_params = [v for n, v in parameters if ("bn" in n) and v.requires_grad]
+                wght_params = [v for n, v in parameters if
+                               ((("conv" in n) or ("fc" in n)) and ("weight" in n)) and v.requires_grad]
+                prob_params = [v for n, v in parameters if (("alpha" in n) or ("betta" in n)) and v.requires_grad]
+                rest_params = [v for n, v in parameters if (("bn" in n) or ("bias" in n))]
+
+                optimizer = optim.Adam(
+                    [
+                        # {"params": bn_params, "weight_decay": 0 if args.no_bn_decay else args.weight_decay},
+                        {"params": prob_params, "weight_decay": probability_decay},
+                        {"params": wght_params, "weight_decay": weight_decay},
+                        {"params": rest_params, "weight_decay": 0},
+                    ],
+                    args.lr)
+
+                # optimizer = optim.Adam(net.parameters(), lr=args.lr)
                 # optimizer = optim.Adam([
                 #     {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
                 #     {'params': net.conv2.parameters(), 'weight_decay': probability_decay},

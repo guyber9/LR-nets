@@ -274,10 +274,10 @@ class LRNet_CIFAR10(nn.Module):
 #         self.bn4 = lrnet_nn.MyBatchNorm2d(num_features=256, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
 #         self.bn5 = lrnet_nn.MyBatchNorm2d(num_features=512, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
 #         self.bn6 = lrnet_nn.MyBatchNorm2d(num_features=512, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True)
-        self.dropout1 = nn.Dropout(0.5)
-        self.dropout2 = nn.Dropout(0.5)
         self.fc1 = nn.Linear(8192, 1024)
         self.fc2 = nn.Linear(1024, 10)
+        self.dropout1 = nn.Dropout(0.5)
+        self.dropout2 = nn.Dropout(0.5)
         self.dropout3 = nn.Dropout(0.2) # 0.2 was 93.13
         self.dropout4 = nn.Dropout(0.2) # 0.2 was 93.13
         self.dropout5 = nn.Dropout(0.2) # 0.2 was 93.13
@@ -288,7 +288,7 @@ class LRNet_CIFAR10(nn.Module):
         x = self.conv1(x)  # input is 3 x 32 x 32, output is 128 x 32 x 32
         x = self.bn1(x)  # <- problematic batchnoram (?)
         x = F.relu(x)
-        x = self.dropout3(x)
+        # x = self.dropout3(x)
         x = self.conv2(x)  # 128 x 32 x 32
         x = self.bn2(x)
         x = F.max_pool2d(x, 2)  # 128 x 16 x 16
@@ -298,7 +298,7 @@ class LRNet_CIFAR10(nn.Module):
         x = self.conv3(x)  # 256 x 16 x 16
         x = self.bn3(x)
         x = F.relu(x)
-        x = self.dropout5(x)
+        # x = self.dropout5(x)
         x = self.conv4(x)  # 256 x 16 x 16
         x = self.bn4(x)
         x = F.max_pool2d(x, 2)  # 256 x 8 x 8
@@ -308,7 +308,7 @@ class LRNet_CIFAR10(nn.Module):
         x = self.conv5(x)  # 512 x 8 x 8
         x = self.bn5(x)
         x = F.relu(x)
-        x = self.dropout7(x)
+        # x = self.dropout7(x)
         x = self.conv6(x)  # 512 x 8 x 8
         x = self.bn6(x)
         x = F.max_pool2d(x, 2)  # 512 x 4 x 4 (= 8192)

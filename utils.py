@@ -91,13 +91,14 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None):
         # print("output: " + str(outputs))
         # print("targets: " + str(targets))
 
-        loss = criterion(outputs, targets) + probability_decay * (torch.norm(net.conv1.alpha, 2) + torch.norm(net.conv1.betta, 2)
-                                                 + torch.norm(net.conv2.alpha, 2) + torch.norm(net.conv2.betta, 2)
-                                                 + torch.norm(net.conv3.alpha, 2) + torch.norm(net.conv3.betta, 2)
-                                                 + torch.norm(net.conv4.alpha, 2) + torch.norm(net.conv4.betta, 2)
-                                                 + torch.norm(net.conv5.alpha, 2) + torch.norm(net.conv5.betta, 2)
-                                                 + torch.norm(net.conv6.alpha, 2) + torch.norm(net.conv6.betta, 2)) \
-                                                 + weight_decay * (torch.norm(net.fc1.weight, 2) + (torch.norm(net.fc2.weight, 2)))
+        loss = criterion(outputs, targets)
+        # loss = criterion(outputs, targets) + probability_decay * (torch.norm(net.conv1.alpha, 2) + torch.norm(net.conv1.betta, 2)
+        #                                          + torch.norm(net.conv2.alpha, 2) + torch.norm(net.conv2.betta, 2)
+        #                                          + torch.norm(net.conv3.alpha, 2) + torch.norm(net.conv3.betta, 2)
+        #                                          + torch.norm(net.conv4.alpha, 2) + torch.norm(net.conv4.betta, 2)
+        #                                          + torch.norm(net.conv5.alpha, 2) + torch.norm(net.conv5.betta, 2)
+        #                                          + torch.norm(net.conv6.alpha, 2) + torch.norm(net.conv6.betta, 2)) \
+        #                                          + weight_decay * (torch.norm(net.fc1.weight, 2) + (torch.norm(net.fc2.weight, 2)))
 
 
         if torch.isnan(loss).any():
