@@ -485,7 +485,7 @@ class LRnetConv2d_ver2(nn.Module):
 
             # z = z1 + z2 - z3
             z = z2 - z3
-            # z = torch.relu(z) + self.eps  # TODO morning
+            z = torch.relu(z) + self.eps  # TODO morning
             z_bfr = z # TODO
             z = z + self.eps # TODO
             v1 = torch.sqrt(z)
