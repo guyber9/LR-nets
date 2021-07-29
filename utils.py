@@ -147,7 +147,7 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None):
     return (100.*correct/total)
 
 
-def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=None, eval_mode=True):
+def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=None, eval_mode=True, dont_save=False):
     # global best_acc
     if eval_mode:
         net.eval()
@@ -189,7 +189,7 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
     # Save checkpoint.
     acc = 100.*correct/total
     if (acc > best_acc) and not test_mode:
-        if not args.dont_save:
+        if (not args.dont_save) or dont_save:
             print('Saving..')
             state = {
                 'net': net.state_dict(),

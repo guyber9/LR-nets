@@ -42,7 +42,7 @@ def main_test():
     parser.add_argument('--pd', type=int, default=11, metavar='N', help='pd is 10**((-1)*pd)')
     parser.add_argument('--binary-mode', action='store_true', default=False, help='binary mode bit')
     parser.add_argument('--nohup', action='store_true', default=False, help='nohup mode')
-    parser.add_argument('--dont-save', action='store_true', default=False, help='dont_save mode')
+    parser.add_argument('--dont-save', action='store_true', default=True, help='dont_save mode')
 
     parser.add_argument('--adam', action='store_true', default=False, help='run with adam')
 
@@ -192,9 +192,9 @@ def main_test():
     print ("Original Trained Model (no ternary)")
     print ("###################################")
     print ("test Data Set")
-    test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=True)
+    test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=True, dont_save=True)
     print ("train Data Set")
-    test(net, criterion, 0, device, trainloader, args, 0, None, test_mode, None, eval_mode=True)
+    test(net, criterion, 0, device, trainloader, args, 0, None, test_mode, None, eval_mode=True, dont_save=True)
 
     if not args.full_prec:
         print ("###################################")
@@ -205,7 +205,7 @@ def main_test():
             # .update_use_batch_stats(True)
             print("iteration: " + str(idx))
             net.test_mode_switch(args.options, args.tickets)
-            acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=its_eval_mode)
+            acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=its_eval_mode, dont_save=True)
             net.inc_cntr()
             if (acc > best_acc):
                 best_acc = acc
@@ -219,7 +219,7 @@ def main_test():
         net.rst_cntr()
         print ("train Data Set")
         # test(net, trainloader)
-        test(net, criterion, 0, device, trainloader, args, 0, None, test_mode, None, eval_mode=its_eval_mode)
+        test(net, criterion, 0, device, trainloader, args, 0, None, test_mode, None, eval_mode=its_eval_mode, dont_save=True)
 
         print ("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
 

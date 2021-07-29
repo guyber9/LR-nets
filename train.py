@@ -279,6 +279,7 @@ def main_train():
                     {'params': net.bn6.parameters()}
                 ], lr=args.lr, weight_decay=weight_decay)
             else:
+                print('==> Building CIFAR10 optimizer')
                 parameters = list(net.named_parameters())
                 # bn_params = [v for n, v in parameters if ("bn" in n) and v.requires_grad]
                 wght_params = [v for n, v in parameters if
@@ -368,7 +369,7 @@ def main_train():
         best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=f, eval_mode=True)
         if args.sampled_test:
             net.test_mode_switch(1, 1)
-            best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, test_mode=True, f=f, eval_mode=True)  # note: model is saved only in above test method
+            best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, test_mode=False, f=f, eval_mode=True, dont_save=True)  # note: model is saved only in above test method
             print_summary(train_acc, best_acc, best_sampled_acc, sampled_acc, f)
 
         scheduler.step()
