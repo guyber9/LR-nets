@@ -383,14 +383,15 @@ def print_full_tensor(input, input_name):
     for i, val1 in enumerate(input):
         for j, val2 in enumerate(val1):
             for m, val3 in enumerate(val2):
-                if (i == 99) and (j == 31) and (m == 4):
+                if (i == 157) and (j == 43) and (m == 5):
                     print (str(input_name) + "(" + str(i) + ", " + str(j) + ", " + str(m) + ": " + str(val3))
 
 def print_fullllll_tensor(input, input_name):
     for i, val1 in enumerate(input):
         for j, val2 in enumerate(val1):
-            for m, val3 in enumerate(val2):
-                print (str(input_name) + "(" + str(i) + ", " + str(j) + ", " + str(m) + ": " + str(val3))
+                print (str(input_name) + "(" + str(i) + ", " + str(j) + ": " + str(val2))
+            # for m, val3 in enumerate(val2):
+            #     print (str(input_name) + "(" + str(i) + ", " + str(j) + ", " + str(m) + ": " + str(val3))
 
 def print_neg_val(input, input_name):
     for i, val1 in enumerate(input):

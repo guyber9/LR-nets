@@ -492,9 +492,9 @@ class LRnetConv2d_ver2(nn.Module):
 
             if torch.isnan(v1).any() or (z < 0).any():
                 print("channels are: ", str(self.in_channels), str(self.out_channels))
-                print("alpha: \n" + str(self.alpha[31]))
-                print("betta: \n" + str(self.betta[31]))
-                print("input_mean: \n" + str(input_mean[99]))
+                # print("alpha: \n" + str(self.alpha[31]))
+                # print("betta: \n" + str(self.betta[31]))
+                print("input_mean: \n" + str(input_mean[157]))
                 print("m isnan: " + str(torch.isnan(m).any()))
                 print("v isnan: " + str(torch.isnan(m).any()))
                 print("alpha isnan: " + str(torch.isnan(self.alpha).any()))
@@ -505,12 +505,16 @@ class LRnetConv2d_ver2(nn.Module):
                 print("z3 is negative: " + str((z3 < 0).any()))
                 print("z2 < z3: " + str((z2 < z3).any()))
                 print("v1 isnan: " + str(torch.isnan(v1).any()))
+                input_mean_2 = input_mean * input_mean
+                print_fullllll_tensor(input_mean_2[157], "input_mean_2[157]")
+                print("mean_pow2[31]: \n" +str(mean_pow2[31]))
+
                 print_full_tensor(z2, "z2")
                 print_full_tensor(z3, "z3")
                 print_neg_val(z_bfr, "z_bfr")
                 print("e_h_2: \n" +str(e_h_2.size()))
                 print("mean_square: \n" +str(mean_square.size()))
-                print("(input_mean*input_mean): \n" +str((input_mean*input_mean).size()))
+                print("input_mean^2.size: \n" +str(input_mean_2[157].size()))
                 print("mean_pow2: \n" +str(mean_pow2.size()))
                 exit(1)
 
