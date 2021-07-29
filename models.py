@@ -126,7 +126,7 @@ class LRNet_ver2(nn.Module):
         # self.bn2 = nn.BatchNorm2d(32)
         # self.bn3 = nn.BatchNorm2d(64)
 
-        self.fc1 = nn.Linear(6400, 512)
+        self.fc1 = nn.Linear(1024, 512)
         # self.fc1 = nn.Linear(6400, 512)
         self.fc2 = nn.Linear(512, 10)
 
