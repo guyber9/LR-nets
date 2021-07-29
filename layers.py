@@ -77,8 +77,11 @@ class LRnetConv2d(nn.Module):
 
     def initialize_weights(self, alpha, betta) -> None:
         print ("Initialize Weights")
-        self.alpha = nn.Parameter(torch.tensor(alpha, dtype=self.tensor_dtype, device=self.device))
-        self.betta = nn.Parameter(torch.tensor(betta, dtype=self.tensor_dtype, device=self.device))
+        # self.alpha = nn.Parameter(torch.tensor(alpha, dtype=self.tensor_dtype, device=self.device))
+        # self.betta = nn.Parameter(torch.tensor(betta, dtype=self.tensor_dtype, device=self.device))
+        with torch.no_grad():
+            self.alpha.copy_(torch.from_numpy(alpha))
+            self.betta.copy_(torch.from_numpy(betta))
 
     def train_mode_switch(self) -> None:
         self.test_forward = False

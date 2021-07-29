@@ -172,6 +172,7 @@ def main_train():
                 net.fc1.bias = test_model.fc1.bias
                 net.fc2.weight = test_model.fc2.weight
                 net.fc2.bias = test_model.fc2.bias
+
     elif args.mnist:
         if args.full_prec:
             print ("Training FP-Net for MNIST")
