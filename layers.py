@@ -30,7 +30,7 @@ class LRnetConv2d(nn.Module):
         test_forward: bool = False,
         output_sample: bool = True,
         binary_mode: bool = False,
-        eps: int = 1e-05,
+        eps: int = 1e-07,
     ):
         super(LRnetConv2d, self).__init__()
         self.in_channels, self.out_channels, self.kernel_size, self.stride, self.padding, self.dilation, self.groups, self.clusters = in_channels, out_channels, kernel_size, stride, padding, dilation, groups, clusters
@@ -58,8 +58,8 @@ class LRnetConv2d(nn.Module):
         self.discrete_mat = torch.as_tensor(discrete_prob, dtype=self.tensor_dtype, device=self.device)
         self.discrete_square_mat = self.discrete_mat * self.discrete_mat
 
-        self.num_of_options = 30
-        self.test_weight_arr = []
+        # self.num_of_options = 30
+        # self.test_weight_arr = []
         self.cntr = 0
         self.sigmoid = torch.nn.Sigmoid()
         self.reset_parameters()
@@ -95,8 +95,8 @@ class LRnetConv2d(nn.Module):
         # sampled = torch.distributions.Categorical(prob_mat).sample() - 1
         # self.test_weight = torch.tensor(sampled, dtype=self.tensor_dtype, device=self.device)
 
-        self.num_of_options = num_of_options
-        self.test_weight_arr = []
+        # self.num_of_options = num_of_options
+        # self.test_weight_arr = []
         if tickets > 1:
             m = torch.distributions.Multinomial(tickets, prob_mat)
         else:
