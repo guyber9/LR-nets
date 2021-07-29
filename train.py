@@ -52,7 +52,7 @@ def main_train():
 
     parser.add_argument('--options', type=int, default=1, metavar='N', help='num_of_options for rand')
     parser.add_argument('--tickets', type=int, default=1, metavar='N', help='num of tickets')
-    parser.add_argument('--sampled-test', action='store_true', default=False, help='sampled validation in training')
+    parser.add_argument('--sampled-test', action='store_true', default=True, help='sampled validation in training')
 
     parser.add_argument('--ver2', action='store_true', default=False, help='discretization for layer output')
     parser.add_argument('--cudnn', action='store_true', default=False, help='using cudnn benchmark=True')
@@ -377,12 +377,11 @@ def main_train():
     for epoch in range(start_epoch, start_epoch+args.epochs):
         net.train_mode_switch()
         train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
-        best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=f, eval_mode=True)
+        best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=f, eval_mode=True, dont_save=True)  # note: model is saved only in test method below
         if args.sampled_test:
             net.test_mode_switch(1, 1)
-            best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, test_mode=False, f=f, eval_mode=True, dont_save=True)  # note: model is saved only in above test method
+            best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, test_mode=False, f=f, eval_mode=True, dont_save=False)
             print_summary(train_acc, best_acc, best_sampled_acc, sampled_acc, f)
-
         scheduler.step()
 
     if args.save_file != 'no_need_to_save':
