@@ -136,14 +136,13 @@ class LRNet_ver2(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x)  # 32 x 24 x 24
-        m,v = x
-        print("m 1size: " + str(m.size()))
+        # m,v = x
         # print("m1: ", m)
         # print("v1: ", v)
         # assertnan(m, "m1")
         # assertnan(v, "v1")
         x = self.bn1(x)
-        m,v = x
+        # m,v = x
         # assertnan(m, "mbn1")
         # assertnan(v, "vbn1")
         # x = self.conv2(x)  # 32 x 20 x 20
@@ -158,13 +157,11 @@ class LRNet_ver2(nn.Module):
         # assertnan(m, "mbn2")
         # assertnan(v, "vbn2")
         x = self.conv3(x)  # 64 x 16 x 16 / 64 x 20 x 20
-        print("x1 size: " + str(x.size()))
         assertnan(x, "x3")
         x = self.bn3(x)
         assertnan(x, "bn3")
         x = F.relu(x)
         x = F.max_pool2d(x, 2)  # 64 x 8 x 8 / # 64 x 10 x 10
-        print("x2 size: " + str(x.size()))
         x = torch.flatten(x, 1)  # 1024
         x = self.fc1(x)
         x = F.relu(x)
