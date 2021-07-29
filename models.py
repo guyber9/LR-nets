@@ -175,27 +175,18 @@ class LRNet_ver2(nn.Module):
 
     def train_mode_switch(self):
         self.conv1.train_mode_switch()
-        self.conv2.train_mode_switch()
+        # self.conv2.train_mode_switch()
         self.conv3.train_mode_switch()
         self.bn1.train_mode_switch()
-        self.bn2.train_mode_switch()
+        # self.bn2.train_mode_switch()
 
     def test_mode_switch(self, options, tickets):
         self.conv1.test_mode_switch(options, tickets)
-        self.conv2.test_mode_switch(options, tickets)
+        # self.conv2.test_mode_switch(options, tickets)
         self.conv3.test_mode_switch(options, tickets)
         self.bn1.test_mode_switch()
-        self.bn2.test_mode_switch()
+        # self.bn2.test_mode_switch()
 
-    def inc_cntr(self):
-        self.conv1.cntr = self.conv1.cntr + 1
-        self.conv2.cntr = self.conv2.cntr + 1
-        self.conv3.cntr = self.conv3.cntr + 1
-
-    def rst_cntr(self):
-        self.conv1.cntr = 0
-        self.conv2.cntr = 0
-        self.conv3.cntr = 0
 
 ##################
 ## CIFAR10 nets ##
