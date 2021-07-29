@@ -252,12 +252,12 @@ def main_train():
                 # optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
                 optimizer = optim.Adam([
                     {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
+                    # {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
                     {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
                     {'params': net.fc1.parameters(), 'weight_decay': weight_decay},
                     {'params': net.fc2.parameters(), 'weight_decay': weight_decay},
                     {'params': net.bn1.parameters()},
-                    {'params': net.bn2.parameters()},
+                    # {'params': net.bn2.parameters()},
                     {'params': net.bn3.parameters()}
                 ], lr=args.lr, weight_decay=weight_decay)
             else:
