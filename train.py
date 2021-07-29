@@ -158,20 +158,30 @@ def main_train():
                 net.conv5.initialize_weights(alpha5, betta5)
                 net.conv6.initialize_weights(alpha6, betta6)
 
-                def normalize_layer(w):
-                    return w
+                state_dict = test_model.state_dict()
+                with torch.no_grad():
+                    net.conv1.bias.copy_(state_dict['conv1.bias'])
+                    net.conv2.bias.copy_(state_dict['conv2.bias'])
+                    net.conv3.bias.copy_(state_dict['conv3.bias'])
+                    net.conv4.bias.copy_(state_dict['conv4.bias'])
+                    net.conv5.bias.copy_(state_dict['conv5.bias'])
+                    net.conv6.bias.copy_(state_dict['conv6.bias'])
+                    net.fc1.weight.copy_(state_dict['fc1.weight'])
+                    net.fc1.bias.copy_(state_dict['fc1.bias'])
+                    net.fc2.weight.copy_(state_dict['fc2.weight'])
+                    net.fc2.bias.copy_(state_dict['fc2.bias'])
 
-                net.conv1.bias = normalize_layer(test_model.conv1.bias)
-                net.conv2.bias = normalize_layer(test_model.conv2.bias)
-                net.conv3.bias = normalize_layer(test_model.conv3.bias)
-                net.conv4.bias = normalize_layer(test_model.conv4.bias)
-                net.conv5.bias = normalize_layer(test_model.conv5.bias)
-                net.conv6.bias = normalize_layer(test_model.conv6.bias)
-
-                net.fc1.weight = test_model.fc1.weight
-                net.fc1.bias = test_model.fc1.bias
-                net.fc2.weight = test_model.fc2.weight
-                net.fc2.bias = test_model.fc2.bias
+                # net.conv1.bias = normalize_layer(test_model.conv1.bias)
+                # net.conv2.bias = normalize_layer(test_model.conv2.bias)
+                # net.conv3.bias = normalize_layer(test_model.conv3.bias)
+                # net.conv4.bias = normalize_layer(test_model.conv4.bias)
+                # net.conv5.bias = normalize_layer(test_model.conv5.bias)
+                # net.conv6.bias = normalize_layer(test_model.conv6.bias)
+                #
+                # net.fc1.weight = test_model.fc1.weight
+                # net.fc1.bias = test_model.fc1.bias
+                # net.fc2.weight = test_model.fc2.weight
+                # net.fc2.bias = test_model.fc2.bias
 
     elif args.mnist:
         if args.full_prec:
