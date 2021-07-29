@@ -114,8 +114,8 @@ class LRNet_ver2(nn.Module):
 
     def __init__(self):
         super(LRNet_ver2, self).__init__()
-        self.conv1 = lrnet_nn.LRnetConv2d(1, 32, 5, 1 ,output_sample=False)
-        self.conv2 = lrnet_nn.LRnetConv2d_ver2(32, 32, 5, 1, output_sample=False)
+        self.conv1 = lrnet_nn.LRnetConv2d(1, 32, 5, 2 ,output_sample=False)
+        # self.conv2 = lrnet_nn.LRnetConv2d_ver2(32, 32, 5, 1, output_sample=False)
         self.conv3 = lrnet_nn.LRnetConv2d_ver2(32, 64, 5, 1, output_sample=True)
 
         # self.conv1 = lrnet_nn.LRnetConv2d(1, 32, 5, 1)
@@ -126,17 +126,18 @@ class LRNet_ver2(nn.Module):
         # self.bn2 = nn.BatchNorm2d(32)
         # self.bn3 = nn.BatchNorm2d(64)
 
-        self.fc1 = nn.Linear(4096, 512)
+        self.fc1 = nn.Linear(6400, 512)
         # self.fc1 = nn.Linear(6400, 512)
         self.fc2 = nn.Linear(512, 10)
 
         self.bn1 = lrnet_nn.LRBatchNorm2d(32)
-        self.bn2 = lrnet_nn.LRBatchNorm2d(32)
+        # self.bn2 = lrnet_nn.LRBatchNorm2d(32)
         self.bn3 = nn.BatchNorm2d(64)
 
     def forward(self, x):
         x = self.conv1(x)  # 32 x 24 x 24
-        # m,v = x
+        m,v = x
+        print("m 1size: " + str(m.size()))
         # print("m1: ", m)
         # print("v1: ", v)
         # assertnan(m, "m1")
@@ -145,23 +146,26 @@ class LRNet_ver2(nn.Module):
         m,v = x
         # assertnan(m, "mbn1")
         # assertnan(v, "vbn1")
-        x = self.conv2(x)  # 32 x 20 x 20
+        # x = self.conv2(x)  # 32 x 20 x 20
         # m,v = x
         # print("m2: ", m)
         # print("v2: ", v)
         # m,v = x
         # assertnan(m, "m2")
         # assertnan(v, "v2")
-        x = self.bn2(x)
+        # x = self.bn2(x)
         # m,v = x
         # assertnan(m, "mbn2")
         # assertnan(v, "vbn2")
-        x = self.conv3(x)  # 64 x 16 x 16
+        x = self.conv3(x)  # 64 x 16 x 16 / 64 x 20 x 20
+        m,v = x
+        print("m2 size: " + str(m.size()))
         assertnan(x, "x3")
         x = self.bn3(x)
         assertnan(x, "bn3")
         x = F.relu(x)
-        x = F.max_pool2d(x, 2)  # 64 x 8 x 8
+        x = F.max_pool2d(x, 2)  # 64 x 8 x 8 / # 64 x 10 x 10
+        print("x size: " + str(x.size()))
         x = torch.flatten(x, 1)  # 1024
         x = self.fc1(x)
         x = F.relu(x)

@@ -52,7 +52,7 @@ def main_train():
 
     parser.add_argument('--options', type=int, default=1, metavar='N', help='num_of_options for rand')
     parser.add_argument('--tickets', type=int, default=1, metavar='N', help='num of tickets')
-    parser.add_argument('--sampled-test', action='store_true', default=True, help='sampled validation in training')
+    parser.add_argument('--sampled-test', action='store_true', default=False, help='sampled validation in training')
 
     parser.add_argument('--ver2', action='store_true', default=False, help='discretization for layer output')
     parser.add_argument('--cudnn', action='store_true', default=False, help='using cudnn benchmark=True')
