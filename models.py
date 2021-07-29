@@ -158,14 +158,13 @@ class LRNet_ver2(nn.Module):
         # assertnan(m, "mbn2")
         # assertnan(v, "vbn2")
         x = self.conv3(x)  # 64 x 16 x 16 / 64 x 20 x 20
-        m,v = x
-        print("m2 size: " + str(m.size()))
+        print("x1 size: " + str(x.size()))
         assertnan(x, "x3")
         x = self.bn3(x)
         assertnan(x, "bn3")
         x = F.relu(x)
         x = F.max_pool2d(x, 2)  # 64 x 8 x 8 / # 64 x 10 x 10
-        print("x size: " + str(x.size()))
+        print("x2 size: " + str(x.size()))
         x = torch.flatten(x, 1)  # 1024
         x = self.fc1(x)
         x = F.relu(x)
