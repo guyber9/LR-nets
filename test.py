@@ -51,6 +51,7 @@ def main_test():
     parser.add_argument('--options', type=int, default=10, metavar='N', help='num_of_options for rand')
     parser.add_argument('--tickets', type=int, default=1, metavar='N', help='num of tickets')
     parser.add_argument('--ver2', action='store_true', default=False, help='discretization for layer output')
+    parser.add_argument('--cudnn', action='store_true', default=False, help='using cudnn benchmark=True')
 
     parser.add_argument('--train-mode', action='store_true', default=False, help='train_mode also for test (collect stats')
     parser.add_argument('--collect-stats', action='store_true', default=False, help='collect_stats for test')
@@ -71,8 +72,14 @@ def main_test():
         train_kwargs.update(cuda_kwargs)
         test_kwargs.update(cuda_kwargs)
 
-    # torch.backends.cudnn.deterministic = True
-    # torch.backends.cudnn.benchmark = False
+    if device == 'cuda':
+        if args.cudnn:
+            print('==> Using cudnn.benchmark = True')
+            cudnn.benchmark = True
+        else:
+            print('==> Using cudnn.benchmark = False && torch.backends.cudnn.deterministic = True')
+            torch.backends.cudnn.deterministic = True
+            torch.backends.cudnn.benchmark = False
 
     best_acc = 0  # best test accuracy
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
