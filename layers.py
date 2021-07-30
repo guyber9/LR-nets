@@ -634,10 +634,10 @@ class LRBatchNorm2d(nn.BatchNorm2d):
                 # variance = torch.relu(variance) + self.eps # TODO morning
                 std = torch.sqrt(variance)
 
-                # norm_m = ((m - mean) / std)
-                # norm_v = (v / std)
-                norm_m = (iweights * ((m - mean) / std)) + ibias
-                norm_v = iweights * (v / std)
+                norm_m = ((m - mean) / std)
+                norm_v = (v / std)
+                # norm_m = (iweights * ((m - mean) / std)) + ibias
+                # norm_v = iweights * (v / std)
 
                 if torch.isnan(mean).any():
                     print("channels are: " + str(self.channels))
@@ -670,6 +670,8 @@ class LRBatchNorm2d(nn.BatchNorm2d):
                     exit(1)
                 return norm_m, norm_v
             else:
+                print ("wrong branch")
+                exit(1)
                 # print("branch 0")
                 mean = input.mean([0, 2, 3])
                 # use biased var in train
