@@ -183,6 +183,11 @@ class LRNet_ver2(nn.Module):
         self.bn1.test_mode_switch()
         # self.bn2.test_mode_switch()
 
+    def use_batch_stats_switch(self, new_val):
+        self.bn1.use_batch_stats_switch(new_val)
+
+    def collect_stats_switch(self, new_val):
+        self.bn1.collect_stats_switch(new_val)
 
 ##################
 ## CIFAR10 nets ##

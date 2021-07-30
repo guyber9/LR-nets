@@ -534,36 +534,46 @@ class LRnetConv2d_ver2(nn.Module):
             else:
                 return m1, v1
 
+# class LRBatchNorm2d(nn.BatchNorm2d):
+#     def __init__(
+#         self,
+#         channels: int,
+#         eps: int = 1e-05,
+#         momentum: int = 0.9,
+#         test_forward: bool = False
+#     ):
+#         super(LRBatchNorm2d, self).__init__()
+#         self.channels, self.eps, self.test_forward, self.momentum = channels, eps, test_forward, momentum
 
-class LRBatchNorm2d(nn.Module):
-
-    def __init__(
-        self,
-        channels: int,
-        eps: int = 1e-05,
-        momentum: int = 0.9,
-        test_forward: bool = False
-    ):
-        super(LRBatchNorm2d, self).__init__()
-        self.channels, self.eps, self.test_forward, self.momentum = channels, eps, test_forward, momentum
+class LRBatchNorm2d(nn.BatchNorm2d):
+    def __init__(self, num_features, eps=1e-5, momentum=0.1,
+                 affine=True, track_running_stats=True, test_forward = False):
+        super(MyBatchNorm2d, self).__init__(
+            num_features, eps, momentum, affine, track_running_stats)
         self.test_forward = test_forward
         if torch.cuda.is_available():
             self.device = 'cuda'
         else:
             self.device = 'cpu'
+
         self.tensor_dtype = torch.float32
+        self.use_batch_stats = True
+        self.collect_stats = False
 
-        self.weight = torch.nn.Parameter(torch.ones([self.channels], dtype=torch.float32, device=self.device))
-        self.bias = torch.nn.Parameter(torch.zeros([self.channels], dtype=self.tensor_dtype, device=self.device))
-
-        self.bn = nn.BatchNorm2d(self.channels)
-
-        self.reset_parameters()
+        # self.weight = torch.nn.Parameter(torch.ones([self.channels], dtype=torch.float32, device=self.device))
+        # self.bias = torch.nn.Parameter(torch.zeros([self.channels], dtype=self.tensor_dtype, device=self.device))
+        # self.reset_parameters()
 
     def reset_parameters(self) -> None:
         nn.init.ones_(self.weight)
         if self.bias is not None:
             nn.init.zeros_(self.bias)
+
+    def use_batch_stats_switch(self, new_val) -> None:
+        self.use_batch_stats = new_val
+
+    def collect_stats_switch(self, new_val) -> None:
+        self.collect_stats = new_val
 
     def train_mode_switch(self) -> None:
         self.test_forward = False
@@ -573,74 +583,107 @@ class LRBatchNorm2d(nn.Module):
 
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
+            if self.collect_stats:
+                # print("branch 0")
+                mean = input.mean([0, 2, 3])
+                # use biased var in train
+                var = input.var([0, 2, 3], unbiased=False)
+                n = input.numel() / input.size(1)
+                with torch.no_grad():
+                    self.running_mean = self.momentum * mean + (1 - self.momentum) * self.running_mean
+                    # update running_var with unbiased var
+                    self.running_var = self.momentum * var * n / (n - 1) + (1 - self.momentum) * self.running_var
+            else:
+                # return self.bn(input)
+                mean = self.test_running_mean
+                var = self.test_running_var
+            input = (input - mean[None, :, None, None]) / (torch.sqrt(var[None, :, None, None] + self.eps))
+            if self.affine:
+                input = input * self.weight[None, :, None, None] + self.bias[None, :, None, None]
             return input
-            # return self.bn(input)
         else:
-            m, v = input
+            if self.training or self.use_batch_stats:
+                m, v = input
+                # print("#################################")
+                # print("m: \n" + str(m))
+                # print("#################################")
+                # print("mean:")
+                mean = mean_over_channel(m)
+                # print("#################################")
+                # print("mean_square:")
+                mean_square = mean_over_channel(m * m)
+                # print("#################################")
+                # print("sigma_square:")
+                sigma_square = mean_over_channel(v * v)
 
-            # print("#################################")
-            # print("m: \n" + str(m))
-            # print("#################################")
-            # print("mean:")
-            mean = mean_over_channel(m)
-            # print("#################################")
-            # print("mean_square:")
-            mean_square = mean_over_channel(m * m)
-            # print("#################################")
-            # print("sigma_square:")
-            sigma_square = mean_over_channel(v * v)
+                weights_tmp = self.weight.repeat(m.size(0), 1)
+                iweights = weights_tmp.view(m.size(0), m.size(1), 1, 1)
+                bias_tmp = self.weight.repeat(m.size(0), 1)
+                ibias = bias_tmp.view(m.size(0), m.size(1), 1, 1)
 
-            weights_tmp = self.weight.repeat(m.size(0), 1)
-            iweights = weights_tmp.view(m.size(0), m.size(1), 1, 1)
-            bias_tmp = self.weight.repeat(m.size(0), 1)
-            ibias = bias_tmp.view(m.size(0), m.size(1), 1, 1)
+                # self.running_mean = self.momentum * mean + (1 - self.momentum) * self.running_mean
 
-            # self.running_mean = self.momentum * mean + (1 - self.momentum) * self.running_mean
+                # print("mean size: " + str(mean.size()))
+                # print("mean_square size: " + str(mean_square.size()))
+                # print("sigma_square size: " + str(sigma_square.size()))
+                # print("iweights size: " + str(iweights.size()))
+                # print("ibias size: " + str(ibias.size()))
 
-            # print("mean size: " + str(mean.size()))
-            # print("mean_square size: " + str(mean_square.size()))
-            # print("sigma_square size: " + str(sigma_square.size()))
-            # print("iweights size: " + str(iweights.size()))
-            # print("ibias size: " + str(ibias.size()))
+                variance = sigma_square + mean_square - (mean * mean) + self.eps
+                # variance = torch.relu(variance) + self.eps # TODO morning
+                std = torch.sqrt(variance)
 
-            variance = sigma_square + mean_square - (mean * mean) + self.eps
-            # variance = torch.relu(variance) + self.eps # TODO morning
-            std = torch.sqrt(variance)
+                # norm_m = ((m - mean) / std)
+                # norm_v = (v / std)
+                norm_m = (iweights * ((m - mean) / std)) + ibias
+                norm_v = iweights * (v / std)
 
-            norm_m = ((m - mean) / std)
-            norm_v = (v / std)
-            # norm_m = (iweights * ((m - mean) / std)) + ibias
-            # norm_v = iweights * (v / std)
+                if torch.isnan(mean).any():
+                    print("channels are: " + str(self.channels))
+                    print("m isnan: " + str(torch.isnan(m).any()))
+                    print("v isnan: " + str(torch.isnan(v).any()))
+                    print("mean isnan: " + str(torch.isnan(mean).any()))
+                    print("norm_m isnan: " + str(torch.isnan(norm_m).any()))
+                    print("norm_v isnan: " + str(torch.isnan(norm_v).any()))
+                    exit(1)
 
-            if torch.isnan(mean).any():
-                print("channels are: " + str(self.channels))
-                print("m isnan: " + str(torch.isnan(m).any()))
-                print("v isnan: " + str(torch.isnan(v).any()))
-                print("mean isnan: " + str(torch.isnan(mean).any()))
-                print("norm_m isnan: " + str(torch.isnan(norm_m).any()))
-                print("norm_v isnan: " + str(torch.isnan(norm_v).any()))
-                exit(1)
+                if torch.isnan(variance).any():
+                    print("channels are: " + str(self.channels))
+                    print("m isnan: " + str(torch.isnan(m).any()))
+                    print("v isnan: " + str(torch.isnan(v).any()))
+                    print("variance isnan: " + str(torch.isnan(variance).any()))
+                    print("norm_m isnan: " + str(torch.isnan(norm_m).any()))
+                    print("norm_v isnan: " + str(torch.isnan(norm_v).any()))
+                    exit(1)
 
-            if torch.isnan(variance).any():
-                print("channels are: " + str(self.channels))
-                print("m isnan: " + str(torch.isnan(m).any()))
-                print("v isnan: " + str(torch.isnan(v).any()))
-                print("variance isnan: " + str(torch.isnan(variance).any()))
-                print("norm_m isnan: " + str(torch.isnan(norm_m).any()))
-                print("norm_v isnan: " + str(torch.isnan(norm_v).any()))
-                exit(1)
+                if torch.isnan(std).any():
+                    print("channels are: " + str(self.channels))
+                    print("variance: \n" + str(variance))
+                    print("variance is negative: " + str((variance < 0).any()))
+                    print("m isnan: " + str(torch.isnan(m).any()))
+                    print("v isnan: " + str(torch.isnan(v).any()))
+                    print("variance isnan: " + str(torch.isnan(variance).any()))
+                    print("std isnan: " + str(torch.isnan(std).any()))
+                    print("norm_m isnan: " + str(torch.isnan(norm_m).any()))
+                    print("norm_v isnan: " + str(torch.isnan(norm_v).any()))
+                    exit(1)
+                return norm_m, norm_v
+            else:
+                # print("branch 0")
+                mean = input.mean([0, 2, 3])
+                # use biased var in train
+                var = input.var([0, 2, 3], unbiased=False)
+                n = input.numel() / input.size(1)
+                with torch.no_grad():
+                    self.running_mean = self.momentum * mean + (1 - self.momentum) * self.running_mean
+                    # update running_var with unbiased var
+                    self.running_var = self.momentum * var * n / (n - 1) + (1 - self.momentum) * self.running_var
 
-            if torch.isnan(std).any():
-                print("channels are: " + str(self.channels))
-                print("variance: \n" + str(variance))
-                print("variance is negative: " + str((variance < 0).any()))
-                print("m isnan: " + str(torch.isnan(m).any()))
-                print("v isnan: " + str(torch.isnan(v).any()))
-                print("variance isnan: " + str(torch.isnan(variance).any()))
-                print("std isnan: " + str(torch.isnan(std).any()))
-                print("norm_m isnan: " + str(torch.isnan(norm_m).any()))
-                print("norm_v isnan: " + str(torch.isnan(norm_v).any()))
-                exit(1)
+                input = (input - mean[None, :, None, None]) / (torch.sqrt(var[None, :, None, None] + self.eps))
+                if self.affine:
+                    input = input * self.weight[None, :, None, None] + self.bias[None, :, None, None]
+
+                return input
 
             # print("m size: " + str(m.size()))
             # print("v size: " + str(v.size()))
@@ -702,7 +745,6 @@ class LRBatchNorm2d(nn.Module):
             # # print("var of sampled_output: " + str(torch.var(sampled_output)))
             # # exit(1)
 
-            return norm_m, norm_v
 
 class MyBatchNorm2d(nn.BatchNorm2d):
     def __init__(self, num_features, eps=1e-5, momentum=0.1,

@@ -378,12 +378,23 @@ def main_train():
 
     for epoch in range(start_epoch, start_epoch+args.epochs):
         net.train_mode_switch()
+        if args.ver2:
+            net.use_batch_stats_switch(True)
         train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
         best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=f, eval_mode=True, dont_save=True)  # note: model is saved only in test method below
         if args.sampled_test:
-            net.test_mode_switch(1, 1)
-            best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, test_mode=False, f=f, eval_mode=True, dont_save=False)
-            print_summary(train_acc, best_acc, best_sampled_acc, sampled_acc, f)
+            if args.ver2:
+                net.test_mode_switch(1, 1)
+                net.collect_stats_switch(True)
+                test(net, criterion, epoch, device, testloader, args, 0, None, test_mode=True, f=f, eval_mode=True, dont_save=True)
+                net.collect_stats_switch(False)
+                best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, test_mode=False, f=f, eval_mode=True, dont_save=False)
+                print_summary(train_acc, best_acc, best_sampled_acc, sampled_acc, f)
+            else:
+                net.test_mode_switch(1, 1)
+                best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, test_mode=False, f=f, eval_mode=True, dont_save=False)
+                print_summary(train_acc, best_acc, best_sampled_acc, sampled_acc, f)
+
         scheduler.step()
 
     if args.save_file != 'no_need_to_save':
