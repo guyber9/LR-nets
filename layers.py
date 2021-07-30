@@ -548,7 +548,7 @@ class LRnetConv2d_ver2(nn.Module):
 class LRBatchNorm2d(nn.BatchNorm2d):
     def __init__(self, num_features, eps=1e-5, momentum=0.1,
                  affine=True, track_running_stats=True, test_forward = False):
-        super(MyBatchNorm2d, self).__init__(
+        super(LRBatchNorm2d, self).__init__(
             num_features, eps, momentum, affine, track_running_stats)
         self.test_forward = test_forward
         if torch.cuda.is_available():
