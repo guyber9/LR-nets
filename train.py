@@ -54,7 +54,7 @@ def main_train():
     parser.add_argument('--tickets', type=int, default=1, metavar='N', help='num of tickets')
     parser.add_argument('--sampled-test', action='store_true', default=False, help='sampled validation in training')
 
-    parser.add_argument('--no-bn-bias-decay', action='store_true', default=False, help='dd weight decay to bn(weight/bias) and bias')
+    parser.add_argument('--add-bn-bias-decay', action='store_true', default=False, help='dd weight decay to bn(weight/bias) and bias')
 
     parser.add_argument('--ver2', action='store_true', default=False, help='discretization for layer output')
     parser.add_argument('--cudnn', action='store_true', default=False, help='using cudnn benchmark=True')
@@ -305,7 +305,7 @@ def main_train():
                         # {"params": bn_params, "weight_decay": 0 if args.no_bn_decay else args.weight_decay},
                         {"params": prob_params, "weight_decay": probability_decay},
                         {"params": wght_params, "weight_decay": weight_decay},
-                        {"params": rest_params, "weight_decay": 0 if args.no_bn_bias_decay else weight_decay},
+                        {"params": rest_params, "weight_decay": weight_decay if args.add_bn_bias_decay else 0},
                     ],
                     args.lr)
 
