@@ -636,8 +636,9 @@ class LRBatchNorm2d(nn.BatchNorm2d):
 
                 norm_m = ((m - mean) / std)
                 norm_v = (v / std)
-                # norm_m = (iweights * ((m - mean) / std)) + ibias
-                # norm_v = iweights * (v / std)
+                if self.affine:
+                    norm_m = norm_m * self.weight[None, :, None, None] + self.bias[None, :, None, None]
+                    norm_v = norm_v * self.weight[None, :, None, None]
 
                 if torch.isnan(mean).any():
                     print("channels are: " + str(self.channels))
