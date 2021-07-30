@@ -595,8 +595,8 @@ class LRBatchNorm2d(nn.BatchNorm2d):
                     self.running_var = self.momentum * var * n / (n - 1) + (1 - self.momentum) * self.running_var
             else:
                 # return self.bn(input)
-                mean = self.test_running_mean
-                var = self.test_running_var
+                mean = self.running_mean
+                var = self.running_var
             input = (input - mean[None, :, None, None]) / (torch.sqrt(var[None, :, None, None] + self.eps))
             if self.affine:
                 input = input * self.weight[None, :, None, None] + self.bias[None, :, None, None]
