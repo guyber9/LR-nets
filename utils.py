@@ -189,7 +189,7 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
     # Save checkpoint.
     acc = 100.*correct/total
     if (acc > best_acc) and not test_mode:
-        if (not args.dont_save) or (not dont_save):
+        if (not args.dont_save) and (not dont_save):
             print('Saving..')
             state = {
                 'net': net.state_dict(),
