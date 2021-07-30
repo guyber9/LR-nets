@@ -583,25 +583,25 @@ class LRBatchNorm2d(nn.BatchNorm2d):
 
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
-            return input
-            # if self.collect_stats:
-            #     # print("branch 0")
-            #     mean = input.mean([0, 2, 3])
-            #     # use biased var in train
-            #     var = input.var([0, 2, 3], unbiased=False)
-            #     n = input.numel() / input.size(1)
-            #     with torch.no_grad():
-            #         self.running_mean = self.momentum * mean + (1 - self.momentum) * self.running_mean
-            #         # update running_var with unbiased var
-            #         self.running_var = self.momentum * var * n / (n - 1) + (1 - self.momentum) * self.running_var
-            # else:
-            #     # return self.bn(input)
-            #     mean = self.running_mean
-            #     var = self.running_var
-            # input = (input - mean[None, :, None, None]) / (torch.sqrt(var[None, :, None, None] + self.eps))
-            # if self.affine:
-            #     input = input * self.weight[None, :, None, None] + self.bias[None, :, None, None]
             # return input
+            if self.collect_stats:
+                # print("branch 0")
+                mean = input.mean([0, 2, 3])
+                # use biased var in train
+                var = input.var([0, 2, 3], unbiased=False)
+                n = input.numel() / input.size(1)
+                with torch.no_grad():
+                    self.running_mean = self.momentum * mean + (1 - self.momentum) * self.running_mean
+                    # update running_var with unbiased var
+                    self.running_var = self.momentum * var * n / (n - 1) + (1 - self.momentum) * self.running_var
+            else:
+                # return self.bn(input)
+                mean = self.running_mean
+                var = self.running_var
+            input = (input - mean[None, :, None, None]) / (torch.sqrt(var[None, :, None, None] + self.eps))
+            if self.affine:
+                input = input * self.weight[None, :, None, None] + self.bias[None, :, None, None]
+            return input
         else:
             if self.training or self.use_batch_stats:
                 m, v = input
