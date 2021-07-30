@@ -147,7 +147,7 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None):
     return (100.*correct/total)
 
 
-def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=None, eval_mode=True, dont_save=False):
+def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=None, eval_mode=True, dont_save=True):
     # global best_acc
     if eval_mode:
         net.eval()
