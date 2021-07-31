@@ -274,11 +274,11 @@ class LRNet_CIFAR10(nn.Module):
         self.fc2 = nn.Linear(1024, 10)
         self.dropout1 = nn.Dropout(0.5)
         self.dropout2 = nn.Dropout(0.5)
-        self.dropout3 = nn.Dropout(0.25) # 0.2 was 93.13
-        self.dropout4 = nn.Dropout(0.25) # 0.2 was 93.13
-        self.dropout5 = nn.Dropout(0.25) # 0.2 was 93.13
-        self.dropout6 = nn.Dropout(0.25) # 0.2 was 93.13
-        self.dropout7 = nn.Dropout(0.25) # 0.2 was 93.13
+        self.dropout3 = nn.Dropout(0.2) # 0.2 was 93.13
+        self.dropout4 = nn.Dropout(0.2) # 0.2 was 93.13
+        self.dropout5 = nn.Dropout(0.2) # 0.2 was 93.13
+        self.dropout6 = nn.Dropout(0.2) # 0.2 was 93.13
+        self.dropout7 = nn.Dropout(0.2) # 0.2 was 93.13
         
     def forward(self, x): 
         x = self.conv1(x)  # input is 3 x 32 x 32, output is 128 x 32 x 32
