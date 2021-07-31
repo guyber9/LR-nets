@@ -351,7 +351,7 @@ class LRnetConv2d_ver2(nn.Module):
         transposed: bool = True,
         test_forward: bool = False,
         output_sample: bool = False,
-        eps: int = 1.0, #1e-05, # TODO today
+        eps: int = 1e-05, # TODO today
     ):
         super(LRnetConv2d_ver2, self).__init__()
         self.in_channels, self.out_channels, self.kernel_size, self.stride, self.padding, self.dilation, self.groups, self.clusters = in_channels, out_channels, kernel_size, stride, padding, dilation, groups, clusters
@@ -453,7 +453,7 @@ class LRnetConv2d_ver2(nn.Module):
 
             # mean of input
             # input_mean = 2 * (1 - torch.erf((-1) * m / v)) - 1
-            cdf = (1 + torch.erf((-1) * m / (v * np.sqrt(2)))) / 2
+            cdf = (1 + torch.erf((-1) * m / (v * np.sqrt(2) + self.eps))) / 2
             input_mean = 2 * (1 - cdf) - 1
 
             # print("input_mean: " + str(input_mean))
