@@ -307,7 +307,7 @@ def main_train():
                         # {"params": bn_params, "weight_decay": 0 if args.no_bn_decay else args.weight_decay},
                         {"params": prob_params, "weight_decay": probability_decay},
                         {"params": wght_params, "weight_decay": weight_decay},
-                        {"params": rest_params, "weight_decay": weight_decay if args.add_bn_bias_decay else 0},
+                        {"params": rest_params, "weight_decay": bn_decay if args.add_bn_bias_decay else 0},
                     ],
                     args.lr)
 
