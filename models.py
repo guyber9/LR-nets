@@ -142,7 +142,6 @@ class LRNet_ver2(nn.Module):
         # print("v1: ", v)
         # assertnan(m, "m1")
         # assertnan(v, "v1")
-        assertnan(x, "x1")
         x = self.bn1(x)
         # m,v = x
         # assertnan(m, "mbn1")
