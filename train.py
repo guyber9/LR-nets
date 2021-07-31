@@ -40,6 +40,7 @@ def main_train():
     parser.add_argument('--num', type=int, default=4, metavar='N',  help='how many batches to wait before logging training status')
     parser.add_argument('--wd', type=int, default=4, metavar='N', help='wd is 10**((-1)*wd)')
     parser.add_argument('--pd', type=int, default=11, metavar='N', help='pd is 10**((-1)*pd)')
+    parser.add_argument('--bn-wd', type=int, default=4, metavar='N', help='pd is 10**((-1)*bn_wd)')
     parser.add_argument('--binary-mode', action='store_true', default=False, help='binary mode bit')
     parser.add_argument('--nohup', action='store_true', default=False, help='nohup mode')
     parser.add_argument('--dont-save', action='store_true', default=False, help='dont_save mode')
@@ -241,6 +242,7 @@ def main_train():
         # TODO
         net.load_state_dict(torch.load('../model_2/LRNet/saved_model/best_cifar10_cnn.pt'))
 
+    bn_decay = 10**((-1)*args.bn_wd)
     weight_decay = 10**((-1)*args.wd)
     probability_decay = 10**((-1)*args.pd)
     criterion = nn.CrossEntropyLoss()
