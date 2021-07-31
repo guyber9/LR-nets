@@ -520,18 +520,16 @@ class LRNet_CIFAR10_ver2(nn.Module):
         self.bn5.test_mode_switch()
         # self.bn6.test_mode_switch()
 
-    def inc_cntr(self):
-        self.conv1.cntr = self.conv1.cntr + 1
-        self.conv2.cntr = self.conv2.cntr + 1
-        self.conv3.cntr = self.conv3.cntr + 1
-        self.conv4.cntr = self.conv4.cntr + 1
-        self.conv5.cntr = self.conv5.cntr + 1
-        self.conv6.cntr = self.conv6.cntr + 1
+    def use_batch_stats_switch(self, new_val):
+        self.bn1.use_batch_stats_switch(new_val)
+        self.bn2.use_batch_stats_switch(new_val)
+        self.bn3.use_batch_stats_switch(new_val)
+        self.bn4.use_batch_stats_switch(new_val)
+        self.bn5.use_batch_stats_switch(new_val)
 
-    def rst_cntr(self):
-        self.conv1.cntr = 0
-        self.conv2.cntr = 0
-        self.conv3.cntr = 0
-        self.conv4.cntr = 0
-        self.conv5.cntr = 0
-        self.conv6.cntr = 0
+    def collect_stats_switch(self, new_val):
+        self.bn1.collect_stats_switch(new_val)
+        self.bn2.collect_stats_switch(new_val)
+        self.bn3.collect_stats_switch(new_val)
+        self.bn4.collect_stats_switch(new_val)
+        self.bn5.collect_stats_switch(new_val)
