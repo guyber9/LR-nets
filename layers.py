@@ -201,10 +201,9 @@ class LRnetConv2d(nn.Module):
                 print("alpha isnan: " + str(torch.isnan(self.alpha).any()))
                 print("betta isnan: " + str(torch.isnan(self.betta).any()))
                 print("z1 is negative: " + str((z1 < 0).any()))
-                print_neg_val(z_bfr, "z_bfr")
-                print_neg_val(z1, "z1")
+                # print_neg_val(z_bfr, "z_bfr")
+                # print_neg_val(z1, "z1")
                 print("v isnan: " + str(torch.isnan(v).any()))
-                print_neg_val(z_bfr, "z_bfr")
                 exit(1)
 
             if self.output_sample:
@@ -515,7 +514,7 @@ class LRnetConv2d_ver2(nn.Module):
 
                 print_full_tensor(z2, "z2")
                 print_full_tensor(z3, "z3")
-                print_neg_val(z_bfr, "z_bfr")
+                # print_neg_val(z_bfr, "z_bfr")
                 print("e_h_2: \n" +str(e_h_2.size()))
                 print("mean_square: \n" +str(mean_square.size()))
                 print("input_mean^2.size: \n" +str(input_mean_2[157].size()))
