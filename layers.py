@@ -451,7 +451,10 @@ class LRnetConv2d_ver2(nn.Module):
             mean = torch.sum(mean_tmp, dim=4)
 
             # mean of input
-            input_mean = 2 * (1 - torch.erf((-1) * m / v)) - 1
+            # input_mean = 2 * (1 - torch.erf((-1) * m / v)) - 1
+            cdf = (1 + torch.erf((-1) * m / (v * np.sqrt(2)))) / 2
+            input_mean = 2 * (1 - cdf) - 1
+
             # print("input_mean: " + str(input_mean))
 
             m1 = F.conv2d(input_mean, mean, self.bias, self.stride, self.padding, self.dilation, self.groups) # TODO bias
