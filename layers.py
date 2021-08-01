@@ -432,6 +432,7 @@ class LRnetConv2d_ver2(nn.Module):
 
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
+            print(self.test_weight)
             sign_input = torch.sign(input)
             return F.conv2d(sign_input, self.test_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
         else:
