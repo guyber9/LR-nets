@@ -452,7 +452,7 @@ class LRnetConv2d_ver2(nn.Module):
 
             # mean of input
             # input_mean = 2 * (1 - torch.erf((-1) * m / v)) - 1
-            cdf = (1 + torch.erf((-1) * m / (v * np.sqrt(2) + self.eps))) / 2
+            cdf = 0.5 * (1 + torch.erf((-1) * m / (v * np.sqrt(2) + self.eps)))
             input_mean = 2 * (1 - cdf) - 1
 
             # print("input_mean: " + str(input_mean))
@@ -472,16 +472,16 @@ class LRnetConv2d_ver2(nn.Module):
             # print("mean_square: " + str(mean_square))
             # print("e_h_2: " + str(e_h_2))
 
-            if torch.cuda.is_available():
-                torch.backends.cudnn.deterministic = True
+            # if torch.cuda.is_available():
+            #     torch.backends.cudnn.deterministic = True
 
             # z1 = F.conv2d((input_mean*input_mean), mean_pow2, None, self.stride, self.padding, self.dilation, self.groups)
             # z1 = m1 * m1
             z2 = F.conv2d(e_h_2, mean_square, None, self.stride, self.padding, self.dilation, self.groups)
             z3 = F.conv2d((input_mean*input_mean), mean_pow2, None, self.stride, self.padding, self.dilation, self.groups)
 
-            if torch.cuda.is_available():
-                torch.backends.cudnn.deterministic = False
+            # if torch.cuda.is_available():
+            #     torch.backends.cudnn.deterministic = False
 
             # print("z2: " + str(z2))
             # print("z3: " + str(z3))
