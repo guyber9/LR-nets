@@ -878,3 +878,32 @@ class LRnet_sign_prob(nn.Module):
                 return m1 + epsilon * v1
             else:
                 return m1, v1    
+
+class LRnetLinear(nn.Module):
+    def __init__(self, size_in, size_out, output_sample = True):
+        super(LRnetLinear, self).__init__()
+        self.size_in, self.size_out = size_in, size_out
+        self.weights = nn.Parameter(torch.Tensor(size_out, size_in))
+        self.bias = nn.Parameter(torch.Tensor(size_out))
+
+        # initialize weights and biases
+        nn.init.kaiming_uniform_(self.weights, a=math.sqrt(5))  # weight init
+        fan_in, _ = nn.init._calculate_fan_in_and_fan_out(self.weights)
+        bound = 1 / math.sqrt(fan_in)
+        nn.init.uniform_(self.bias, -bound, bound)  # bias init
+
+    def forward(self, input):
+        if self.test_forward:
+            w_times_x = torch.mm(input, self.weights.t())
+            return torch.add(w_times_x, self.bias)  # w times x + b
+        else:
+            m, v = input
+            m_times_x = torch.mm(m, self.weights.t())
+            m1 = torch.add(m_times_x, self.bias)  # m times x + b
+            v1 = torch.mm(v, self.weights.t())
+
+            if self.output_sample:
+                epsilon = torch.normal(0, 1, size=m1.size(), dtype=self.tensor_dtype, requires_grad=False, device=self.device)
+                return m1 + epsilon * v1
+            else:
+                return m1, v1
