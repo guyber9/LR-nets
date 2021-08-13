@@ -86,7 +86,8 @@ def main_train():
     best_sampled_epoch = 0
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
-    writer_name = "runs/" + str('mnist' if args.mnist else 'cifar10') + str('' if args.ver2 else '_ver2')
+#     writer_name = "runs/" + str('mnist' if args.mnist else 'cifar10') + str('' if args.ver2 else '_ver2')
+    writer_name = "runs/" + str('mnist' if args.mnist else 'cifar10') + str('_last_run')
     writer = SummaryWriter(writer_name)
     
     # Data
