@@ -53,6 +53,8 @@ class LRnetConv2d(nn.Module):
         self.test_weight = torch.empty([D_0, D_1, D_2, D_3], dtype=torch.float32, device=self.device)
         self.bias = torch.nn.Parameter(torch.empty([out_channels], dtype=self.tensor_dtype, device=self.device))
 
+        self.weight = torch.nn.Parameter(torch.ones([out_channels], dtype=self.tensor_dtype, device=self.device))
+        
         discrete_prob = np.array([-1.0, 0.0, 1.0])
         discrete_prob = np.tile(discrete_prob, [self.out_channels, self.in_channels, self.kernel_size, self.kernel_size, 1])
         self.discrete_mat = torch.as_tensor(discrete_prob, dtype=self.tensor_dtype, device=self.device)
@@ -115,7 +117,7 @@ class LRnetConv2d(nn.Module):
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
             # self.test_weight = torch.tensor(self.test_weight_arr[self.cntr],dtype=self.tensor_dtype,device=self.device)
-            return F.conv2d(input, self.test_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
+            return (F.conv2d(input, self.test_weight, self.bias, self.stride, self.padding, self.dilation, self.groups))
         else:
             # if(self.in_channels == 128) and (self.out_channels == 128):
             #     print ("alpha: " + str(self.alpha))
@@ -208,7 +210,7 @@ class LRnetConv2d(nn.Module):
 
             if self.output_sample:
                 epsilon = torch.normal(0, 1, size=z1.size(), dtype=self.tensor_dtype, requires_grad=False, device=self.device)
-                return m + epsilon * v
+                return (m + epsilon * v) * self.weight[None, :, None, None]
             else:
                 return m, v
 
@@ -432,7 +434,6 @@ class LRnetConv2d_ver2(nn.Module):
 
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
-            print(self.test_weight)
             sign_input = torch.sign(input)
             return F.conv2d(sign_input, self.test_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
         else:
@@ -569,9 +570,10 @@ class LRBatchNorm2d(nn.BatchNorm2d):
         # self.reset_parameters()
 
     def reset_parameters(self) -> None:
-        nn.init.ones_(self.weight)
-        if self.bias is not None:
-            nn.init.zeros_(self.bias)
+        if self.affine:
+            nn.init.ones_(self.weight)
+            if self.bias is not None:
+                nn.init.zeros_(self.bias)
 
     def use_batch_stats_switch(self, new_val) -> None:
         self.use_batch_stats = new_val
@@ -621,10 +623,10 @@ class LRBatchNorm2d(nn.BatchNorm2d):
                 # print("sigma_square:")
                 sigma_square = mean_over_channel(v * v)
 
-                weights_tmp = self.weight.repeat(m.size(0), 1)
-                iweights = weights_tmp.view(m.size(0), m.size(1), 1, 1)
-                bias_tmp = self.weight.repeat(m.size(0), 1)
-                ibias = bias_tmp.view(m.size(0), m.size(1), 1, 1)
+#                 weights_tmp = self.weight.repeat(m.size(0), 1)
+#                 iweights = weights_tmp.view(m.size(0), m.size(1), 1, 1)
+#                 bias_tmp = self.weight.repeat(m.size(0), 1)
+#                 ibias = bias_tmp.view(m.size(0), m.size(1), 1, 1)
 
                 # self.running_mean = self.momentum * mean + (1 - self.momentum) * self.running_mean
 
@@ -829,3 +831,50 @@ class MyBatchNorm2d(nn.BatchNorm2d):
             input = input * self.weight[None, :, None, None] + self.bias[None, :, None, None]
 
         return input
+
+    
+class LRnet_sign_prob(nn.Module):
+
+    def __init__(
+        self,
+        test_forward: bool = False,
+        output_sample: bool = True,
+        eps: int = 1e-05, # TODO today
+    ):
+        super(LRnet_sign_prob, self).__init__()
+        self.test_forward = test_forward
+        self.output_sample = output_sample
+        self.eps = eps
+        if torch.cuda.is_available():
+            self.device = 'cuda'
+        else:
+            self.device = 'cpu'
+        self.tensor_dtype = torch.float32
+
+    def train_mode_switch(self) -> None:
+        self.test_forward = False
+
+    def test_mode_switch(self, num_of_options, tickets=1) -> None:
+        self.test_forward = True
+
+    def forward(self, input: Tensor) -> Tensor:
+        if self.test_forward:
+            return torch.sign(input)
+        else:
+            m, v = input
+
+            # mean of input
+            # input_mean = 2 * (1 - torch.erf((-1) * m / v)) - 1
+            cdf = 0.5 * (1 + torch.erf((-1) * m / (v * np.sqrt(2) + self.eps)))
+            m1 = 2 * (1 - cdf) - 1
+
+            # sigma_square = mean_square - mean_pow2
+            e_h_2 = torch.ones(m.size(), dtype=self.tensor_dtype, device=self.device)
+            z = e_h_2 - (m1*m1) + self.eps # TODO;
+            v1 = torch.sqrt(z)
+
+            if self.output_sample:
+                epsilon = torch.normal(0, 1, size=z.size(), dtype=self.tensor_dtype, requires_grad=False, device=self.device)
+                return m1 + epsilon * v1
+            else:
+                return m1, v1    

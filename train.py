@@ -13,6 +13,8 @@ import os
 from models import *
 from utils import find_sigm_weights, train, test, print_summary, copy_net2net
 
+from torch.utils.tensorboard import SummaryWriter
+import matplotlib.pyplot as plt
 
 def main_train():
     # TODO
@@ -84,6 +86,9 @@ def main_train():
     best_sampled_epoch = 0
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
+    writer_name = "runs/" + str('mnist' if args.mnist else 'cifar10') + str('' if args.ver2 else '_ver2')
+    writer = SummaryWriter(writer_name)
+    
     # Data
     if args.cifar10:
         print('==> Preparing CIFAR10 data..')
@@ -129,16 +134,15 @@ def main_train():
     print('==> Building model..')
     if args.cifar10:
         if args.full_prec:
-            if args.ver2:
-                print("add net")
-                exit(1)
+            if args.ver2:                
+                net = FPNet_CIFAR10_ver2()
             else:
                 print("Training FP-Net for CIFAR10")
                 net = FPNet_CIFAR10()
         else:
             if args.ver2:
                 print ("Training LR-Net for CIFAR10 | ver2")
-                net = LRNet_CIFAR10_ver2()
+                net = LRNet_CIFAR10_ver2(writer)
             else:
                 print ("Training LR-Net for CIFAR10")
                 net = LRNet_CIFAR10()
@@ -188,12 +192,35 @@ def main_train():
 
     elif args.mnist:
         if args.full_prec:
-            print ("Training FP-Net for MNIST")
-            net = FPNet().to(device)
+            if args.ver2:
+                print ("Training FP-Net for MNIST | ver2")
+                net = FPNet_ver2().to(device)                       
+            else:
+                print ("Training FP-Net for MNIST")
+                net = FPNet().to(device)
         else:
             if args.ver2:
                 print ("Training LR-Net for MNIST | ver2")
-                net = LRNet_ver2().to(device)
+                net = LRNet_ver2(writer).to(device)
+
+                print("Loading Parameters for MNIST | ver2")
+                test_model = FPNet_ver2().to(device)
+                test_model.load_state_dict(torch.load('saved_models/mnist_fp_ver2.pt'))
+                alpha1, betta1 = find_sigm_weights(test_model.conv1.weight, False)
+                alpha2, betta2 = find_sigm_weights(test_model.conv2.weight, False)
+
+                net.conv1.initialize_weights(alpha1, betta1)
+                net.conv2.initialize_weights(alpha2, betta2)
+
+                state_dict = test_model.state_dict()
+                with torch.no_grad():
+                    net.conv1.bias.copy_(state_dict['conv1.bias'])
+                    net.conv2.bias.copy_(state_dict['conv2.bias'])
+                    net.fc1.weight.copy_(state_dict['fc1.weight'])
+                    net.fc1.bias.copy_(state_dict['fc1.bias'])
+                    net.fc2.weight.copy_(state_dict['fc2.weight'])
+                    net.fc2.bias.copy_(state_dict['fc2.bias'])                
+                
             else:
                 print ("Training LR-Net for MNIST")
                 net = LRNet().to(device)
@@ -253,14 +280,14 @@ def main_train():
         elif args.mnist:
             if args.ver2:
                 # TODO
-                # optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
+#                 optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
                 optimizer = optim.Adam([
                     {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
                     # {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
+                    {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
                     {'params': net.fc1.parameters(), 'weight_decay': weight_decay},
                     {'params': net.fc2.parameters(), 'weight_decay': weight_decay},
-                    {'params': net.bn1.parameters()},
+#                     {'params': net.bn1.parameters()},
                     # {'params': net.bn2.parameters()},
                     {'params': net.bn3.parameters()}
                 ], lr=args.lr, weight_decay=weight_decay)
@@ -275,8 +302,9 @@ def main_train():
                 ], lr=args.lr, weight_decay=weight_decay)
         elif args.cifar10:
             if args.ver2:
+                print('==> Building CIFAR10 | ver2 optimizer')                
                 # TODO
-                # optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
+#                 optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
                 optimizer = optim.Adam([
                     {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
                     {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
@@ -300,35 +328,51 @@ def main_train():
                 wght_params = [v for n, v in parameters if
                                ((("conv" in n) or ("fc" in n)) and ("weight" in n)) and v.requires_grad]
                 prob_params = [v for n, v in parameters if (("alpha" in n) or ("betta" in n)) and v.requires_grad]
-                rest_params = [v for n, v in parameters if (("bn" in n) or ("bias" in n))]
+                bn_params   = [v for n, v in parameters if (("bn" in n) and ("weight" in n))]
+                rest_params = [v for n, v in parameters if (("bias" in n))]                 
+#                 rest_params = [v for n, v in parameters if
+#                                ((("conv" in n) or ("fc" in n)) and ("bias" in n)) and v.requires_grad]
+#                 rest_params = [v for n, v in parameters if (("bn" in n) or ("bias" in n))]  <- original
+#                 rest_params = [v for n, v in parameters if (("bn" in n) and ("weight" in n))]
+# conv
+# alpha <- prob_params 
+# betta <- prob_params 
+# bias  <- rest_params
+# BN
+# weight <- bn_params
+# bias   <- rest_params
+# FC
+# weight <- wght_params
+# bias   <- rest_params
 
-                optimizer = optim.Adam(
-                    [
-                        # {"params": bn_params, "weight_decay": 0 if args.no_bn_decay else args.weight_decay},
-                        {"params": prob_params, "weight_decay": probability_decay},
-                        {"params": wght_params, "weight_decay": weight_decay},
-                        {"params": rest_params, "weight_decay": bn_decay if args.add_bn_bias_decay else 0},
-                    ],
-                    args.lr)
+#                 optimizer = optim.Adam(
+#                     [
+#                         # {"params": bn_params, "weight_decay": 0 if args.no_bn_decay else args.weight_decay},
+#                         {"params": prob_params, "weight_decay": probability_decay},
+#                         {"params": wght_params, "weight_decay": weight_decay},
+# #                         {"params": bn_params,   "weight_decay": bn_decay if args.add_bn_bias_decay else 0},
+#                         {"params": bn_params,   "weight_decay": bn_decay},
+#                         {"params": rest_params, "weight_decay": weight_decay},                        
+#                     ],
+#                     args.lr)
 
                 # optimizer = optim.Adam(net.parameters(), lr=args.lr)
-                # optimizer = optim.Adam([
-                #     {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
-                #     {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
-                #     {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
-                #     {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
-                #     {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
-                #     {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
-                #     {'params': net.fc1.parameters(), 'weight_decay': weight_decay}, # TODO
-                #     {'params': net.fc2.parameters(), 'weight_decay': weight_decay}, # TODO
-                #     {'params': net.bn1.parameters()},
-                #     {'params': net.bn2.parameters()},
-                #     {'params': net.bn3.parameters()},
-                #     {'params': net.bn4.parameters()},
-                #     {'params': net.bn5.parameters()},
-                #     {'params': net.bn6.parameters()}
-                # ], lr=args.lr)
-                # ], lr = args.lr, weight_decay = weight_decay)
+                optimizer = optim.Adam([
+                    {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
+                    {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
+                    {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
+                    {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
+                    {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
+                    {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
+                    {'params': net.fc1.parameters(), 'weight_decay': weight_decay}, # TODO
+                    {'params': net.fc2.parameters(), 'weight_decay': weight_decay}, # TODO
+                    {'params': net.bn1.parameters()},
+                    {'params': net.bn2.parameters()},
+                    {'params': net.bn3.parameters()},
+                    {'params': net.bn4.parameters()},
+                    {'params': net.bn5.parameters()},
+                    {'params': net.bn6.parameters()}
+                ], lr = args.lr, weight_decay = weight_decay)
         if args.annealing_sched:
             scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
         else:
@@ -378,26 +422,55 @@ def main_train():
         print(args)
         f = None
 
+
+########################################################################    
+    images, labels = next(iter(testloader))
+    images, labels = images.cuda(), labels.cuda()    
+#     example_data, example_target = examples.next()    
+#     example_data, example_target = examples.next()
+#     for i in range(0,6):
+#         plt.subplot(2,3,i+1)
+#         plt.imshow(example_data[i][0], cmap='gray')
+#     img_grid = torchvision.utils.make_grid(example_data)
+#     writer.add_image('my_images', img_grid)
+#     writer.add_graph(net, images)
+#########################################################################
+
     for epoch in range(start_epoch, start_epoch+args.epochs):
         net.train_mode_switch()
         if args.ver2:
             net.use_batch_stats_switch(True)
-        train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f)
-        best_acc, best_epoch, _ = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=f, eval_mode=True, dont_save=True)  # note: model is saved only in test method below
+#             net.tensorboard = True
+        train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f, writer)
+        writer.add_scalar("acc/train", train_acc, epoch)
+#         if args.ver2:
+#             net.tensorboard = False
+        best_acc, best_epoch, test_acc = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=f, eval_mode=True, dont_save=True)  # note: model is saved only in test method below
+        writer.add_scalar("cont acc/test", test_acc, epoch)
         if args.sampled_test:
             if args.ver2:
                 net.test_mode_switch(1, 1)
                 net.collect_stats_switch(True)
                 test(net, criterion, epoch, device, testloader, args, 0, None, test_mode=True, f=f, eval_mode=True, dont_save=True)
                 net.collect_stats_switch(False)
+                
+                net.tensorboard = True
                 best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, test_mode=False, f=f, eval_mode=True, dont_save=False)
+                writer.add_scalar("sampled_acc/test", sampled_acc, epoch)
+                net.tensorboard = False
+                net.iteration = net.iteration + 1 
+
                 print_summary(train_acc, best_acc, best_sampled_acc, sampled_acc, f)
             else:
-                net.test_mode_switch(1, 1)
-                best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, test_mode=False, f=f, eval_mode=True, dont_save=False)
-                print_summary(train_acc, best_acc, best_sampled_acc, sampled_acc, f)
+                for idx in range(0, args.options):
+                    net.test_mode_switch(1, 1)
+                    best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, test_mode=False, f=f, eval_mode=True, dont_save=False)
+                    print_summary(train_acc, best_acc, best_sampled_acc, sampled_acc, f)
 
         scheduler.step()
+
+    writer.flush()
+    writer.close()
 
     if args.save_file != 'no_need_to_save':
         f.close()

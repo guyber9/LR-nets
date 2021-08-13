@@ -74,7 +74,7 @@ import numpy as np
 #     return (100. * correct / len(test_loader.dataset))
 
 # Training
-def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None):
+def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, writer=None):
     print('\nEpoch: %d' % epoch)
     net.train()
     train_loss = 0
@@ -143,6 +143,7 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None):
         # else:
         #     progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
         #                  % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+    writer.add_scalar("Loss/train", loss, epoch)
     print('{} seconds'.format(time.time() - t0))
     return (100.*correct/total)
 
@@ -215,8 +216,8 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
     return best_acc, best_epoch, acc
 
 
-_, term_width = os.popen('stty size', 'r').read().split()
-term_width = int(term_width)
+# _, term_width = os.popen('stty size', 'r').read().split()
+# term_width = int(term_width)
 
 TOTAL_BAR_LENGTH = 65.
 last_time = time.time()
