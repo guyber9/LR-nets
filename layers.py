@@ -592,7 +592,7 @@ class LRBatchNorm2d(nn.BatchNorm2d):
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
             # return input
-            if True or self.collect_stats:
+            if self.collect_stats:
                 # print("branch 0")
                 mean = input.mean([0, 2, 3])
                 # use biased var in train

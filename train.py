@@ -407,7 +407,7 @@ def main_train():
 #                 print(bias_decay)
 #                 print(no_decay)        
 
-                optimizer = optim.AdamW(
+                optimizer = optim.Adam(
                     [
                         {"params": list(prob_decay), "weight_decay": probability_decay},
                         {"params": list(wd_decay),   "weight_decay": weight_decay},
