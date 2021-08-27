@@ -406,7 +406,7 @@ class LRnetConv2d_ver2(nn.Module):
     def train_mode_switch(self) -> None:
         self.test_forward = False
 
-    def test_mode_switch(self, num_of_options, tickets=1) -> None:
+    def test_mode_switch(self, num_of_options=1, tickets=1) -> None:
         with torch.no_grad():
             self.test_forward = True
             sigmoid_func = torch.nn.Sigmoid()
@@ -455,7 +455,8 @@ class LRnetConv2d_ver2(nn.Module):
             # mean of input
             # input_mean = 2 * (1 - torch.erf((-1) * m / v)) - 1
             cdf = 0.5 * (1 + torch.erf((-1) * m / (v * np.sqrt(2) + self.eps)))
-            input_mean = 2 * (1 - cdf) - 1
+            p = 1 - cdf
+            input_mean = 2 * p - 1
 
             # print("input_mean: " + str(input_mean))
 
@@ -468,7 +469,8 @@ class LRnetConv2d_ver2(nn.Module):
             mean_pow2 = mean * mean
 
             # sigma_square = mean_square - mean_pow2
-            e_h_2 = torch.ones(m.size(), dtype=self.tensor_dtype, device=self.device)
+#             e_h_2 = torch.ones(m.size(), dtype=self.tensor_dtype, device=self.device)
+            e_h_2 = 1*p + 1*(1-p)
 
             # print("mean_square_tmp: " + str(mean_square_tmp))
             # print("mean_square: " + str(mean_square))
@@ -590,7 +592,7 @@ class LRBatchNorm2d(nn.BatchNorm2d):
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
             # return input
-            if self.collect_stats:
+            if True or self.collect_stats:
                 # print("branch 0")
                 mean = input.mean([0, 2, 3])
                 # use biased var in train
@@ -838,7 +840,7 @@ class LRnet_sign_prob(nn.Module):
     def __init__(
         self,
         test_forward: bool = False,
-        output_sample: bool = True,
+        output_sample: bool = False,
         eps: int = 1e-05, # TODO today
     ):
         super(LRnet_sign_prob, self).__init__()
@@ -866,10 +868,13 @@ class LRnet_sign_prob(nn.Module):
             # mean of input
             # input_mean = 2 * (1 - torch.erf((-1) * m / v)) - 1
             cdf = 0.5 * (1 + torch.erf((-1) * m / (v * np.sqrt(2) + self.eps)))
-            m1 = 2 * (1 - cdf) - 1
+            p = (1 - cdf)
+            m1 = 2 * p - 1
 
             # sigma_square = mean_square - mean_pow2
-            e_h_2 = torch.ones(m.size(), dtype=self.tensor_dtype, device=self.device)
+#             e_h_2 = torch.ones(m.size(), dtype=self.tensor_dtype, device=self.device)
+            e_h_2 = 1*p + 1*(1-p)
+            
             z = e_h_2 - (m1*m1) + self.eps # TODO;
             v1 = torch.sqrt(z)
 
@@ -880,11 +885,18 @@ class LRnet_sign_prob(nn.Module):
                 return m1, v1    
 
 class LRnetLinear(nn.Module):
-    def __init__(self, size_in, size_out, output_sample = True):
+    def __init__(self, size_in, size_out, output_sample = True, test_forward = False, eps: int = 1e-05):
         super(LRnetLinear, self).__init__()
         self.size_in, self.size_out = size_in, size_out
         self.weights = nn.Parameter(torch.Tensor(size_out, size_in))
         self.bias = nn.Parameter(torch.Tensor(size_out))
+        self.output_sample = output_sample
+        self.test_forward = test_forward
+        self.eps = eps
+        if torch.cuda.is_available():
+            self.device = 'cuda'
+        else:
+            self.device = 'cpu'        
 
         # initialize weights and biases
         nn.init.kaiming_uniform_(self.weights, a=math.sqrt(5))  # weight init
@@ -892,6 +904,12 @@ class LRnetLinear(nn.Module):
         bound = 1 / math.sqrt(fan_in)
         nn.init.uniform_(self.bias, -bound, bound)  # bias init
 
+    def train_mode_switch(self) -> None:
+        self.test_forward = False
+
+    def test_mode_switch(self, num_of_options, tickets=1) -> None:
+        self.test_forward = True
+        
     def forward(self, input):
         if self.test_forward:
             w_times_x = torch.mm(input, self.weights.t())
@@ -900,10 +918,13 @@ class LRnetLinear(nn.Module):
             m, v = input
             m_times_x = torch.mm(m, self.weights.t())
             m1 = torch.add(m_times_x, self.bias)  # m times x + b
-            v1 = torch.mm(v, self.weights.t())
+            v1 = torch.sqrt(torch.mm(v*v, self.weights.t()*self.weights.t()) + self.eps)
 
             if self.output_sample:
-                epsilon = torch.normal(0, 1, size=m1.size(), dtype=self.tensor_dtype, requires_grad=False, device=self.device)
+#                 epsilon = torch.normal(0, 1, size=m1.size(), dtype=self.tensor_dtype, requires_grad=False, device=self.device)
+                epsilon = torch.normal(0, 1, size=m1.size(), requires_grad=False, device=self.device)                
                 return m1 + epsilon * v1
             else:
                 return m1, v1
+
+            

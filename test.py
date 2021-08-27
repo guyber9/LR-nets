@@ -7,6 +7,7 @@ import torch.backends.cudnn as cudnn
 import torchvision
 import torchvision.transforms as transforms
 from torchvision import datasets, transforms
+from torch.utils.tensorboard import SummaryWriter
 
 import os
 import argparse
@@ -58,6 +59,9 @@ def main_test():
 
     parser.add_argument('--suffix', action='store', default='', help='suffix for saved model name')
 
+    parser.add_argument('--no-shuffle', action='store_true', default=False, help='shuffle the data')
+    parser.add_argument('--writer', action='store_true', default=False, help='collect stats')
+
     args = parser.parse_args()
 
     use_cuda = torch.cuda.is_available()
@@ -68,7 +72,7 @@ def main_test():
     if use_cuda:
         cuda_kwargs = {'num_workers': args.num_workers,
                        'pin_memory': True,
-                       'shuffle': True}
+                       'shuffle': not args.no_shuffle}
         train_kwargs.update(cuda_kwargs)
         test_kwargs.update(cuda_kwargs)
 
@@ -81,6 +85,14 @@ def main_test():
             torch.backends.cudnn.deterministic = True
             torch.backends.cudnn.benchmark = False
 
+    if args.writer:
+        writer_a = 'mnist' if args.mnist else 'cifar10'
+        writer_b = '_ver2' if args.ver2 else ''
+        writer_name = "runs/test_" + str(writer_a) + str(writer_b) + '/' + str(writer_a) + str(writer_b) + str(args.suffix)
+        writer = SummaryWriter(writer_name)
+    else:
+        writer = None
+    
     best_acc = 0  # best test accuracy
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
@@ -106,9 +118,6 @@ def main_test():
         testset = torchvision.datasets.CIFAR10(
             root='./data', train=False, download=True, transform=transform_test)
         testloader = torch.utils.data.DataLoader(testset, **test_kwargs)
-
-        classes = ('plane', 'car', 'bird', 'cat', 'deer',
-                   'dog', 'frog', 'horse', 'ship', 'truck')
     elif args.mnist:
         print('==> Preparing MNIST data..')
         transform=transforms.Compose([
@@ -135,7 +144,7 @@ def main_test():
             net = FPNet_CIFAR10()
         elif args.ver2:
             print("Testing LR-Net for CIFAR10 | ver2")
-            net = LRNet_CIFAR10_ver2()
+            net = LRNet_CIFAR10_ver2(writer)
         else:
             print ("Testing LR-Net for CIFAR10")
             net = LRNet_CIFAR10()
@@ -199,7 +208,9 @@ def main_test():
     print ("Original Trained Model (no ternary)")
     print ("###################################")
     print ("test Data Set")
+    net.tensorboard_train = True if args.writer else False
     test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=True, dont_save=True)
+    net.tensorboard_train = False
     print ("train Data Set")
     test(net, criterion, 0, device, trainloader, args, 0, None, test_mode, None, eval_mode=True, dont_save=True)
 
@@ -212,24 +223,28 @@ def main_test():
             # .update_use_batch_stats(True)
             print("iteration: " + str(idx))
             net.test_mode_switch(args.options, args.tickets)
+            net.tensorboard_test = True if args.writer else False
             acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=its_eval_mode, dont_save=True)
-            net.inc_cntr()
-            if (acc > best_acc):
-                best_acc = acc
-                dataset_name = 'mnist' if args.mnist else 'cifar10'
-                isBinary = '_binary' if args.binary_mode else '_ternary'
-                isVer2 = '_ver2' if args.ver2 else ''
-                torch.save(net.state_dict(),
-                           "trained_models/" + str(dataset_name) + "_lrnet" + str(isBinary) + str(isVer2) + ".pt")
+            net.tensorboard_test = False                
+#             if (acc > best_acc):
+#                 best_acc = acc
+#                 dataset_name = 'mnist' if args.mnist else 'cifar10'
+#                 isBinary = '_binary' if args.binary_mode else '_ternary'
+#                 isVer2 = '_ver2' if args.ver2 else ''
+#                 torch.save(net.state_dict(),
+#                            "trained_models/" + str(dataset_name) + "_lrnet" + str(isBinary) + str(isVer2) + ".pt")
         print ("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
 
-        net.rst_cntr()
         print ("train Data Set")
         # test(net, trainloader)
         test(net, criterion, 0, device, trainloader, args, 0, None, test_mode, None, eval_mode=its_eval_mode, dont_save=True)
 
         print ("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
 
+        if args.writer:
+            writer.flush()
+            writer.close()
+    
 if __name__ == '__main__':
     main_test()
 

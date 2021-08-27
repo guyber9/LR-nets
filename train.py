@@ -86,8 +86,12 @@ def main_train():
     best_sampled_epoch = 0
     start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
-#     writer_name = "runs/" + str('mnist' if args.mnist else 'cifar10') + str('_ver2' if args.ver2 else '')
-    writer_name = "runs/" + str('mnist' if args.mnist else 'cifar10') + str('_last_run')
+    if args.save_file != 'no_need_to_save':
+        writer_suffix = '_' + str(args.save_file)
+    else:
+        writer_suffix = ''
+    writer_name = "runs/" + str('mnist' if args.mnist else 'cifar10') + str('_ver2/' if args.ver2 else '/') + str(writer_suffix)
+#     writer_name = "runs/" + str('mnist' if args.mnist else 'cifar10') + str('_new_run')
     writer = SummaryWriter(writer_name)
     
     # Data
@@ -204,23 +208,24 @@ def main_train():
                 print ("Training LR-Net for MNIST | ver2")
                 net = LRNet_ver2(writer).to(device)
 
-                print("Loading Parameters for MNIST | ver2")
-                test_model = FPNet_ver2().to(device)
-                test_model.load_state_dict(torch.load('saved_models/mnist_fp_ver2.pt'))
-                alpha1, betta1 = find_sigm_weights(test_model.conv1.weight, False)
-                alpha2, betta2 = find_sigm_weights(test_model.conv2.weight, False)
+                if args.load_pre_trained:
+                    print("Loading Parameters for MNIST | ver2")
+                    test_model = FPNet_ver2().to(device)
+                    test_model.load_state_dict(torch.load('saved_models/mnist_fp_ver2.pt'))
+                    alpha1, betta1 = find_sigm_weights(test_model.conv1.weight, False)
+                    alpha2, betta2 = find_sigm_weights(test_model.conv2.weight, False)
 
-                net.conv1.initialize_weights(alpha1, betta1)
-                net.conv2.initialize_weights(alpha2, betta2)
+                    net.conv1.initialize_weights(alpha1, betta1)
+                    net.conv2.initialize_weights(alpha2, betta2)
 
-                state_dict = test_model.state_dict()
-                with torch.no_grad():
-                    net.conv1.bias.copy_(state_dict['conv1.bias'])
-                    net.conv2.bias.copy_(state_dict['conv2.bias'])
-                    net.fc1.weight.copy_(state_dict['fc1.weight'])
-                    net.fc1.bias.copy_(state_dict['fc1.bias'])
-                    net.fc2.weight.copy_(state_dict['fc2.weight'])
-                    net.fc2.bias.copy_(state_dict['fc2.bias'])                
+                    state_dict = test_model.state_dict()
+                    with torch.no_grad():
+                        net.conv1.bias.copy_(state_dict['conv1.bias'])
+                        net.conv2.bias.copy_(state_dict['conv2.bias'])
+                        net.fc1.weight.copy_(state_dict['fc1.weight'])
+                        net.fc1.bias.copy_(state_dict['fc1.bias'])
+                        net.fc2.weight.copy_(state_dict['fc2.weight'])
+                        net.fc2.bias.copy_(state_dict['fc2.bias'])                
                 
             else:
                 print ("Training LR-Net for MNIST")
@@ -314,13 +319,13 @@ def main_train():
                     {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
                     {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
                     {'params': net.fc1.parameters()},
-                    {'params': net.fc2.parameters()},
-                    {'params': net.bn1.parameters()},
-                    {'params': net.bn2.parameters()},
-                    {'params': net.bn3.parameters()},
-                    {'params': net.bn4.parameters()},
-                    {'params': net.bn5.parameters()},
-                    {'params': net.bn6.parameters()}
+                    {'params': net.fc2.parameters()}
+#                     {'params': net.bn1.parameters()},
+#                     {'params': net.bn2.parameters()},
+#                     {'params': net.bn3.parameters()},
+#                     {'params': net.bn4.parameters()},
+#                     {'params': net.bn5.parameters()},
+#                     {'params': net.bn6.parameters()}
                 ], lr=args.lr, weight_decay=weight_decay)
             else:
                 print('==> Building CIFAR10 optimizer')
@@ -346,6 +351,71 @@ def main_train():
 # weight <- wght_params
 # bias   <- rest_params
 
+#                 wght_decay = dict()
+#                 prob_decay = dict()    
+#                 bias_decay = dict()    
+#                 no_decay = dict()
+#                 for name, m in net.named_parameters():
+#                     print('checking {}'.format(name))
+#                     if 'weight' in name:
+#                         wght_decay[name] = m
+#                     elif 'alpha' in name or 'betta' in name:
+#                         prob_decay[name] = m
+#                     elif 'bias' in name:
+#                         bias_decay[name] = m
+#                     else:
+#                         no_decay[name] = m
+
+#                 print(wght_decay.keys())
+#                 print(prob_decay.keys())
+#                 print(bias_decay.keys())
+#                 print(no_decay.keys())
+
+#                 optimizer = optim.Adam(
+#                     [
+#                         {"params": prob_decay.keys(), "weight_decay": probability_decay},
+#                         {"params": wght_decay.keys(), "weight_decay": weight_decay},
+#                         {"params": bias_decay.keys(), "weight_decay": bn_decay},
+#                         {"params": no_decay,          "weight_decay": weight_decay}                     
+#                     ],
+#                     args.lr) 
+
+                all_params = set(net.parameters())
+                wd_decay = set()
+                bias_decay = set()
+                prob_decay = set()
+                no_decay = set()
+                for m in net.modules():
+                    if isinstance(m, (lrnet_nn.LRnetConv2d)):
+                        prob_decay.add(m.alpha)
+                        prob_decay.add(m.betta)
+                        bias_decay.add(m.bias)
+                    elif isinstance(m, (nn.BatchNorm2d)):
+#                         no_decay.add(m.weight)
+#                         no_decay.add(m.bias)
+                        wd_decay.add(m.weight)
+                        bias_decay.add(m.bias)
+                    elif isinstance(m, (nn.Linear)):
+                        wd_decay.add(m.weight)
+                        bias_decay.add(m.bias)
+#                     else:
+#                         no_decay.add(m.weight)
+#                         no_decay.add(m.bias)  
+                        
+#                 print(wd_decay)
+#                 print(prob_decay)
+#                 print(bias_decay)
+#                 print(no_decay)        
+
+                optimizer = optim.AdamW(
+                    [
+                        {"params": list(prob_decay), "weight_decay": probability_decay},
+                        {"params": list(wd_decay),   "weight_decay": weight_decay},
+                        {"params": list(bias_decay), "weight_decay": bn_decay},
+                        {"params": list(no_decay),   "weight_decay": weight_decay}                     
+                    ],
+                    args.lr)   
+
 #                 optimizer = optim.Adam(
 #                     [
 #                         # {"params": bn_params, "weight_decay": 0 if args.no_bn_decay else args.weight_decay},
@@ -358,22 +428,23 @@ def main_train():
 #                     args.lr)
 
                 # optimizer = optim.Adam(net.parameters(), lr=args.lr)
-                optimizer = optim.Adam([
-                    {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.fc1.parameters(), 'weight_decay': weight_decay}, # TODO
-                    {'params': net.fc2.parameters(), 'weight_decay': weight_decay}, # TODO
-                    {'params': net.bn1.parameters()},
-                    {'params': net.bn2.parameters()},
-                    {'params': net.bn3.parameters()},
-                    {'params': net.bn4.parameters()},
-                    {'params': net.bn5.parameters()},
-                    {'params': net.bn6.parameters()}
-                ], lr = args.lr, weight_decay = weight_decay)
+#                 optimizer = optim.Adam([
+#                     {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
+#                     {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
+#                     {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
+#                     {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
+#                     {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
+#                     {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
+#                     {'params': net.fc1.parameters(), 'weight_decay': weight_decay}, # TODO
+#                     {'params': net.fc2.parameters(), 'weight_decay': weight_decay}, # TODO
+#                     {'params': net.bn1.parameters()},
+#                     {'params': net.bn2.parameters()},
+#                     {'params': net.bn3.parameters()},
+#                     {'params': net.bn4.parameters()},
+#                     {'params': net.bn5.parameters()},
+#                     {'params': net.bn6.parameters()}
+#                 ], lr = args.lr, weight_decay = weight_decay)
+
         if args.annealing_sched:
             scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
         else:
@@ -441,25 +512,28 @@ def main_train():
         net.train_mode_switch()
         if args.ver2:
             net.use_batch_stats_switch(True)
-#             net.tensorboard = True
+            net.tensorboard_train = True
         train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f, writer)
         writer.add_scalar("acc/train", train_acc, epoch)
-#         if args.ver2:
-#             net.tensorboard = False
+        if args.ver2:
+            net.tensorboard_train = False
+            print("iter is :", net.iteration_train)
+#             net.iteration_train = net.iteration_train + 1 
         best_acc, best_epoch, test_acc = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=f, eval_mode=True, dont_save=True)  # note: model is saved only in test method below
         writer.add_scalar("cont acc/test", test_acc, epoch)
         if args.sampled_test:
             if args.ver2:
                 net.test_mode_switch(1, 1)
-                net.collect_stats_switch(True)
-                test(net, criterion, epoch, device, testloader, args, 0, None, test_mode=True, f=f, eval_mode=True, dont_save=True)
-                net.collect_stats_switch(False)
+#                 net.collect_stats_switch(True)
+#                 _a, acc_norm, _b = test(net, criterion, epoch, device, testloader, args, 0, None, test_mode=True, f=f, eval_mode=True, dont_save=True)
+#                 writer.add_scalar("acc_norm/test", acc_norm, epoch)
+#                 net.collect_stats_switch(False)
                 
-                net.tensorboard = True
-                best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, test_mode=False, f=f, eval_mode=True, dont_save=False)
+                net.tensorboard_test = True
+                best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, test_mode=False, f=f, eval_mode=True, dont_save=False, writer=writer)
                 writer.add_scalar("sampled_acc/test", sampled_acc, epoch)
-                net.tensorboard = False
-                net.iteration = net.iteration + 1 
+                net.tensorboard_test = False
+#                 net.iteration_test = net.iteration_test + 1 
 
                 print_summary(train_acc, best_acc, best_sampled_acc, sampled_acc, f)
             else:
@@ -467,9 +541,15 @@ def main_train():
                     net.test_mode_switch(1, 1)
                     best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, test_mode=False, f=f, eval_mode=True, dont_save=False)
                     print_summary(train_acc, best_acc, best_sampled_acc, sampled_acc, f)
+                writer.add_scalar("sampled_acc/test", sampled_acc, epoch)
 
         scheduler.step()
 
+    if args.ver2:
+        net = net.to('cpu')
+        torch.save(net.state_dict(), "saved_models/debug_cpu.pt")
+#             torch.save(net.state_dict(), "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + str(isVer2) + str(args.suffix) + ".pt")        
+        
     writer.flush()
     writer.close()
 

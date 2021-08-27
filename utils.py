@@ -100,7 +100,8 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, w
         #                                          + torch.norm(net.conv6.alpha, 2) + torch.norm(net.conv6.betta, 2)) \
         #                                          + weight_decay * (torch.norm(net.fc1.weight, 2) + (torch.norm(net.fc2.weight, 2)))
 
-
+        assert not torch.isnan(loss).any(), "loss nan before backward"
+        assert not torch.isinf(loss).any(), "loss inf before backward"        
         if torch.isnan(loss).any():
             print("loss isnan: " + str(torch.isnan(loss).any()))
             exit(1)
@@ -110,6 +111,8 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, w
             loss.backward(retain_graph=True)
         else:
             loss.backward()
+        assert not torch.isnan(loss).any(), "loss nan after backward"
+        assert not torch.isinf(loss).any(), "loss inf after backward"              
         if args.debug:
             print("was backward")
         optimizer.step()
@@ -148,7 +151,7 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, w
     return (100.*correct/total)
 
 
-def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=None, eval_mode=True, dont_save=True):
+def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=None, eval_mode=True, dont_save=True, writer=None):
     # global best_acc
     if eval_mode:
         net.eval()
@@ -207,6 +210,8 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
             torch.save(net.state_dict(), "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + str(isVer2) + str(args.suffix) + ".pt")
         best_acc = acc
         best_epoch = epoch
+        if writer is not None:
+            writer.add_scalar("Loss/test", loss, epoch)
     if test_mode:
         best_acc = acc
 
@@ -448,3 +453,53 @@ def assertnan(x, name):
     if torch.isnan(x).any():
         print(str(name) + " isnan: " + str(torch.isnan(x).any()))
         exit(1)
+        
+def collect_hist(desired_itr, iteration, writer, x, x_name, test_weight, alpha, betta):        
+    if (iteration == desired_itr) and (writer is not None):
+        if x is not None:            
+            hist_name = str(x_name) + str(' x distribution ') + str(iteration)
+            writer.add_histogram(hist_name, x, 0, bins='auto')
+#         if test_weight is not None:
+#             hist_name = str(x_name) + str(' test_weight distribution ') + str(iteration)
+#             writer.add_histogram(hist_name, test_weight, 0)
+#         if alpha is not None:
+#             hist_name = str(x_name) + str(' alpha distribution ') + str(iteration)
+#             writer.add_histogram(hist_name, alpha, 0)
+#         if betta is not None:
+#             hist_name = str(x_name) + str(' betta distribution ') + str(iteration)
+#             writer.add_histogram(hist_name, betta, 0)  
+ 
+def collect_m_v(writer, name, x, iteration): 
+    if writer is not None:
+        m,v = x
+        writer.add_scalar("m" + str(name) + " mean", torch.mean(m), iteration)
+        writer.add_scalar("m" + str(name) + " std", torch.std(m), iteration)
+#         writer.add_scalar("m" + str(name) + " max", torch.max(m), iteration)
+#         writer.add_scalar("m" + str(name) + " min", torch.min(m), iteration)
+        writer.add_scalar("v" + str(name) + " mean", torch.mean(v), iteration)
+        writer.add_scalar("v" + str(name) + " std", torch.std(v), iteration)
+#         writer.add_scalar("v" + str(name) + " max", torch.max(m), iteration)
+#         writer.add_scalar("v" + str(name) + " min", torch.min(m), iteration)                
+#         self.writer.add_scalar("max(m" + str(name) + "-v" + str(name) + ")", torch.max(m/v), self.iteration)
+#         self.writer.add_scalar("min(m" + str(name) + "-v" + str(name) + ")", torch.min(m/v), self.iteration)   
+#         self.writer.add_scalar("mean(m" + str(name) + "-v" + str(name) + ")", torch.mean(m/v), self.iteration)
+#         self.writer.add_scalar("std(m" + str(name) + "-v" + str(name) + ")", torch.std(m/v), self.iteration)
+ 
+    
+def take_silce(name, x):     
+    m, v = x
+#     m_slice = m[:,:,0:3,0:3]
+#     v_slice = v[:,:,0:3,0:3]
+    m_slice = m[:,:,:,:]
+    v_slice = v[:,:,:,:]    
+    with open('layers/' + str(name) + '_m.npy', 'wb') as f:
+        m_slice = m_slice.data.cpu().numpy()
+        np.save(f, m_slice)
+    with open('layers/' + str(name) + '_v.npy', 'wb') as f:
+        v_slice = v_slice.data.cpu().numpy()
+        np.save(f, v_slice)         
+    
+
+    
+    
+    
