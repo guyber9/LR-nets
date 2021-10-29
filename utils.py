@@ -8,7 +8,9 @@ from torch import Tensor
 from torch.nn.parameter import Parameter
 from torch.nn import functional as F
 from torch.nn import init
-import numpy as np
+import numpy as np    
+import string
+import random
 
 
 # def train(args, model, device, train_loader, optimizer, epoch):
@@ -74,7 +76,7 @@ import numpy as np
 #     return (100. * correct / len(test_loader.dataset))
 
 # Training
-def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, writer=None):
+def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, writer=None, warmup=False):
     print('\nEpoch: %d' % epoch)
     net.train()
     train_loss = 0
@@ -83,10 +85,47 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, w
     weight_decay = 10**((-1)*args.wd)
     probability_decay = 10**((-1)*args.pd)
     t0 = time.time()
+    
+    for g in optimizer.param_groups:
+        curre_lr = g['lr']
+        
     for batch_idx, (inputs, targets) in enumerate(trainloader):
         # print("batch_idx: " + str(batch_idx))
         inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
+        
+        if warmup:            
+            warmup_factor = (batch_idx / len(trainloader)) * (batch_idx / len(trainloader))
+            for g in optimizer.param_groups:
+                g['lr'] = warmup_factor * curre_lr
+                print ("g:", g['lr'])
+            print ("warmup_factor:", warmup_factor)
+    
+#         if args.freeze:      
+#             if epoch>=1000:
+#                 net.unfreeze_all_layer()
+#             else:            
+# #                 freeze_arr = [50,90,130,170,210]
+# #                 freeze_arr = [100,130,170,210,240]
+# #                 freeze_arr = [150,180,210,240,270]   
+# #                 freeze_arr = [70,110,150,210,240]
+# #                 freeze_arr = [70,110,150,500,500]    
+# #                 freeze_arr = [70,110,150,240,500]
+#                 freeze_arr = [70,110,150,210,240, 270]
+# #                 freeze_arr = [40,100,160,240,500]
+#                 if epoch>=freeze_arr[0]:
+#                     net.freeze_layer(net.conv1, net.sign_prob1, net.conv2)
+#                 if epoch>=freeze_arr[1]:
+#                     net.freeze_layer(net.conv2, net.sign_prob2, net.conv3)   
+#                 if epoch>=freeze_arr[2]:
+#                     net.freeze_layer(net.conv3, net.sign_prob3, net.conv4)   
+#                 if epoch>=freeze_arr[3]:
+#                     net.freeze_layer(net.conv4, net.sign_prob4, net.conv5)   
+#                 if epoch>=freeze_arr[4]:
+#                     net.freeze_layer(net.conv5, net.sign_prob5, net.conv6)           
+#                 if epoch>=freeze_arr[5]:
+#                     net.freeze_last_layer(net.conv6)                     
+        
         outputs = net(inputs)
         # print("output: " + str(outputs))
         # print("targets: " + str(targets))
@@ -146,6 +185,11 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, w
         # else:
         #     progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
         #                  % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+    if warmup:
+        for g in optimizer.param_groups:
+            g['lr'] = curre_lr
+            print ("g:", g['lr'])
+        warmup = False
     writer.add_scalar("Loss/train", loss, epoch)
     print('{} seconds'.format(time.time() - t0))
     return (100.*correct/total)
@@ -389,8 +433,9 @@ def print_full_tensor(input, input_name):
     for i, val1 in enumerate(input):
         for j, val2 in enumerate(val1):
             for m, val3 in enumerate(val2):
-                if (i == 157) and (j == 43) and (m == 5):
-                    print (str(input_name) + "(" + str(i) + ", " + str(j) + ", " + str(m) + ": " + str(val3))
+#                 if (i == 157) and (j == 43) and (m == 5):
+                if ((val3 > 1.0).any()):
+                    print (str(input_name) + "(" + str(i) + ", " + str(j) + ", " + str(m) + "): " + str(val3))
 
 def print_fullllll_tensor(input, input_name):
     for i, val1 in enumerate(input):
@@ -439,6 +484,7 @@ def mean_over_channel(input):
     # print("input1 size: \n" + str(input1.size()))
     # print("#################################")
     mean = input1.repeat(input.size(0), 1).view(input.size(0), input.size(1), 1, 1)
+    print(mean)
     return mean
 
 
@@ -497,9 +543,26 @@ def take_silce(name, x):
         np.save(f, m_slice)
     with open('layers/' + str(name) + '_v.npy', 'wb') as f:
         v_slice = v_slice.data.cpu().numpy()
-        np.save(f, v_slice)         
+        np.save(f, v_slice)      
+        
+        
+def output_hist(name, x, net_input, layer, writer, N, iteration=None):             
+    iteration_idx = str(iteration) if iteration is not None else ''
+    for i in range(N):
+        if i == 0:
+            y = x[0,0,0,0].view(1)
+        else:
+            layer.test_mode_switch(1, 1)
+            z = layer(net_input)
+            y = torch.cat((y,z[0,0,0,0].view(1)))
+    writer.add_histogram(str(name) + " [0,0,0,0] " + iteration_idx + " distribution", y, 0, bins='auto')         
     
+    
+def layer_hist(name, x, writer, iteration=None):             
+    iteration_idx = str(iteration) if iteration is not None else ''
+    writer.add_histogram(str(name) + " " + str(iteration_idx) + " distribution", x, 0, bins='auto')  
 
-    
-    
+def id_generator(size=16, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
+
     

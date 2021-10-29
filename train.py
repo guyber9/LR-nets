@@ -9,6 +9,8 @@ import torchvision
 import torchvision.transforms as transforms
 from torchvision import datasets, transforms
 import os
+import resnet
+import resnet1
 
 from models import *
 from utils import find_sigm_weights, train, test, print_summary, copy_net2net
@@ -17,8 +19,6 @@ from torch.utils.tensorboard import SummaryWriter
 import matplotlib.pyplot as plt
 
 def main_train():
-    # TODO
-    # lr 0.1 or 0.01
     parser = argparse.ArgumentParser(description='PyTorch MNIST/CIFAR10 Training')
     parser.add_argument('--mnist', action='store_true', default=False, help='mnist flag')
     parser.add_argument('--cifar10', action='store_true', default=False, help='cifar10 flag')
@@ -60,11 +60,22 @@ def main_train():
     parser.add_argument('--add-bn-bias-decay', action='store_true', default=False, help='dd weight decay to bn(weight/bias) and bias')
 
     parser.add_argument('--ver2', action='store_true', default=False, help='discretization for layer output')
-    parser.add_argument('--cudnn', action='store_true', default=False, help='using cudnn benchmark=True')
+    parser.add_argument('--cudnn', action='store_true', default=True, help='using cudnn benchmark=True')
     parser.add_argument('--collect_stats', action='store_true', default=False, help='collect_stats for test')
 
     parser.add_argument('--suffix', action='store', default='', help='suffix for saved model name')
     parser.add_argument('--annealing-sched', action='store_true', default=False, help='using CosineAnnealingLR')
+    parser.add_argument('--freeze', action='store_true', default=False, help='freeze layers')
+
+    parser.add_argument('--lnum', type=int, default=6, metavar='N', help='num of layers')
+    parser.add_argument('--step', type=int, default=35, metavar='N', help='step size in freezeing')
+    parser.add_argument('--start', type=int, default=50, metavar='N', help='starting point in freezeing')
+    parser.add_argument('--trials', type=int, default=15, metavar='N', help='num of trials in freezeing')
+
+    parser.add_argument('--only-1-fc', action='store_true', default=False, help='only_1_fc layer in classifier')
+    
+    parser.add_argument('--resnet18', action='store_true', default=False, help='resnet18')
+    parser.add_argument('--vgg', action='store_true', default=False, help='resnet18')
 
     args = parser.parse_args()
 
@@ -144,18 +155,59 @@ def main_train():
             else:
                 print("Training FP-Net for CIFAR10")
                 net = FPNet_CIFAR10()
+                if args.vgg:
+                    net = VGG_SMALL()
         else:
             if args.ver2:
                 print ("Training LR-Net for CIFAR10 | ver2")
-                net = LRNet_CIFAR10_ver2(writer)
+#                 net = LRNet_CIFAR10_ver2(writer)
+                net = LRNet_CIFAR10_ver2X(writer, args)
+#                 net = LRNet_CIFAR10_ver2XXX(writer)
             else:
                 print ("Training LR-Net for CIFAR10")
                 net = LRNet_CIFAR10()
 
             if args.load_pre_trained:
+#                 if args.ver2:                   
+#                     print("Loading Parameters for CIFAR10 | ver2")
+#                     test_model = LRNet_CIFAR10().to(device)
+#                     test_model.load_state_dict(torch.load('trained_models/cifar10_lrnet_ternary.pt'))
+
+#                     state_dict = test_model.state_dict()
+#                     with torch.no_grad():
+#                         net.conv1.alpha.copy_(state_dict['conv1.alpha'])
+#                         net.conv1.betta.copy_(state_dict['conv1.betta'])
+#                         net.conv2.alpha.copy_(state_dict['conv2.alpha'])
+#                         net.conv2.betta.copy_(state_dict['conv2.betta'])
+#                         net.conv3.alpha.copy_(state_dict['conv3.alpha'])
+#                         net.conv3.betta.copy_(state_dict['conv3.betta'])
+#                         net.conv4.alpha.copy_(state_dict['conv4.alpha'])
+#                         net.conv4.betta.copy_(state_dict['conv4.betta'])
+#                         net.conv5.alpha.copy_(state_dict['conv5.alpha'])
+#                         net.conv5.betta.copy_(state_dict['conv5.betta'])
+#                         net.conv6.alpha.copy_(state_dict['conv6.alpha'])
+#                         net.conv6.betta.copy_(state_dict['conv6.betta'])                        
+#                         net.conv1.bias.copy_(state_dict['conv1.bias'])
+#                         net.conv2.bias.copy_(state_dict['conv2.bias'])
+#                         net.conv3.bias.copy_(state_dict['conv3.bias'])
+#                         net.conv4.bias.copy_(state_dict['conv4.bias'])
+#                         net.conv5.bias.copy_(state_dict['conv5.bias'])
+#                         net.conv6.bias.copy_(state_dict['conv6.bias'])
+#                         if not args.only_1_fc: # TODO
+#                             net.fc1.weight.copy_(state_dict['fc1.weight'])
+#                             net.fc1.bias.copy_(state_dict['fc1.bias'])
+#                             net.fc2.weight.copy_(state_dict['fc2.weight'])
+#                             net.fc2.bias.copy_(state_dict['fc2.bias'])                    
+#                 else:
                 print("Loading Parameters for CIFAR10")
+                print("Loading model: saved_models/cifar10_fp.pt")
                 test_model = FPNet_CIFAR10().to(device)
                 test_model.load_state_dict(torch.load('saved_models/cifar10_fp.pt'))
+                if args.vgg:
+                    print("Loading model: saved_models/cifar10_vgg_small_sgd_fp.pt")
+                    test_model = VGG_SMALL().to(device)                
+                    test_model.load_state_dict(torch.load('saved_models/cifar10_vgg_small_sgd_fp.pt'))
+     
                 alpha1, betta1 = find_sigm_weights(test_model.conv1.weight, False)
                 alpha2, betta2 = find_sigm_weights(test_model.conv2.weight, False)
                 alpha3, betta3 = find_sigm_weights(test_model.conv3.weight, False)
@@ -178,22 +230,26 @@ def main_train():
                     net.conv4.bias.copy_(state_dict['conv4.bias'])
                     net.conv5.bias.copy_(state_dict['conv5.bias'])
                     net.conv6.bias.copy_(state_dict['conv6.bias'])
-                    net.fc1.weight.copy_(state_dict['fc1.weight'])
-                    net.fc1.bias.copy_(state_dict['fc1.bias'])
-                    net.fc2.weight.copy_(state_dict['fc2.weight'])
-                    net.fc2.bias.copy_(state_dict['fc2.bias'])
+                    if args.vgg:
+                        net.fc1.weight.copy_(state_dict['fc1.weight'])
+                        net.fc1.bias.copy_(state_dict['fc1.bias'])                        
+                    elif not args.only_1_fc: # TODO
+                        net.fc1.weight.copy_(state_dict['fc1.weight'])
+                        net.fc1.bias.copy_(state_dict['fc1.bias'])
+                        net.fc2.weight.copy_(state_dict['fc2.weight'])
+                        net.fc2.bias.copy_(state_dict['fc2.bias'])
 
-                # net.conv1.bias = normalize_layer(test_model.conv1.bias)
-                # net.conv2.bias = normalize_layer(test_model.conv2.bias)
-                # net.conv3.bias = normalize_layer(test_model.conv3.bias)
-                # net.conv4.bias = normalize_layer(test_model.conv4.bias)
-                # net.conv5.bias = normalize_layer(test_model.conv5.bias)
-                # net.conv6.bias = normalize_layer(test_model.conv6.bias)
-                #
-                # net.fc1.weight = test_model.fc1.weight
-                # net.fc1.bias = test_model.fc1.bias
-                # net.fc2.weight = test_model.fc2.weight
-                # net.fc2.bias = test_model.fc2.bias
+                    # net.conv1.bias = normalize_layer(test_model.conv1.bias)
+                    # net.conv2.bias = normalize_layer(test_model.conv2.bias)
+                    # net.conv3.bias = normalize_layer(test_model.conv3.bias)
+                    # net.conv4.bias = normalize_layer(test_model.conv4.bias)
+                    # net.conv5.bias = normalize_layer(test_model.conv5.bias)
+                    # net.conv6.bias = normalize_layer(test_model.conv6.bias)
+                    #
+                    # net.fc1.weight = test_model.fc1.weight
+                    # net.fc1.bias = test_model.fc1.bias
+                    # net.fc2.weight = test_model.fc2.weight
+                    # net.fc2.bias = test_model.fc2.bias
 
     elif args.mnist:
         if args.full_prec:
@@ -206,7 +262,8 @@ def main_train():
         else:
             if args.ver2:
                 print ("Training LR-Net for MNIST | ver2")
-                net = LRNet_ver2(writer).to(device)
+#                 net = LRNet_ver2(writer).to(device)
+                net = LRNet_ver2XXX(writer).to(device)
 
                 if args.load_pre_trained:
                     print("Loading Parameters for MNIST | ver2")
@@ -255,6 +312,10 @@ def main_train():
     # # TODO    net = torch.nn.DataParallel(net)
     #     cudnn.benchmark = True
 
+    if args.resnet18:                
+        net = resnet18()    
+        net = resnet20()    
+        
     if device == 'cuda':
         if args.cudnn:
             print('==> Using cudnn.benchmark = True')
@@ -275,13 +336,14 @@ def main_train():
         # TODO
         net.load_state_dict(torch.load('../model_2/LRNet/saved_model/best_cifar10_cnn.pt'))
 
+    layer1_decay = 10**(-20)
     bn_decay = 10**((-1)*args.bn_wd)
     weight_decay = 10**((-1)*args.wd)
     probability_decay = 10**((-1)*args.pd)
     criterion = nn.CrossEntropyLoss()
 
     if not args.sgd:
-        if args.full_prec:
+        if args.full_prec or args.resnet18:
             optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
         elif args.mnist:
             if args.ver2:
@@ -293,6 +355,14 @@ def main_train():
                     {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
                     {'params': net.fc1.parameters(), 'weight_decay': weight_decay},
                     {'params': net.fc2.parameters(), 'weight_decay': weight_decay},
+                    
+                    {'params': net.sign_prob1.parameters(), 'weight_decay': weight_decay},
+                    {'params': net.sign_prob2.parameters(), 'weight_decay': weight_decay},
+                    {'params': net.sign_prob3.parameters(), 'weight_decay': weight_decay},
+                    {'params': net.sign_prob4.parameters(), 'weight_decay': weight_decay},
+                    {'params': net.sign_prob5.parameters(), 'weight_decay': weight_decay},
+                    {'params': net.sign_prob6.parameters(), 'weight_decay': weight_decay},
+                    
 #                     {'params': net.bn1.parameters()},
                     # {'params': net.bn2.parameters()},
                     {'params': net.bn3.parameters()}
@@ -311,22 +381,38 @@ def main_train():
                 print('==> Building CIFAR10 | ver2 optimizer')                
                 # TODO
 #                 optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
-                optimizer = optim.Adam([
-                    {'params': net.conv1.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.fc1.parameters()},
-                    {'params': net.fc2.parameters()}
-#                     {'params': net.bn1.parameters()},
-#                     {'params': net.bn2.parameters()},
-#                     {'params': net.bn3.parameters()},
-#                     {'params': net.bn4.parameters()},
-#                     {'params': net.bn5.parameters()},
-#                     {'params': net.bn6.parameters()}
-                ], lr=args.lr, weight_decay=weight_decay)
+                if args.only_1_fc:
+                    optimizer = optim.Adam([
+                            {'params': net.conv1.parameters(), 'weight_decay': layer1_decay},
+                            {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
+                            {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
+                            {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
+                            {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
+                            {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
+                        
+#                             {'params': net.sign_prob1.parameters(), 'weight_decay': weight_decay},
+#                             {'params': net.sign_prob2.parameters(), 'weight_decay': weight_decay},
+#                             {'params': net.sign_prob3.parameters(), 'weight_decay': weight_decay},
+#                             {'params': net.sign_prob4.parameters(), 'weight_decay': weight_decay},
+#                             {'params': net.sign_prob5.parameters(), 'weight_decay': weight_decay},
+#                             {'params': net.sign_prob6.parameters(), 'weight_decay': weight_decay},
+                                           
+                            {'params': net.fc1.parameters()},
+                            {'params': net.bn6.parameters()}
+                        ], lr=args.lr, weight_decay=weight_decay)     
+        
+                else:
+                    optimizer = optim.Adam([
+                            {'params': net.conv1.parameters(), 'weight_decay': layer1_decay},
+                            {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
+                            {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
+                            {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
+                            {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
+                            {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
+                            {'params': net.fc1.parameters()},
+                            {'params': net.fc2.parameters()},
+                            {'params': net.bn6.parameters()}
+                        ], lr=args.lr, weight_decay=weight_decay)   
             else:
                 print('==> Building CIFAR10 optimizer')
                 parameters = list(net.named_parameters())
@@ -412,7 +498,7 @@ def main_train():
                         {"params": list(prob_decay), "weight_decay": probability_decay},
                         {"params": list(wd_decay),   "weight_decay": weight_decay},
                         {"params": list(bias_decay), "weight_decay": bn_decay},
-                        {"params": list(no_decay),   "weight_decay": weight_decay}                     
+                        {"params": list(no_decay),   "weight_decay": 0}                     
                     ],
                     args.lr)   
 
@@ -485,7 +571,7 @@ def main_train():
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
 
     net = net.to(device)
-
+    
     if args.save_file != 'no_need_to_save':
         file_name = "tmp_logs/" + str(args.save_file) + ".log"
         f = open(file_name, "w")
@@ -494,6 +580,20 @@ def main_train():
         print(args)
         f = None
 
+    if args.ver2:        
+        print("sampled_last_layer:", net.sampled_last_layer)
+        print("bn_s:", net.bn_s)
+        print("gumbel:", net.gumbel)
+        print("gumble_last_layer:", net.gumble_last_layer)
+        print("gain:", net.gain)
+        print("only_1_fc:", net.only_1_fc)   
+
+        print("sampled_last_layer:", net.sampled_last_layer, file=f)
+        print("bn_s:", net.bn_s, file=f)
+        print("gumbel:", net.gumbel, file=f)
+        print("gumble_last_layer:", net.gumble_last_layer, file=f)
+        print("gain:", net.gain, file=f)
+        print("only_1_fc:", net.only_1_fc, file=f)              
 
 ########################################################################    
     images, labels = next(iter(testloader))
@@ -508,22 +608,78 @@ def main_train():
 #     writer.add_graph(net, images)
 #########################################################################
 
+    freeze_mask = np.full((args.lnum), 1).tolist()
+    freeze_arr = np.arange(0, args.lnum) * args.step + args.start 
+
+    warmup = False
+       
     for epoch in range(start_epoch, start_epoch+args.epochs):
-        net.train_mode_switch()
+        if args.freeze:
+            net.train_mode_freeze(freeze_mask)
+        else:
+            if not args.full_prec:
+                net.train_mode_switch()
+
         if args.ver2:
-            net.use_batch_stats_switch(True)
+#             net.use_batch_stats_switch(True)
             net.tensorboard_train = True
-        train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f, writer)
+            if args.freeze:
+#                 freeze_arr = [1,2,3,4,5]  #0
+#                 freeze_arr = [50,90,130,170,210]  #0
+#                 freeze_arr = [100,130,170,210,240]  #1
+#                 freeze_arr = [150,180,210,240,270]
+#                 freeze_arr = [70,110,150,210,240]
+#                 freeze_arr = [70,110,150,500,500]
+#                 freeze_arr = [70,110,150,240,500]  #2 <- best
+#                 freeze_arr = [70,110,150,210,240,270]
+#                 freeze_arr = [40,100,160,240,500]  #3
+                if epoch==100000:
+                    net.unfreeze_all_layer()
+                else:
+                    warmup = False
+                    if epoch==freeze_arr[0]:
+                        net.freeze_layer(net.conv1, net.sign_prob1, net.conv2, args.trials, net, criterion, device, trainloader, args, f)
+#                         net.freeze_layer(net.conv1, net.sign_prob1, net.conv2)
+                        warmup = True
+                        freeze_mask = [0,1,1,1,1,1]
+                    if epoch==freeze_arr[1]:
+                        net.freeze_layer(net.conv2, net.sign_prob2, net.conv3, args.trials, net, criterion, device, trainloader, args, f, net.pool2)  
+                        freeze_mask = [0,0,1,1,1,1]
+                        warmup = True                        
+                    if epoch==freeze_arr[2]:
+                        net.freeze_layer(net.conv3, net.sign_prob3, net.conv4, args.trials, net, criterion, device, trainloader, args, f)   
+                        freeze_mask = [0,0,0,1,1,1]
+                        warmup = True
+                    if epoch==freeze_arr[3]:
+                        net.freeze_layer(net.conv4, net.sign_prob4, net.conv5, args.trials, net, criterion, device, trainloader, args, f, net.pool4)   
+                        freeze_mask = [0,0,0,0,1,1]
+                        warmup = True
+                    if epoch==freeze_arr[4]:
+                        net.freeze_layer(net.conv5, net.sign_prob5, net.conv6, args.trials, net, criterion, device, trainloader, args, f)
+                        freeze_mask = [0,0,0,0,0,1]
+                        warmup = True
+                    if epoch==freeze_arr[5]:
+                        if net.sampled_last_layer:
+                            net.freeze_last_layer(net.conv6, args.trials, net, criterion, device, trainloader, args, f)
+                        else:
+                            net.freeze_layer(net.conv6, net.sign_prob6, net.fc1, args.trials, net, criterion, device, trainloader, args, f, net.pool6)
+                        freeze_mask = [0,0,0,0,0,0]
+                        warmup = True
+                        
+        train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f, writer, warmup)
         writer.add_scalar("acc/train", train_acc, epoch)
         if args.ver2:
             net.tensorboard_train = False
             print("iter is :", net.iteration_train)
-#             net.iteration_train = net.iteration_train + 1 
+            net.iteration_train = net.iteration_train + 1 
         best_acc, best_epoch, test_acc = test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=f, eval_mode=True, dont_save=True)  # note: model is saved only in test method below
         writer.add_scalar("cont acc/test", test_acc, epoch)
         if args.sampled_test:
             if args.ver2:
-                net.test_mode_switch(1, 1)
+                if args.freeze:
+                    net.test_mode_freeze(freeze_mask)
+                else:
+                    net.test_mode_switch(1, 1)
 #                 net.collect_stats_switch(True)
 #                 _a, acc_norm, _b = test(net, criterion, epoch, device, testloader, args, 0, None, test_mode=True, f=f, eval_mode=True, dont_save=True)
 #                 writer.add_scalar("acc_norm/test", acc_norm, epoch)
@@ -533,7 +689,7 @@ def main_train():
                 best_sampled_acc, best_sampled_epoch, sampled_acc = test(net, criterion, epoch, device, testloader, args, best_sampled_acc, best_sampled_epoch, test_mode=False, f=f, eval_mode=True, dont_save=False, writer=writer)
                 writer.add_scalar("sampled_acc/test", sampled_acc, epoch)
                 net.tensorboard_test = False
-#                 net.iteration_test = net.iteration_test + 1 
+                net.iteration_test = net.iteration_test + 1 
 
                 print_summary(train_acc, best_acc, best_sampled_acc, sampled_acc, f)
             else:
@@ -545,11 +701,14 @@ def main_train():
 
         scheduler.step()
 
-    if args.ver2:
+    if args.ver2 or (args.save_file != 'no_need_to_save'):
         net = net.to('cpu')
-        torch.save(net.state_dict(), "saved_models/debug_cpu.pt")
+        torch.save(net.state_dict(), "saved_models/" + str(args.save_file) + "_cpu.pt")
 #             torch.save(net.state_dict(), "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + str(isVer2) + str(args.suffix) + ".pt")        
-        
+    if args.full_prec:
+        torch.save(net.state_dict(), "saved_models/" + str(args.save_file) + "_fp.pt")
+
+
     writer.flush()
     writer.close()
 

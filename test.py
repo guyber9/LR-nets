@@ -61,6 +61,7 @@ def main_test():
 
     parser.add_argument('--no-shuffle', action='store_true', default=False, help='shuffle the data')
     parser.add_argument('--writer', action='store_true', default=False, help='collect stats')
+    parser.add_argument('--dont-load-model', action='store_true', default=False, help='collect stats')
 
     args = parser.parse_args()
 
@@ -147,7 +148,7 @@ def main_test():
             net = LRNet_CIFAR10_ver2(writer)
         else:
             print ("Testing LR-Net for CIFAR10")
-            net = LRNet_CIFAR10()
+            net = LRNet_CIFAR10(writer)
     elif args.mnist:
         if args.full_prec:
             print ("Testing FP-Net for MNIST")
@@ -178,7 +179,8 @@ def main_test():
     is_sampled = "_sampled" if args.collect_stats else ''
     load_model_name = "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + str(isVer2) + str(is_sampled) + str(args.suffix) + ".pt"
     print('==> Loading model: ' + str(load_model_name))
-    net.load_state_dict(torch.load(load_model_name))
+    if not args.dont_load_model:
+        net.load_state_dict(torch.load(load_model_name))
     net.eval()
     net = net.to(device)
 
@@ -224,6 +226,7 @@ def main_test():
             print("iteration: " + str(idx))
             net.test_mode_switch(args.options, args.tickets)
             net.tensorboard_test = True if args.writer else False
+            print("tensorboard_test: " + str(net.tensorboard_test))
             acc, _, _ = test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=its_eval_mode, dont_save=True)
             net.tensorboard_test = False                
 #             if (acc > best_acc):
