@@ -145,7 +145,8 @@ def main_test():
             net = FPNet_CIFAR10()
         elif args.ver2:
             print("Testing LR-Net for CIFAR10 | ver2")
-            net = LRNet_CIFAR10_ver2(writer)
+#             net = LRNet_CIFAR10_ver2(writer)
+            net = LRNet_CIFAR10_ver2_not_sample()
         else:
             print ("Testing LR-Net for CIFAR10")
             net = LRNet_CIFAR10(writer)
@@ -172,15 +173,18 @@ def main_test():
     # print("\n\n==> The best acc is :" + str(best_acc) + "\n\n\n")
     best_acc = 0
 
-    dataset_name = 'mnist' if args.mnist else 'cifar10'
-    net_type = '_fp' if args.full_prec else '_lrnet'
-    isBinary = '_binary' if args.binary_mode else ''
-    isVer2 = '_ver2' if args.ver2 else ''
-    is_sampled = "_sampled" if args.collect_stats else ''
-    load_model_name = "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + str(isVer2) + str(is_sampled) + str(args.suffix) + ".pt"
-    print('==> Loading model: ' + str(load_model_name))
-    if not args.dont_load_model:
-        net.load_state_dict(torch.load(load_model_name))
+#     dataset_name = 'mnist' if args.mnist else 'cifar10'
+#     net_type = '_fp' if args.full_prec else '_lrnet'
+#     isBinary = '_binary' if args.binary_mode else ''
+#     isVer2 = '_ver2' if args.ver2 else ''
+#     is_sampled = "_sampled" if args.collect_stats else ''
+#     load_model_name = "saved_models/" + str(dataset_name) + str(net_type) + str(isBinary) + str(isVer2) + str(is_sampled) + str(args.suffix) + ".pt"
+#     print('==> Loading model: ' + str(load_model_name))
+#     if not args.dont_load_model:
+#         net.load_state_dict(torch.load(load_model_name))
+   
+    load_model_name = 'saved_models/cifar10_not_sample_not_gumbel_30_10_bn_last_layer_sz_cpu.pt'
+    net.load_state_dict(torch.load(load_model_name))    
     net.eval()
     net = net.to(device)
 

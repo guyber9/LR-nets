@@ -12,71 +12,8 @@ import numpy as np
 import string
 import random
 
-
-# def train(args, model, device, train_loader, optimizer, epoch):
-#     model.train()
-#     weight_decay = 10**((-1)*args.wd) # 1e-4
-#     probability_decay = 10**((-1)*args.pd) # 1e-11
-#     print("weight_decay: " + str(weight_decay))
-#     print("probability_decay: " + str(probability_decay))
-#     for batch_idx, (data, target) in enumerate(train_loader):
-#         data, target = data.to(device), target.to(device)
-#         optimizer.zero_grad()
-#         output = model(data)
-#         if args.cifar10:
-#             if args.full_prec:
-#                 loss = F.cross_entropy(output, target)
-#                 ce_loss = loss
-#             else:
-#                 ce_loss = F.cross_entropy(output, target)
-#                 loss = ce_loss + probability_decay * (torch.norm(model.conv1.alpha, 2) + torch.norm(model.conv1.betta, 2)
-#                                                  + torch.norm(model.conv2.alpha, 2) + torch.norm(model.conv2.betta, 2)
-#                                                  + torch.norm(model.conv3.alpha, 2) + torch.norm(model.conv3.betta, 2)
-#                                                  + torch.norm(model.conv4.alpha, 2) + torch.norm(model.conv4.betta, 2)
-#                                                  + torch.norm(model.conv5.alpha, 2) + torch.norm(model.conv5.betta, 2)
-#                                                  + torch.norm(model.conv6.alpha, 2) + torch.norm(model.conv6.betta, 2)) \
-#                        + weight_decay * (torch.norm(model.fc1.weight, 2) + (torch.norm(model.fc2.weight, 2)))
-#         else:
-#             if args.full_prec:
-#                 loss = F.cross_entropy(output, target)
-#             else:
-#                 loss = F.cross_entropy(output, target) + probability_decay * (torch.norm(model.conv1.alpha, 2)
-#                                                                + torch.norm(model.conv1.betta, 2)
-#                                                                + torch.norm(model.conv2.alpha, 2)
-#                                                                + torch.norm(model.conv2.betta, 2)) + weight_decay * (torch.norm(model.fc1.weight, 2) + (torch.norm(model.fc2.weight, 2)))
-#         # optimizer.zero_grad()
-#         if args.debug_mode:
-#             torch.autograd.set_detect_anomaly(True)
-#             loss.backward(retain_graph=True)
-#         else:
-#             loss.backward()
-#         optimizer.step()
-#         if batch_idx % args.log_interval == 0:
-#             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tce_loss: {:.6f}\tloss: {:.6f}'.format(
-#                 epoch, batch_idx * len(data), len(train_loader.dataset),
-#                 100. * batch_idx / len(train_loader), ce_loss.item(), loss.item()))
-#
-# def test(model, device, test_loader):
-#     model.eval()
-#     test_loss = 0
-#     correct = 0
-#     with torch.no_grad():
-#         for data, target in test_loader:
-#             data, target = data.to(device), target.to(device)
-#             output = model(data)
-#             test_loss += F.cross_entropy(output, target, reduction='sum').item()  # sum up batch loss
-#             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
-#             correct += pred.eq(target.view_as(pred)).sum().item()
-#
-#     test_loss /= len(test_loader.dataset)
-#
-#     print('\n' + str(tstring) +' set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-#         test_loss, correct, len(test_loader.dataset),
-#         100. * correct / len(test_loader.dataset)))
-#     return (100. * correct / len(test_loader.dataset))
-
 # Training
-def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, writer=None, warmup=False):
+def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, writer=None, warmup=False, entropy_level=None):
     print('\nEpoch: %d' % epoch)
     net.train()
     train_loss = 0
@@ -85,9 +22,11 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, w
     weight_decay = 10**((-1)*args.wd)
     probability_decay = 10**((-1)*args.pd)
     t0 = time.time()
-    
+        
     for g in optimizer.param_groups:
         curre_lr = g['lr']
+        
+    epoch_level = 200
         
     for batch_idx, (inputs, targets) in enumerate(trainloader):
         # print("batch_idx: " + str(batch_idx))
@@ -100,38 +39,56 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, w
                 g['lr'] = warmup_factor * curre_lr
                 print ("g:", g['lr'])
             print ("warmup_factor:", warmup_factor)
-    
-#         if args.freeze:      
-#             if epoch>=1000:
-#                 net.unfreeze_all_layer()
-#             else:            
-# #                 freeze_arr = [50,90,130,170,210]
-# #                 freeze_arr = [100,130,170,210,240]
-# #                 freeze_arr = [150,180,210,240,270]   
-# #                 freeze_arr = [70,110,150,210,240]
-# #                 freeze_arr = [70,110,150,500,500]    
-# #                 freeze_arr = [70,110,150,240,500]
-#                 freeze_arr = [70,110,150,210,240, 270]
-# #                 freeze_arr = [40,100,160,240,500]
-#                 if epoch>=freeze_arr[0]:
-#                     net.freeze_layer(net.conv1, net.sign_prob1, net.conv2)
-#                 if epoch>=freeze_arr[1]:
-#                     net.freeze_layer(net.conv2, net.sign_prob2, net.conv3)   
-#                 if epoch>=freeze_arr[2]:
-#                     net.freeze_layer(net.conv3, net.sign_prob3, net.conv4)   
-#                 if epoch>=freeze_arr[3]:
-#                     net.freeze_layer(net.conv4, net.sign_prob4, net.conv5)   
-#                 if epoch>=freeze_arr[4]:
-#                     net.freeze_layer(net.conv5, net.sign_prob5, net.conv6)           
-#                 if epoch>=freeze_arr[5]:
-#                     net.freeze_last_layer(net.conv6)                     
-        
-        outputs = net(inputs)
-        # print("output: " + str(outputs))
-        # print("targets: " + str(targets))
 
+        outputs = net(inputs)
         loss = criterion(outputs, targets)
-        # loss = criterion(outputs, targets) + probability_decay * (torch.norm(net.conv1.alpha, 2) + torch.norm(net.conv1.betta, 2)
+
+#         if net.sign_prob6.test_forward:
+#             outputs = net(inputs)
+#             loss = criterion(outputs, targets)
+#         else:
+#             outputs, p6 = net(inputs)
+#             loss = criterion(outputs, targets) + calc_act_entropy(p6, 0.3, avg=True)             
+
+#         if net.sign_prob6.test_forward and net.sign_prob5.test_forward:
+#             outputs = net(inputs)
+#             loss = criterion(outputs, targets)    
+#         elif net.sign_prob5.test_forward and not net.sign_prob6.test_forward:
+#             outputs, p6 = net(inputs)       
+#             loss = criterion(outputs, targets) + calc_act_entropy(p6, 0.3, avg=True)
+#         else:
+#             outputs, p6, p5 = net(inputs)
+#             loss = criterion(outputs, targets) + calc_act_entropy(p6, 0.3, avg=True) + calc_act_entropy(p5, 0.3, avg=True)
+
+
+#         if net.sign_prob6.test_forward:
+#             outputs = net(inputs)
+#             loss = criterion(outputs, targets)                
+#         else:
+#             outputs, p6 = net(inputs)
+#             if batch_idx == 0:
+#                 if epoch == (epoch_level+1):
+#                     entropy_level = calc_average_entropy(p6)
+#                     entropy_level = entropy_level.item()
+#                 elif epoch > (epoch_level+1):
+#                     entropy_level = entropy_level * 0.994
+#                 writer.add_scalar("entropy_level", entropy_level, epoch)
+                
+#             if epoch > epoch_level:
+#                 loss = criterion(outputs, targets) + calc_act_entropy(p6, entropy_level, avg=False)                
+#             else:
+#                 loss = criterion(outputs, targets)
+        
+    
+#         loss = criterion(outputs, targets) + calc_weights_entropy(net.conv6, 0.5) + calc_weights_entropy(net.conv5, 0.5) + calc_weights_entropy(net.conv4, 0.5)
+#         loss = criterion(outputs, targets) + calc_weights_entropy(net.conv6, 0.6) + calc_weights_entropy(net.conv5, 0.6) # + calc_weights_entropy(net.conv4, 0.6) # + calc_weights_entropy(net.conv3, 0.6) + calc_weights_entropy(net.conv2, 0.6) + calc_weights_entropy(net.conv1, 0.6)
+
+#         loss = criterion(outputs, targets) + calc_weights_entropy(net.conv6, 0.4, avg=True) + calc_weights_entropy(net.conv5, 0.4, avg=True)
+
+#         loss = criterion(outputs, targets) + calc_weights_entropy(net.conv6, 0.4, avg=True) + calc_weights_entropy(net.conv5, 0.4, avg=True)
+
+    
+#         loss = criterion(outputs, targets) + probability_decay * (torch.norm(net.conv1.alpha, 2) + torch.norm(net.conv1.betta, 2)
         #                                          + torch.norm(net.conv2.alpha, 2) + torch.norm(net.conv2.betta, 2)
         #                                          + torch.norm(net.conv3.alpha, 2) + torch.norm(net.conv3.betta, 2)
         #                                          + torch.norm(net.conv4.alpha, 2) + torch.norm(net.conv4.betta, 2)
@@ -190,9 +147,10 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, w
             g['lr'] = curre_lr
             print ("g:", g['lr'])
         warmup = False
-    writer.add_scalar("Loss/train", loss, epoch)
+    if writer is not None:
+        writer.add_scalar("Loss/train", loss, epoch)
     print('{} seconds'.format(time.time() - t0))
-    return (100.*correct/total)
+    return (100.*correct/total), entropy_level
 
 
 def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, test_mode=False, f=None, eval_mode=True, dont_save=True, writer=None):
@@ -207,7 +165,21 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
     with torch.no_grad():
         for batch_idx, (inputs, targets) in enumerate(testloader):
             inputs, targets = inputs.to(device), targets.to(device)
+            
             outputs = net(inputs)
+
+#             if net.sign_prob6.test_forward:
+#                 outputs = net(inputs)
+#             else:
+#                 outputs, p = net(inputs)
+      
+#             if net.sign_prob6.test_forward and net.sign_prob5.test_forward:
+#                 outputs = net(inputs)
+#             elif net.sign_prob5.test_forward and not net.sign_prob6.test_forward:
+#                 outputs, p6 = net(inputs)       
+#             else:
+#                 outputs, p6, p5 = net(inputs)
+
             loss = criterion(outputs, targets)
             test_loss += loss.item()
             _, predicted = outputs.max(1)
@@ -313,7 +285,7 @@ def progress_bar(current, total, msg=None):
     else:
         sys.stdout.write('\n')
     sys.stdout.flush()
-
+          
 def format_time(seconds):
     days = int(seconds / 3600/24)
     seconds = seconds - days*3600*24
@@ -345,6 +317,69 @@ def format_time(seconds):
     if f == '':
         f = '0ms'
     return f
+
+
+# def train(args, model, device, train_loader, optimizer, epoch):
+#     model.train()
+#     weight_decay = 10**((-1)*args.wd) # 1e-4
+#     probability_decay = 10**((-1)*args.pd) # 1e-11
+#     print("weight_decay: " + str(weight_decay))
+#     print("probability_decay: " + str(probability_decay))
+#     for batch_idx, (data, target) in enumerate(train_loader):
+#         data, target = data.to(device), target.to(device)
+#         optimizer.zero_grad()
+#         output = model(data)
+#         if args.cifar10:
+#             if args.full_prec:
+#                 loss = F.cross_entropy(output, target)
+#                 ce_loss = loss
+#             else:
+#                 ce_loss = F.cross_entropy(output, target)
+#                 loss = ce_loss + probability_decay * (torch.norm(model.conv1.alpha, 2) + torch.norm(model.conv1.betta, 2)
+#                                                  + torch.norm(model.conv2.alpha, 2) + torch.norm(model.conv2.betta, 2)
+#                                                  + torch.norm(model.conv3.alpha, 2) + torch.norm(model.conv3.betta, 2)
+#                                                  + torch.norm(model.conv4.alpha, 2) + torch.norm(model.conv4.betta, 2)
+#                                                  + torch.norm(model.conv5.alpha, 2) + torch.norm(model.conv5.betta, 2)
+#                                                  + torch.norm(model.conv6.alpha, 2) + torch.norm(model.conv6.betta, 2)) \
+#                        + weight_decay * (torch.norm(model.fc1.weight, 2) + (torch.norm(model.fc2.weight, 2)))
+#         else:
+#             if args.full_prec:
+#                 loss = F.cross_entropy(output, target)
+#             else:
+#                 loss = F.cross_entropy(output, target) + probability_decay * (torch.norm(model.conv1.alpha, 2)
+#                                                                + torch.norm(model.conv1.betta, 2)
+#                                                                + torch.norm(model.conv2.alpha, 2)
+#                                                                + torch.norm(model.conv2.betta, 2)) + weight_decay * (torch.norm(model.fc1.weight, 2) + (torch.norm(model.fc2.weight, 2)))
+#         # optimizer.zero_grad()
+#         if args.debug_mode:
+#             torch.autograd.set_detect_anomaly(True)
+#             loss.backward(retain_graph=True)
+#         else:
+#             loss.backward()
+#         optimizer.step()
+#         if batch_idx % args.log_interval == 0:
+#             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tce_loss: {:.6f}\tloss: {:.6f}'.format(
+#                 epoch, batch_idx * len(data), len(train_loader.dataset),
+#                 100. * batch_idx / len(train_loader), ce_loss.item(), loss.item()))
+#
+# def test(model, device, test_loader):
+#     model.eval()
+#     test_loss = 0
+#     correct = 0
+#     with torch.no_grad():
+#         for data, target in test_loader:
+#             data, target = data.to(device), target.to(device)
+#             output = model(data)
+#             test_loss += F.cross_entropy(output, target, reduction='sum').item()  # sum up batch loss
+#             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+#             correct += pred.eq(target.view_as(pred)).sum().item()
+#
+#     test_loss /= len(test_loader.dataset)
+#
+#     print('\n' + str(tstring) +' set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+#         test_loss, correct, len(test_loader.dataset),
+#         100. * correct / len(test_loader.dataset)))
+#     return (100. * correct / len(test_loader.dataset))
 
 def find_weights(w, my_prints=False):
     if my_prints:
@@ -558,11 +593,175 @@ def output_hist(name, x, net_input, layer, writer, N, iteration=None):
     writer.add_histogram(str(name) + " [0,0,0,0] " + iteration_idx + " distribution", y, 0, bins='auto')         
     
     
-def layer_hist(name, x, writer, iteration=None):             
-    iteration_idx = str(iteration) if iteration is not None else ''
-    writer.add_histogram(str(name) + " " + str(iteration_idx) + " distribution", x, 0, bins='auto')  
+def layer_hist(name, x, writer, iteration=None, iter_list=None):             
+    if iteration in iter_list:
+        iteration_idx = str(iteration) if iteration is not None else ''
+        writer.add_histogram(str(name) + " " + str(iteration_idx) + " distribution", x, 0, bins='auto')  
 
 def id_generator(size=16, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
+
+def calc_avg_entropy (p, category, name, inner_iteration_train, writer):
+    q = 1 - p + 1e-10            
+    p = p + 1e-10            
+    entropy = (-1) * ((p * torch.log(p)) + (q * torch.log(q)))
+    entropy = torch.mean(entropy)            
+    writer.add_scalar(str(category) + str(name), entropy, inner_iteration_train)
+    entropy = (-1) * (p * torch.log(p))
+    entropy = torch.mean(entropy)    
+    writer.add_scalar(str(category) + "_only_p" + str(name) + "_only_p", entropy, inner_iteration_train)
+
+def calc_avg_entropy3 (p1, p2, category, name, inner_iteration_train, writer):
+    p3 = 1 - p1 - p2 + 1e-10                 
+    p1 = p1 + 1e-10            
+    p2 = p2 + 1e-10            
+    entropy = (-1) * ((p1 * torch.log(p1)) + (p2 * torch.log(p2)) + (p3 * torch.log(p3)))
+    entropy = torch.mean(entropy)            
+    writer.add_scalar(str(category) + str(name), entropy, inner_iteration_train)
+    entropy = (-1) * (p1 * torch.log(p1))
+    entropy = torch.mean(entropy)    
+    writer.add_scalar(str(category) + "_only_alpha" + str(name) + "_only_alpha", entropy, inner_iteration_train)
+    entropy = (-1) * (p2 * torch.log(p2))
+    entropy = torch.mean(entropy)    
+    writer.add_scalar(str(category) + "_only_betta" + str(name) + "_only_betta", entropy, inner_iteration_train)
+
     
+def get_p (x, output_sample):   
+    if output_sample:
+        z, p = x
+    else:
+        m, v, p = x 
+    return p
+
+
+def get_x (x, sign_layer):   
+    test_forward = sign_layer.test_forward
+    collect_stats = sign_layer.collect_stats
+    output_sample = sign_layer.output_sample
+    if test_forward or not collect_stats:
+        x = x
+    else:
+        if output_sample:            
+            z, p = x   
+            x = z
+        else:
+            m, v, p = x
+            x = m, v
+    return x
+
+ 
+def calc_m_v_sample (x, layer, N, name, writer, iteration, iter_list):
+    if iteration in iter_list:
+        test_samples = []
+        with torch.no_grad():
+            m, v = layer(x)
+            m = m[0][0][0][0]
+            v = v[0][0][0][0]
+            for i in range(N):   
+#                 print("compare_m_v", i)
+                # rand weight
+                layer.test_mode_switch(1,1)
+                # calc output
+                y = layer(x)
+#                 test_samples.append(torch.unsqueeze(y[0][0][0][0],0))
+                test_samples.append(y[0][0][0][0].data.cpu().numpy())                
+#                 y = y[0][0][0][0]                
+#                 writer.add_histogram(str(name) + " " + str(iteration) + " samples", y, 0, bins='auto')  
+    
+#             b = torch.Tensor(N).cuda()
+#             torch.cat(test_samples, out=b)
+#             print(b)
+            test_samples = np.array(test_samples)
+            writer.add_histogram(str(name) + " " + str(iteration) + " samples", test_samples, 0, bins='auto')              
+#             writer.add_histogram(str(name) + " " + str(iteration) + " samples", x, torch.mean(b), bins='auto')  
+#             writer.add_histogram(str(name) + " " + str(iteration) + " samples", x, 0, bins='auto')  
+
+            m = test_samples.mean()
+            v = test_samples.std()
+            print(str(name) + "_" + str(iteration) + ": m samples is: ", m)
+            print(str(name) + "_" + str(iteration) + ": v samples is: ", v)            
+            layer.train_mode_switch()
+            return m, v            
+    else:
+        return None, None        
+            
+def calc_m_v_analyt (x, layer, N, name, writer, iteration, iter_list):
+    if iteration in iter_list:
+        samples = []
+        with torch.no_grad():
+            m, v = layer(x)
+            m = m[0][0][0][0]
+            v = v[0][0][0][0]
+            for i in range(N):
+#                 print("compare_m_v_1", i)                
+                # sample according to m/v
+                epsilon = torch.normal(0, 1, size=m.size())
+                r = m + epsilon * v
+                r = torch.unsqueeze(r,0)
+                samples.append(r.data.cpu().numpy())
+#                 writer.add_histogram(str(name) + " " + str(iteration) + " analytics", r, 0, bins='auto')  
+
+#             b = torch.Tensor(N).cuda()
+#             torch.cat(samples, out=b)
+            samples = np.array(samples)
+            writer.add_histogram(str(name) + " " + str(iteration) + " analytics", samples, 0, bins='auto')  
+#             writer.add_histogram(str(name) + " " + str(iteration) + " analytics", x, 0, bins='auto')  
+            
+            print(str(name) + "_" + str(iteration) + ": m analytics is: ", m)
+            print(str(name) + "_" + str(iteration) + ": v analytics is: ", v)
+            
+            layer.train_mode_switch()
+            return m, v
+    else:
+        return None, None
+
+def compare_m_v (m_a, v_a, m_s, v_s, name, writer, iteration, iter_list):
+    if iteration in iter_list:    
+        m_ratio = m_a / m_s
+        v_ratio = v_a / v_s
+        writer.add_scalar(str(name) + "_m", m_ratio, iteration)        
+        writer.add_scalar(str(name) + "_v", v_ratio, iteration)        
+
+
+def calc_weights_entropy (layer, desired, avg=False, eps=1e-10):
+    alpha_p = F.sigmoid(layer.alpha)           
+    betta_p = F.sigmoid(layer.betta) * (1 - alpha_p) 
+    gamma_p = 1 - alpha_p - betta_p
+    alpha_p = alpha_p + eps
+    betta_p = betta_p + eps
+    gamma_p = gamma_p + eps
+    entropy = (-1) * ((alpha_p * torch.log(alpha_p)) + (betta_p * torch.log(betta_p)) + (gamma_p * torch.log(gamma_p)))
+    if avg:
+        avg_entropy = torch.mean(entropy)    
+        return torch.pow((avg_entropy - desired), 2)       
+    else:
+        reg_entropy = torch.sum(torch.pow((entropy - desired), 2)) 
+    return reg_entropy
+
+def calc_act_entropy (p, desired, avg=False, eps=1e-10):
+    q = 1 - p + eps
+    p = p + eps
+    entropy = (-1) * ((p * torch.log(p)) + (q * torch.log(q)))
+    if avg:
+        avg_entropy = torch.mean(entropy)    
+        return torch.pow((avg_entropy - desired), 2)       
+    else:
+        reg_entropy = torch.sum(torch.pow((entropy - desired), 2)) 
+    return reg_entropy
+
+
+def calc_average_entropy (p, eps=1e-10):
+    q = 1 - p + eps
+    p = p + eps
+    entropy = (-1) * ((p * torch.log(p)) + (q * torch.log(q)))
+    avg_entropy = torch.mean(entropy)    
+    return avg_entropy       
+  
+        
+        
+        
+        
+        
+        
+        

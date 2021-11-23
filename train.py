@@ -75,10 +75,16 @@ def main_train():
     parser.add_argument('--only-1-fc', action='store_true', default=False, help='only_1_fc layer in classifier')
     
     parser.add_argument('--resnet18', action='store_true', default=False, help='resnet18')
-    parser.add_argument('--vgg', action='store_true', default=False, help='resnet18')
+    parser.add_argument('--vgg', action='store_true', default=False, help='vgg')
+    parser.add_argument('--wide', action='store_true', default=False, help='wider network')
+    parser.add_argument('--sample', action='store_true', default=False, help='sample')
+    parser.add_argument('--not_sample', action='store_true', default=False, help='not_sample')
 
     args = parser.parse_args()
-
+    
+    # TODO: chec no issue
+    args.save_file = str('mnist' if args.mnist else 'cifar10') + args.suffix
+    
     torch.manual_seed(args.seed)
     use_cuda = torch.cuda.is_available()
     device = 'cuda' if use_cuda else 'cpu'
@@ -127,7 +133,7 @@ def main_train():
         testset = torchvision.datasets.CIFAR10(
             root='../data', train=False, download=True, transform=transform_test)
         testloader = torch.utils.data.DataLoader(testset, **test_kwargs)
-
+        
     elif args.mnist:
         print('==> Preparing MNIST data..')
         transform=transforms.Compose([
@@ -161,7 +167,13 @@ def main_train():
             if args.ver2:
                 print ("Training LR-Net for CIFAR10 | ver2")
 #                 net = LRNet_CIFAR10_ver2(writer)
-                net = LRNet_CIFAR10_ver2X(writer, args)
+                if args.sample:
+                    net = LRNet_CIFAR10_ver2_sample(writer, args)
+                elif args.not_sample:
+                    net = LRNet_CIFAR10_ver2_not_sample(writer, args)       
+#                     net = LRNet_CIFAR10_ver2_l1(writer, args) #shooli                        
+                else:
+                    net = LRNet_CIFAR10_ver2X(writer, args)                    
 #                 net = LRNet_CIFAR10_ver2XXX(writer)
             else:
                 print ("Training LR-Net for CIFAR10")
@@ -203,7 +215,11 @@ def main_train():
                 print("Loading model: saved_models/cifar10_fp.pt")
                 test_model = FPNet_CIFAR10().to(device)
                 test_model.load_state_dict(torch.load('saved_models/cifar10_fp.pt'))
-                if args.vgg:
+                if args.wide:
+                    print("Loading model: saved_models//cifar10_vgg_wide_5_11_fp.pt")
+                    test_model = VGG_SMALL().to(device)                
+                    test_model.load_state_dict(torch.load('saved_models//cifar10_vgg_wide_5_11_fp.pt'))
+                elif args.vgg:
                     print("Loading model: saved_models/cifar10_vgg_small_sgd_fp.pt")
                     test_model = VGG_SMALL().to(device)                
                     test_model.load_state_dict(torch.load('saved_models/cifar10_vgg_small_sgd_fp.pt'))
@@ -215,6 +231,7 @@ def main_train():
                 alpha5, betta5 = find_sigm_weights(test_model.conv5.weight, False)
                 alpha6, betta6 = find_sigm_weights(test_model.conv6.weight, False)
 
+                # TODO shooli net.conv1.initialize_weights(alpha1, betta1)
                 net.conv1.initialize_weights(alpha1, betta1)
                 net.conv2.initialize_weights(alpha2, betta2)
                 net.conv3.initialize_weights(alpha3, betta3)
@@ -382,24 +399,71 @@ def main_train():
                 # TODO
 #                 optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
                 if args.only_1_fc:
-                    optimizer = optim.Adam([
-                            {'params': net.conv1.parameters(), 'weight_decay': layer1_decay},
-                            {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
-                            {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
-                            {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
-                            {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
-                            {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
-                        
-#                             {'params': net.sign_prob1.parameters(), 'weight_decay': weight_decay},
-#                             {'params': net.sign_prob2.parameters(), 'weight_decay': weight_decay},
-#                             {'params': net.sign_prob3.parameters(), 'weight_decay': weight_decay},
-#                             {'params': net.sign_prob4.parameters(), 'weight_decay': weight_decay},
-#                             {'params': net.sign_prob5.parameters(), 'weight_decay': weight_decay},
-#                             {'params': net.sign_prob6.parameters(), 'weight_decay': weight_decay},
-                                           
-                            {'params': net.fc1.parameters()},
-                            {'params': net.bn6.parameters()}
-                        ], lr=args.lr, weight_decay=weight_decay)     
+                    if args.not_sample:
+
+#                         wd_decay = list()
+#                         bias_decay = list()
+#                         layer1_prob_decay = list()
+#                         prob_decay = list()
+#                         no_decay = list()                
+#                         for name,param in net.named_parameters():
+#                             if any(substring in str(name) for substring in ["conv1.alpha", "conv1.betta"]):
+#                                 layer1_prob_decay.append(param)            
+#                             elif any(substring in str(name) for substring in ["alpha", "betta"]):
+#                                 prob_decay.append(param)            
+#                             elif any(substring in str(name) for substring in ["gain", "weight"]):
+#                                 wd_decay.append(param)            
+#                             elif any(substring in str(name) for substring in ["bias"]):
+#                                 bias_decay.append(param)            
+#                             else:
+#                                 no_decay.append(param)            
+
+#                             optimizer = optim.Adam(
+#                             [
+#                                 {"params": layer1_prob_decay, "weight_decay": layer1_decay},
+#                                 {"params": prob_decay, "weight_decay": probability_decay},
+#                                 {"params": wd_decay,   "weight_decay": weight_decay},
+#                                 {"params": bias_decay, "weight_decay": weight_decay},
+#                                 {"params": no_decay,   "weight_decay": 0}                     
+#                             ],
+#                             args.lr, weight_decay=weight_decay)                                                                       
+                
+                        optimizer = optim.Adam([
+                                {'params': net.conv1.parameters(), 'weight_decay': layer1_decay}, # TODO shooli
+                                {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
+                                {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
+                                {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
+                                {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
+                                {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
+
+#                                 {'params': net.sign_prob1.bn.parameters(), 'weight_decay': weight_decay},
+#                                 {'params': net.sign_prob2.bn.parameters(), 'weight_decay': weight_decay},
+#                                 {'params': net.sign_prob3.bn.parameters(), 'weight_decay': weight_decay},
+#                                 {'params': net.sign_prob4.bn.parameters(), 'weight_decay': weight_decay},
+#                                 {'params': net.sign_prob5.bn.parameters(), 'weight_decay': weight_decay},
+#                                 {'params': net.sign_prob6.bn.parameters(), 'weight_decay': weight_decay},
+
+                                {'params': net.fc1.parameters()}
+                            ], lr=args.lr, weight_decay=weight_decay)   
+                    else:
+                        optimizer = optim.Adam([
+                                {'params': net.conv1.parameters(), 'weight_decay': layer1_decay}, # TODO: layer1_decay
+                                {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
+                                {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
+                                {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
+                                {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
+                                {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
+
+#                                 {'params': net.sign_prob1.bn.parameters(), 'weight_decay': weight_decay},
+#                                 {'params': net.sign_prob2.bn.parameters(), 'weight_decay': weight_decay},
+#                                 {'params': net.sign_prob3.bn.parameters(), 'weight_decay': weight_decay},
+#                                 {'params': net.sign_prob4.bn.parameters(), 'weight_decay': weight_decay},
+#                                 {'params': net.sign_prob5.bn.parameters(), 'weight_decay': weight_decay},
+#                                 {'params': net.sign_prob6.bn.parameters(), 'weight_decay': weight_decay},
+
+                                {'params': net.fc1.parameters()},
+                                {'params': net.bn6.parameters()}
+                            ], lr=args.lr, weight_decay=weight_decay)     
         
                 else:
                     optimizer = optim.Adam([
@@ -580,20 +644,26 @@ def main_train():
         print(args)
         f = None
 
-    if args.ver2:        
-        print("sampled_last_layer:", net.sampled_last_layer)
+    if args.ver2 and not args.full_prec:        
+        if hasattr(net, 'sampled_last_layer'):
+            print("sampled_last_layer:", net.sampled_last_layer)
         print("bn_s:", net.bn_s)
         print("gumbel:", net.gumbel)
-        print("gumble_last_layer:", net.gumble_last_layer)
+        if hasattr(net, 'gumble_last_layer'):        
+            print("gumble_last_layer:", net.gumble_last_layer)
         print("gain:", net.gain)
-        print("only_1_fc:", net.only_1_fc)   
+        if hasattr(net, 'only_1_fc'):                
+            print("only_1_fc:", net.only_1_fc)   
 
-        print("sampled_last_layer:", net.sampled_last_layer, file=f)
+        if hasattr(net, 'sampled_last_layer'):
+            print("sampled_last_layer:", net.sampled_last_layer, file=f)
         print("bn_s:", net.bn_s, file=f)
         print("gumbel:", net.gumbel, file=f)
-        print("gumble_last_layer:", net.gumble_last_layer, file=f)
+        if hasattr(net, 'gumble_last_layer'):                
+            print("gumble_last_layer:", net.gumble_last_layer, file=f)
         print("gain:", net.gain, file=f)
-        print("only_1_fc:", net.only_1_fc, file=f)              
+        if hasattr(net, 'only_1_fc'):                        
+            print("only_1_fc:", net.only_1_fc, file=f)              
 
 ########################################################################    
     images, labels = next(iter(testloader))
@@ -610,8 +680,9 @@ def main_train():
 
     freeze_mask = np.full((args.lnum), 1).tolist()
     freeze_arr = np.arange(0, args.lnum) * args.step + args.start 
+    entropy_level = 0.69
 
-    warmup = False
+    cas = False
        
     for epoch in range(start_epoch, start_epoch+args.epochs):
         if args.freeze:
@@ -638,12 +709,14 @@ def main_train():
                 else:
                     warmup = False
                     if epoch==freeze_arr[0]:
+                        # TODO shooli
                         net.freeze_layer(net.conv1, net.sign_prob1, net.conv2, args.trials, net, criterion, device, trainloader, args, f)
+#                         net.freeze_l1_layer(net.conv1, net.sign_prob1, net.conv2, args.trials, net, criterion, device, trainloader, args, f)
 #                         net.freeze_layer(net.conv1, net.sign_prob1, net.conv2)
                         warmup = True
                         freeze_mask = [0,1,1,1,1,1]
                     if epoch==freeze_arr[1]:
-                        net.freeze_layer(net.conv2, net.sign_prob2, net.conv3, args.trials, net, criterion, device, trainloader, args, f, net.pool2)  
+                        net.freeze_layer(net.conv2, net.sign_prob2, net.conv3, args.trials, net, criterion, device, trainloader, args, f, None) # net.pool2  
                         freeze_mask = [0,0,1,1,1,1]
                         warmup = True                        
                     if epoch==freeze_arr[2]:
@@ -651,7 +724,7 @@ def main_train():
                         freeze_mask = [0,0,0,1,1,1]
                         warmup = True
                     if epoch==freeze_arr[3]:
-                        net.freeze_layer(net.conv4, net.sign_prob4, net.conv5, args.trials, net, criterion, device, trainloader, args, f, net.pool4)   
+                        net.freeze_layer(net.conv4, net.sign_prob4, net.conv5, args.trials, net, criterion, device, trainloader, args, f, None) # net.pool4   
                         freeze_mask = [0,0,0,0,1,1]
                         warmup = True
                     if epoch==freeze_arr[4]:
@@ -659,14 +732,39 @@ def main_train():
                         freeze_mask = [0,0,0,0,0,1]
                         warmup = True
                     if epoch==freeze_arr[5]:
-                        if net.sampled_last_layer:
+                        if net.sampled_last_layer or args.sample:
                             net.freeze_last_layer(net.conv6, args.trials, net, criterion, device, trainloader, args, f)
                         else:
-                            net.freeze_layer(net.conv6, net.sign_prob6, net.fc1, args.trials, net, criterion, device, trainloader, args, f, net.pool6)
+                            net.freeze_layer(net.conv6, net.sign_prob6, net.fc1, args.trials, net, criterion, device, trainloader, args, f, None) # net.pool6
                         freeze_mask = [0,0,0,0,0,0]
                         warmup = True
                         
-        train_acc = train(net, criterion, epoch, device, trainloader, optimizer, args, f, writer, warmup)
+        train_acc, entropy_level = train(net, criterion, epoch, device, trainloader, optimizer, args, f, writer, warmup, entropy_level)
+
+          
+#         if epoch <= 200: # 79 # 100
+#             warmup_factor = 1.027 # 1.04715
+#             for g in optimizer.param_groups:
+#                 g['lr'] = 0.00001 * (warmup_factor ** epoch)
+#                 new_lr = g['lr']
+#         else:
+#             for g in optimizer.param_groups:
+#                 g['lr'] = 0.00001 * 35000 * (warmup_factor ** (-epoch))
+#                 new_lr = g['lr']                    
+        
+#         if epoch < 0: # 79 # 100
+#             warmup_factor = 1.027 # 1.04715
+#             for g in optimizer.param_groups:
+#                 g['lr'] = warmup_factor * g['lr']
+#                 new_lr = g['lr']
+#         else:
+#             for g in optimizer.param_groups:
+#                 new_lr = g['lr'] 
+
+        for g in optimizer.param_groups:
+            new_lr = g['lr']
+        writer.add_scalar("stats/lr", new_lr, epoch)
+
         writer.add_scalar("acc/train", train_acc, epoch)
         if args.ver2:
             net.tensorboard_train = False
