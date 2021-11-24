@@ -42,6 +42,7 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, w
 
         outputs = net(inputs)
         loss = criterion(outputs, targets)
+        entropy_level = None
 
 #         if net.sign_prob6.test_forward:
 #             outputs = net(inputs)
@@ -59,7 +60,6 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, w
 #         else:
 #             outputs, p6, p5 = net(inputs)
 #             loss = criterion(outputs, targets) + calc_act_entropy(p6, 0.3, avg=True) + calc_act_entropy(p5, 0.3, avg=True)
-
 
 #         if net.sign_prob6.test_forward:
 #             outputs = net(inputs)

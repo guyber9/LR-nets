@@ -190,8 +190,8 @@ def main_train():
                         net.fc2.weight.copy_(state_dict['fc2.weight'])
                         net.fc2.bias.copy_(state_dict['fc2.bias'])
 
-                    net.fc1.weight = test_model.fc1.weight
-                    net.fc1.bias = test_model.fc1.bias
+#                     net.fc1.weight = test_model.fc1.weight
+#                     net.fc1.bias = test_model.fc1.bias
 
     if device == 'cuda':
         print('==> Using cudnn.benchmark = True')
@@ -209,24 +209,23 @@ def main_train():
     probability_decay = 10**((-1)*args.pd)
     criterion = nn.CrossEntropyLoss()
 
-    if not args.sgd:
-        if args.full_prec or args.resnet18:
-            optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
-        else:                                                                                
-            optimizer = optim.Adam([
-                    {'params': net.conv1.parameters(), 'weight_decay': layer1_decay}, # TODO shooli
-                    {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
-                    {'params': net.fc1.parameters()}
-                ], lr=args.lr, weight_decay=weight_decay)   
+    if args.full_prec or args.resnet18:
+        optimizer = optim.Adam(net.parameters(), lr=args.lr, weight_decay=weight_decay)
+    else:                                                                                
+        optimizer = optim.Adam([
+                {'params': net.conv1.parameters(), 'weight_decay': layer1_decay}, # TODO shooli
+                {'params': net.conv2.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv3.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv4.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv5.parameters(), 'weight_decay': probability_decay},
+                {'params': net.conv6.parameters(), 'weight_decay': probability_decay},
+                {'params': net.fc1.parameters()}
+            ], lr=args.lr, weight_decay=weight_decay)   
 
-        if args.annealing_sched:
-            scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
-        else:
-            scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
+    if args.annealing_sched:
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
+    else:
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=args.step_size, gamma=args.gamma)
 
     net = net.to(device)
     
