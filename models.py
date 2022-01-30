@@ -11,6 +11,8 @@ import layers as lrnet_nn
 from utils import print_full_tensor, assertnan, collect_hist, collect_m_v, take_silce, output_hist, layer_hist, id_generator, calc_avg_entropy, calc_avg_entropy3, get_p, get_x, compare_m_v, calc_m_v_sample, calc_m_v_analyt
 import numpy as np
 from utils import test
+import torch.autograd as autograd
+import math
 
 ################
 ## MNIST nets ##
@@ -329,19 +331,27 @@ class LRNet_ver2(nn.Module):
         
 class LRNet_ver2XXX(nn.Module):
 
-    def __init__(self, writer):
+    def __init__(self, writer=None, args=None):
         super(LRNet_ver2XXX, self).__init__()
         
         self.conv1 = lrnet_nn.LRnetConv2d(1, 32, 5, stride=2, padding=0, output_sample=False)
         self.conv2 = lrnet_nn.LRnetConv2d(32, 64, 5, stride=2, padding=0, output_sample=False)
 
-        self.sign_prob1 = lrnet_nn.LRnet_sign_probX(output_sample=True)
-        self.sign_prob2 = lrnet_nn.LRnet_sign_probX(output_sample=True)
+        self.sign_prob1 = lrnet_nn.LRnet_sign_probX(output_sample=True, collect_stats=True)
+        self.sign_prob2 = lrnet_nn.LRnet_sign_probX(output_sample=True, collect_stats=True)
 
+        self.collect_all_stats = True        
+        self.bn_s = False
+        self.gumbel = True
+        self.gain = True
+        
+        self.args = args        
         if writer is not None:
             self.writer = writer
             self.iteration_train = 0
             self.iteration_test = 0
+            self.inner_iteration_test = 0
+            self.inner_iteration_train = 0
         self.tensorboard_train = False
         self.tensorboard_test = False                 
 
@@ -353,12 +363,52 @@ class LRNet_ver2XXX(nn.Module):
     
         self.dropout1 = nn.Dropout(0.5)
         self.dropout2 = nn.Dropout(0.5)
+        self.sigmoid_func = torch.nn.Sigmoid()   
+        self.iterations_list = [0, 10, 50, 100, 150, 200, 250, 300, 350, 400, 450]
         
     def forward(self, x):
+        cin = x
         x = self.conv1(x)
-        x = self.sign_prob1(x)  
+        
+        x = self.sign_prob1(x)        
+        if self.tensorboard_train and self.sign_prob1.collect_stats and not self.sign_prob1.test_forward and (self.writer is not None):
+            print("LRNet_CIFAR10_ver2_not_sample iteration_train:", self.iteration_train)
+            print("LRNet_CIFAR10_ver2_not_sample inner_iteration_train:", self.inner_iteration_train)
+            p = get_p(x, self.sign_prob1.output_sample)
+            p = p + 1e-10
+            calc_avg_entropy (p, "sign_entropy", "/sign1_entropy", self.iteration_train, self.writer)
+            alpha_p = self.sigmoid_func(self.conv1.alpha) + 1e-10            
+            betta_p = self.sigmoid_func(self.conv1.betta) * (1 - alpha_p) + 1e-10  
+            calc_avg_entropy3 (alpha_p, betta_p, "weights_entropy", "/weights_1", self.inner_iteration_train, self.writer)
+            if self.collect_all_stats:
+                layer_hist("sign1_p/sign1", p, self.writer, self.iteration_train, self.iterations_list) 
+                m_s, v_s = calc_m_v_sample (cin, self.conv1, 2000, 'conv1_clt/conv1', self.writer, self.iteration_train, self.iterations_list)
+                m_a, v_a = calc_m_v_analyt (cin, self.conv1, 2000, 'conv1_clt/conv1', self.writer, self.iteration_train, self.iterations_list)
+                compare_m_v (m_a, v_a, m_s, v_s, "compare_m_v_conv1/iteraion", self.writer, self.iteration_train, self.iterations_list)    
+        x = get_x (x, self.sign_prob1)
+        
+        cin = x
         x = self.conv2(x)
-        x = self.sign_prob2(x)   
+        x = self.sign_prob2(x)
+
+        if self.tensorboard_train and self.sign_prob2.collect_stats and not self.sign_prob2.test_forward and (self.writer is not None): 
+            p = get_p(x, self.sign_prob2.output_sample)             
+            p = p + 1e-10
+            calc_avg_entropy (p, "sign_entropy", "/sign2_entropy", self.inner_iteration_train, self.writer)
+            alpha_p = self.sigmoid_func(self.conv2.alpha) + 1e-10            
+            betta_p = self.sigmoid_func(self.conv2.betta) * (1 - alpha_p) + 1e-10            
+            calc_avg_entropy3 (alpha_p, betta_p, "weights_entropy", "/weights_2", self.inner_iteration_train, self.writer)             
+            if self.collect_all_stats:
+                layer_hist("sign2_p/sign2", p, self.writer, self.iteration_train, self.iterations_list) 
+                m_s, v_s = calc_m_v_sample (cin, self.conv2, 2000, 'conv2_clt/conv2', self.writer, self.iteration_train, self.iterations_list)
+                m_a, v_a = calc_m_v_analyt (cin, self.conv2, 2000, 'conv2_clt/conv2', self.writer, self.iteration_train, self.iterations_list)
+                compare_m_v (m_a, v_a, m_s, v_s, "compare_m_v_conv2/iteraion", self.writer, self.iteration_train, self.iterations_list)    
+            self.tensorboard_train = False
+            self.inner_iteration_test = self.inner_iteration_test + 1
+            self.inner_iteration_train = self.inner_iteration_train + 1                
+                
+        x = get_x (x, self.sign_prob2)  
+
         x = torch.flatten(x, 1)
         x = self.fc1(x)
         x = F.relu(x)
@@ -457,21 +507,21 @@ class VGG_SMALL(nn.Module):
 
     def __init__(self):
         super(VGG_SMALL, self).__init__()
-        self.wide=1.25
+        self.wide=1.0
         self.conv1 = nn.Conv2d(3, int(128*self.wide), 3, 1, padding=1)
         self.conv2 = nn.Conv2d(int(128*self.wide), int(128*self.wide), 3, 1, padding=1)
         self.conv3 = nn.Conv2d(int(128*self.wide), int(256*self.wide), 3, 1, padding=1)
         self.conv4 = nn.Conv2d(int(256*self.wide), int(256*self.wide), 3, 1, padding=1)
-        self.conv5 = nn.Conv2d(int(256*self.wide), int(512*self.wide), 3, 1, padding=1)
-        self.conv6 = nn.Conv2d(int(512*self.wide), int(512*self.wide), 3, 1, padding=1)
+        self.conv5 = nn.Conv2d(int(256*self.wide), int(256*self.wide), 3, 1, padding=1)
+        self.conv6 = nn.Conv2d(int(256*self.wide), int(256*self.wide), 3, 1, padding=1)
         self.bn1 = nn.BatchNorm2d(int(128*self.wide))
         self.bn2 = nn.BatchNorm2d(int(128*self.wide))
         self.bn3 = nn.BatchNorm2d(int(256*self.wide))
         self.bn4 = nn.BatchNorm2d(int(256*self.wide))
-        self.bn5 = nn.BatchNorm2d(int(512*self.wide))
-        self.bn6 = nn.BatchNorm2d(int(512*self.wide))
+        self.bn5 = nn.BatchNorm2d(int(256*self.wide))
+        self.bn6 = nn.BatchNorm2d(int(256*self.wide))
         self.dropout1 = nn.Dropout(0.5)
-        self.fc1 = nn.Linear(int(8192*self.wide), 10)
+        self.fc1 = nn.Linear(int(4096*self.wide), 10) # 8192 # 4096 # 2048
 
     def forward(self, x):
         x = self.conv1(x)  # input is 3 x 32 x 32, output is 128 x 32 x 3
@@ -498,9 +548,9 @@ class VGG_SMALL(nn.Module):
         x = F.max_pool2d(x, 2) # 512 x 4 x 4 (= 8192)
         x = F.relu(x)
 
-        x = torch.flatten(x, 1) # 8192
+        x = torch.flatten(x, 1)
         x = self.dropout1(x)
-        x = self.fc1(x)  # 8192 -> 1024
+        x = self.fc1(x) 
         output = x
         return output    
     
@@ -1174,6 +1224,8 @@ class LRNet_CIFAR10_ver2X(nn.Module):
 
     def __init__(self, writer=None, args=None):
         super(LRNet_CIFAR10_ver2X, self).__init__()
+        
+        self.conv1_is_normal = False
 
         self.args = args
         
@@ -1182,14 +1234,14 @@ class LRNet_CIFAR10_ver2X(nn.Module):
         self.gumbel = True        
         self.gumble_last_layer = False # True if not self.sampled_last_layer else False
         self.bn_last_layer = False or self.bn_s # True if not self.sampled_last_layer else False
-        self.gain = False 
+        self.gain = True 
         
         self.only_1_fc = args.only_1_fc
         self.dropout = False
         self.zero_act = 0
         self.tau = 1.0
         
-        self.pool = True
+        self.pool = False
         self.stride = 1 if self.pool else 2
         if self.pool:
             self.pool2 = lrnet_nn.LRnetAvgPool2d()
@@ -1440,7 +1492,7 @@ class LRNet_CIFAR10_ver2X(nn.Module):
             if not self.sampled_last_layer:
                 self.pool6.test_mode_switch(options, tickets)             
 
-    def freeze_layer(self, conv_layer, sign_layer, next_layer, trials, net, criterion, device, trainloader, args, f=None, pool_layer=None):
+    def freeze_layer(self, conv_layer, sign_layer, next_layer, trials, net, criterion, device, trainloader, args, f=None, pool_layer=None, update_tau=None):
         print('==> Freezing...') 
         
 #         self.tau = 0.8 * self.tau
@@ -2033,51 +2085,112 @@ class LRNet_CIFAR10_ver2_sample(nn.Module):
             self.pool2.test_mode_switch(1, 1)
             self.pool4.test_mode_switch(1, 1)
 
+            
+class GetSubnet(autograd.Function):
+    @staticmethod
+    def forward(ctx, scores, k):
+        # Get the supermask by sorting the scores and using the top k%
+        out = scores.clone()
+        _, idx = scores.flatten().sort()
+        j = int((1 - k) * scores.numel())
+
+        # flat_out and out access the same memory.
+        flat_out = out.flatten()
+        flat_out[idx[:j]] = 0
+        flat_out[idx[j:]] = 1
+
+        return out
+
+    @staticmethod
+    def backward(ctx, g):
+        # send the gradient g straight-through on the backward pass.
+        return g, None                       
+            
+class SupermaskLinear(nn.Linear):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)      
+        
+        self.sparsity = 0.5
+        self.my_requires_grad = False
+
+        # initialize the scores
+        self.scores = nn.Parameter(torch.Tensor(self.weight.size()))
+        nn.init.kaiming_uniform_(self.scores, a=math.sqrt(5))
+
+        # NOTE: initialize the weights like this.
+        nn.init.kaiming_normal_(self.weight, mode="fan_in", nonlinearity="relu")
+
+        # NOTE: turn the gradient on the weights off
+        self.weight.requires_grad = self.my_requires_grad
+        
+    def forward(self, x):
+        subnet = GetSubnet.apply(self.scores.abs(), self.sparsity)        
+        w = self.weight * subnet
+        print("w:", w)
+        print("nonzero:", torch.count_nonzero(w))        
+        return F.linear(x, w, self.bias)
 
 # here3
 class LRNet_CIFAR10_ver2_not_sample(nn.Module):
 
     def __init__(self, writer=None, args=None):
         super(LRNet_CIFAR10_ver2_not_sample, self).__init__()
+        
+        print("LRNet_CIFAR10_ver2_not_sample")
 
         self.args = args
         self.sampled_last_layer = False # always False here3
         
-        self.p = 0
+        self.collect_all_stats = False
+        
         self.gumbel_ = True
 
         self.wide = 1.00
         
         self.bn_s = False
-        self.gumbel = True        
+        self.gumbel = True
         self.gumble_last_layer = False # True if not self.sampled_last_layer else False
         self.bn_last_layer = True or self.bn_s # True if not self.sampled_last_layer else False
-        self.gain = True 
+        self.gain = True
         
-        self.dropout = False
-        self.zero_act = 0
-        self.tau = 1.0
-        
-        self.l6 = 512
+        self.lrgain = False
+
+        self.supermask = False         
         
         self.pool = False
+        self.conv1_is_normal = False
+
+        self.dropout = False
+        
+        self.zero_act = 0
+        self.tau = 0.01
+                
+        self.l6 = 512
+        
         self.stride = 1 if self.pool else 2
         if self.pool:
             self.pool2 = lrnet_nn.LRnetAvgPool2d()
             self.pool4 = lrnet_nn.LRnetAvgPool2d()
-            if self.gumble_last_layer:
-                self.pool6 = nn.AvgPool2d(2, stride=2)                
-            else:
-                self.pool6 = lrnet_nn.LRnetAvgPool2d()
+#             if self.gumble_last_layer:
+#                 self.pool6 = nn.AvgPool2d(2, stride=2)                
+#             else:
+            self.pool6 = lrnet_nn.LRnetAvgPool2d()
                 
         if self.wide > 1.0:
             self.flat_chan = int(8192 * self.wide)
         else:
-            self.flat_chan = 8192 # 32768 # 16384 # 8192 # 4096             
+            self.flat_chan = 8192 # 32768 # 16384 # 8192 # 4096 # 2048         
                 
-        self.fc1_output_chan = 10
+        if args.cifar100:
+            self.fc1_output_chan = 100
+        else:
+            self.fc1_output_chan = 10
 
-        self.conv1 = lrnet_nn.LRnetConv2d(3, int(128*self.wide), 3, stride=1, padding=1, output_gain=self.gain, output_sample=False)
+        if self.conv1_is_normal:
+            self.conv1 = nn.Conv2d(3, 128, 3, 1, padding=1)  
+            self.bn1 = nn.BatchNorm2d(128)
+        else:
+            self.conv1 = lrnet_nn.LRnetConv2d(3, int(128*self.wide), 3, stride=1, padding=1, output_gain=self.gain, output_sample=False)
 
         if self.gumbel:
             self.conv2 = lrnet_nn.LRnetConv2d(int(128*self.wide), int(128*self.wide), 3, stride=self.stride, padding=1, output_gain=self.gain, output_sample=False)
@@ -2094,12 +2207,23 @@ class LRNet_CIFAR10_ver2_not_sample(nn.Module):
         
         self.sign_prob6 = lrnet_nn.LRnet_sign_probX(output_chan=int(self.l6*self.wide), tau=self.tau, zero_act=self.zero_act, output_sample=self.gumble_last_layer, collect_stats=True, bn_layer = self.bn_last_layer)
  
+        if self.lrgain:
+            self.gain1 = lrnet_nn.LRgain(num_features=int(128*self.wide))
+            self.gain2 = lrnet_nn.LRgain(num_features=int(128*self.wide))
+            self.gain3 = lrnet_nn.LRgain(num_features=int(256*self.wide))
+            self.gain4 = lrnet_nn.LRgain(num_features=int(256*self.wide))
+            self.gain5 = lrnet_nn.LRgain(num_features=int(512*self.wide))
+            self.gain6 = lrnet_nn.LRgain(num_features=int(512*self.wide))
+
         if self.gumble_last_layer:
-            self.fc1 = nn.Linear(self.flat_chan, self.fc1_output_chan)
+            if self.supermask:
+                self.fc1 = SupermaskLinear(self.flat_chan, self.fc1_output_chan)                
+            else:
+                self.fc1 = nn.Linear(self.flat_chan, self.fc1_output_chan)
         else:
             self.fc1 = lrnet_nn.LRnetLinear(self.flat_chan, self.fc1_output_chan)
 
-        self.dropout1 = nn.Dropout(0.2)
+#         self.dropout1 = nn.Dropout(0.2)
         self.dropout2 = nn.Dropout(0.5)
     
         if writer is not None:
@@ -2113,8 +2237,8 @@ class LRNet_CIFAR10_ver2_not_sample(nn.Module):
         
         self.net_id = id_generator(16)
         self.sigmoid_func = torch.nn.Sigmoid()   
-#         self.iterations_list = [0, 10, 50, 100, 150, 200, 250, 300, 350, 400, 450]
-        self.iterations_list = [0, 10, 50, 100, 200, 250, 350, args.epochs-1]
+        self.iterations_list = [0, 10, 50, 100, 150, 200, 250, 300, 350, 400, 450]
+#         self.iterations_list = [0, 10, 50, 100, 200, 250, 350, args.epochs-1]
 #         self.iterations_list1 = [0, 10, 50, 100, 200, 250, 270, 290, 310, 330, 350, args.epochs-1]
         self.iterations_list1 = self.iterations_list
         
@@ -2128,42 +2252,65 @@ class LRNet_CIFAR10_ver2_not_sample(nn.Module):
         cin = x
         x = self.conv1(x)
         
-        x = self.sign_prob1(x)
-        if self.tensorboard_train and self.sign_prob1.collect_stats and not self.sign_prob1.test_forward and (self.writer is not None):
-            p = get_p(x, self.sign_prob1.output_sample)
-            p = p + 1e-10
-            calc_avg_entropy (p, "sign_entropy", "/sign1_entropy", self.iteration_train, self.writer)
-            alpha_p = self.sigmoid_func(self.conv1.alpha) + 1e-10            
-            betta_p = self.sigmoid_func(self.conv1.betta) * (1 - alpha_p) + 1e-10        
-            calc_avg_entropy3 (alpha_p, betta_p, "weights_entropy", "/weights_1", self.inner_iteration_train, self.writer)           
-            layer_hist("sign1_p/sign1", p, self.writer, self.iteration_train, self.iterations_list) 
-            m_s, v_s = calc_m_v_sample (cin, self.conv1, 2000, 'conv1_clt/conv1', self.writer, self.iteration_train, self.iterations_list)
-            m_a, v_a = calc_m_v_analyt (cin, self.conv1, 2000, 'conv1_clt/conv1', self.writer, self.iteration_train, self.iterations_list)
-            compare_m_v (m_a, v_a, m_s, v_s, "compare_m_v_conv1/iteraion", self.writer, self.iteration_train, self.iterations_list)    
+        if self.conv1_is_normal:   
+            x = self.bn1(x)
+            x = F.relu(x)            
+        else:
+            if self.lrgain:
+                x = self.gain1(x)        
+            x = self.sign_prob1(x)        
+            if self.tensorboard_train and self.sign_prob1.collect_stats and not self.sign_prob1.test_forward and (self.writer is not None):
+#                 print("self.sign_prob1 STATS")                
+#                 x = self.sign_prob1(x, self.writer, self.iteration_train, self.iterations_list, 'bn1')                        
+                print("LRNet_CIFAR10_ver2_not_sample iteration_train:", self.iteration_train)
+                print("LRNet_CIFAR10_ver2_not_sample inner_iteration_train:", self.inner_iteration_train)
+                p = get_p(x, self.sign_prob1.output_sample)
+                p = p + 1e-10
+                calc_avg_entropy (p, "sign_entropy", "/sign1_entropy", self.iteration_train, self.writer)
+                alpha_p = self.sigmoid_func(self.conv1.alpha) + 1e-10            
+                betta_p = self.sigmoid_func(self.conv1.betta) * (1 - alpha_p) + 1e-10  
+                calc_avg_entropy3 (alpha_p, betta_p, "weights_entropy", "/weights_1", self.inner_iteration_train, self.writer)
+                if self.collect_all_stats:
+                    layer_hist("sign1_p/sign1", p, self.writer, self.iteration_train, self.iterations_list) 
+                    m_s, v_s = calc_m_v_sample (cin, self.conv1, 2000, 'conv1_clt/conv1', self.writer, self.iteration_train, self.iterations_list)
+                    m_a, v_a = calc_m_v_analyt (cin, self.conv1, 2000, 'conv1_clt/conv1', self.writer, self.iteration_train, self.iterations_list)
+                    compare_m_v (m_a, v_a, m_s, v_s, "compare_m_v_conv1/iteraion", self.writer, self.iteration_train, self.iterations_list)    
+#             else:
+#                 x = self.sign_prob1(x)                        
+                    
 
-        x = get_x (x, self.sign_prob1)
-
+            x = get_x (x, self.sign_prob1)
+        
         cin = x
         x = self.conv2(x)
         if self.pool:
             x = self.pool2(x)
+
+        if self.lrgain:            
+            x = self.gain2(x)                    
         x = self.sign_prob2(x)
 
         if self.tensorboard_train and self.sign_prob2.collect_stats and not self.sign_prob2.test_forward and (self.writer is not None): 
+#             x = self.sign_prob1(x, self.writer, self.iteration_train, self.iterations_list, 'bn2')                                
             p = get_p(x, self.sign_prob2.output_sample)             
             p = p + 1e-10
             calc_avg_entropy (p, "sign_entropy", "/sign2_entropy", self.inner_iteration_train, self.writer)
             alpha_p = self.sigmoid_func(self.conv2.alpha) + 1e-10            
             betta_p = self.sigmoid_func(self.conv2.betta) * (1 - alpha_p) + 1e-10            
             calc_avg_entropy3 (alpha_p, betta_p, "weights_entropy", "/weights_2", self.inner_iteration_train, self.writer)             
-            layer_hist("sign2_p/sign2", p, self.writer, self.iteration_train, self.iterations_list) 
-            m_s, v_s = calc_m_v_sample (cin, self.conv2, 2000, 'conv2_clt/conv2', self.writer, self.iteration_train, self.iterations_list)
-            m_a, v_a = calc_m_v_analyt (cin, self.conv2, 2000, 'conv2_clt/conv2', self.writer, self.iteration_train, self.iterations_list)
-            compare_m_v (m_a, v_a, m_s, v_s, "compare_m_v_conv2/iteraion", self.writer, self.iteration_train, self.iterations_list)    
+            if self.collect_all_stats:
+                layer_hist("sign2_p/sign2", p, self.writer, self.iteration_train, self.iterations_list) 
+                m_s, v_s = calc_m_v_sample (cin, self.conv2, 2000, 'conv2_clt/conv2', self.writer, self.iteration_train, self.iterations_list)
+                m_a, v_a = calc_m_v_analyt (cin, self.conv2, 2000, 'conv2_clt/conv2', self.writer, self.iteration_train, self.iterations_list)
+                compare_m_v (m_a, v_a, m_s, v_s, "compare_m_v_conv2/iteraion", self.writer, self.iteration_train, self.iterations_list)   
+#             else:
+#                 x = self.sign_prob2(x)                
 
         x = get_x (x, self.sign_prob2)   
         cin = x
         x = self.conv3(x)
+        if self.lrgain:        
+            x = self.gain3(x)                
         x = self.sign_prob3(x)        
 
         if self.tensorboard_train and self.sign_prob3.collect_stats and not self.sign_prob3.test_forward and (self.writer is not None): 
@@ -2173,29 +2320,34 @@ class LRNet_CIFAR10_ver2_not_sample(nn.Module):
             alpha_p = self.sigmoid_func(self.conv3.alpha) + 1e-10            
             betta_p = self.sigmoid_func(self.conv3.betta) * (1 - alpha_p) + 1e-10            
             calc_avg_entropy3 (alpha_p, betta_p, "weights_entropy", "/weights_3", self.inner_iteration_train, self.writer) 
-            layer_hist("sign3_p/sign3", p, self.writer, self.iteration_train, self.iterations_list) 
-            m_s, v_s = calc_m_v_sample (cin, self.conv3, 2000, 'conv3_clt/conv3', self.writer, self.iteration_train, self.iterations_list)
-            m_a, v_a = calc_m_v_analyt (cin, self.conv3, 2000, 'conv3_clt/conv3', self.writer, self.iteration_train, self.iterations_list)
-            compare_m_v (m_a, v_a, m_s, v_s, "compare_m_v_conv3/iteraion", self.writer, self.iteration_train, self.iterations_list)    
+            if self.collect_all_stats:
+                layer_hist("sign3_p/sign3", p, self.writer, self.iteration_train, self.iterations_list) 
+                m_s, v_s = calc_m_v_sample (cin, self.conv3, 2000, 'conv3_clt/conv3', self.writer, self.iteration_train, self.iterations_list)
+                m_a, v_a = calc_m_v_analyt (cin, self.conv3, 2000, 'conv3_clt/conv3', self.writer, self.iteration_train, self.iterations_list)
+                compare_m_v (m_a, v_a, m_s, v_s, "compare_m_v_conv3/iteraion", self.writer, self.iteration_train, self.iterations_list)    
 
         x = get_x (x, self.sign_prob3)   
         cin = x        
         x = self.conv4(x)
         if self.pool:
-            x = self.pool4(x)        
+            x = self.pool4(x) 
+        if self.lrgain:            
+            x = self.gain4(x)                    
         x = self.sign_prob4(x)        
 
         if self.tensorboard_train and self.sign_prob4.collect_stats and not self.sign_prob4.test_forward and (self.writer is not None): 
             p = get_p(x, self.sign_prob4.output_sample)    
-            p = p + 1e-10            
+            p = p + 1e-10   
+            print("calc_avg_entropy start")
             calc_avg_entropy (p, "sign_entropy", "/sign4_entropy", self.inner_iteration_train, self.writer)
             alpha_p = self.sigmoid_func(self.conv4.alpha) + 1e-10            
             betta_p = self.sigmoid_func(self.conv4.betta) * (1 - alpha_p) + 1e-10            
             calc_avg_entropy3 (alpha_p, betta_p, "weights_entropy", "/weights_4", self.inner_iteration_train, self.writer) 
-            layer_hist("sign4_p/sign4", p, self.writer, self.iteration_train, self.iterations_list) 
-            m_s, v_s = calc_m_v_sample (cin, self.conv4, 2000, 'conv4_clt/conv4', self.writer, self.iteration_train, self.iterations_list)
-            m_a, v_a = calc_m_v_analyt (cin, self.conv4, 2000, 'conv4_clt/conv4', self.writer, self.iteration_train, self.iterations_list)
-            compare_m_v (m_a, v_a, m_s, v_s, "compare_m_v_conv4/iteraion", self.writer, self.iteration_train, self.iterations_list)    
+            if self.collect_all_stats:
+                layer_hist("sign4_p/sign4", p, self.writer, self.iteration_train, self.iterations_list) 
+                m_s, v_s = calc_m_v_sample (cin, self.conv4, 2000, 'conv4_clt/conv4', self.writer, self.iteration_train, self.iterations_list)
+                m_a, v_a = calc_m_v_analyt (cin, self.conv4, 2000, 'conv4_clt/conv4', self.writer, self.iteration_train, self.iterations_list)
+                compare_m_v (m_a, v_a, m_s, v_s, "compare_m_v_conv4/iteraion", self.writer, self.iteration_train, self.iterations_list)    
 
 #             self.tensorboard_train = False
 #             self.inner_iteration_test = self.inner_iteration_test + 1
@@ -2209,6 +2361,8 @@ class LRNet_CIFAR10_ver2_not_sample(nn.Module):
 
         cin = x
         x = self.conv5(x)
+        if self.lrgain:        
+            x = self.gain5(x)                            
         x = self.sign_prob5(x)
 
         if self.sign_prob5.test_forward:
@@ -2224,10 +2378,11 @@ class LRNet_CIFAR10_ver2_not_sample(nn.Module):
             alpha_p = self.sigmoid_func(self.conv5.alpha) + 1e-10            
             betta_p = self.sigmoid_func(self.conv5.betta) * (1 - alpha_p) + 1e-10            
             calc_avg_entropy3 (alpha_p, betta_p, "weights_entropy", "/weights_5", self.inner_iteration_train, self.writer)          
-            layer_hist("sign5_p/sign5", p, self.writer, self.iteration_train, self.iterations_list) 
-            m_s, v_s = calc_m_v_sample (cin, self.conv5, 2000, 'conv5_clt/conv5', self.writer, self.iteration_train, self.iterations_list)
-            m_a, v_a = calc_m_v_analyt (cin, self.conv5, 2000, 'conv5_clt/conv5', self.writer, self.iteration_train, self.iterations_list)
-            compare_m_v (m_a, v_a, m_s, v_s, "compare_m_v_conv5/iteraion", self.writer, self.iteration_train, self.iterations_list)    
+            if self.collect_all_stats:            
+                layer_hist("sign5_p/sign5", p, self.writer, self.iteration_train, self.iterations_list) 
+                m_s, v_s = calc_m_v_sample (cin, self.conv5, 2000, 'conv5_clt/conv5', self.writer, self.iteration_train, self.iterations_list)
+                m_a, v_a = calc_m_v_analyt (cin, self.conv5, 2000, 'conv5_clt/conv5', self.writer, self.iteration_train, self.iterations_list)
+                compare_m_v (m_a, v_a, m_s, v_s, "compare_m_v_conv5/iteraion", self.writer, self.iteration_train, self.iterations_list)    
 
 #             self.tensorboard_train = False
 #             self.inner_iteration_test = self.inner_iteration_test + 1
@@ -2250,7 +2405,9 @@ class LRNet_CIFAR10_ver2_not_sample(nn.Module):
         cin = x
         x = self.conv6(x)
         if self.pool:
-            x = self.pool6(x)                             
+            x = self.pool6(x) 
+        if self.lrgain:            
+            x = self.gain6(x)                                
         x = self.sign_prob6(x) 
 
         if self.tensorboard_train and self.sign_prob6.collect_stats and not self.sign_prob6.test_forward and (self.writer is not None): 
@@ -2261,9 +2418,11 @@ class LRNet_CIFAR10_ver2_not_sample(nn.Module):
             betta_p = self.sigmoid_func(self.conv6.betta) * (1 - alpha_p) + 1e-10            
             calc_avg_entropy3 (alpha_p, betta_p, "weights_entropy", "/weights_6", self.inner_iteration_train, self.writer)             
             layer_hist("sign6_p/sign6", p, self.writer, self.iteration_train, self.iterations_list)        
-            m_s, v_s = calc_m_v_sample (cin, self.conv6, 2000, 'conv6_clt/conv6', self.writer, self.iteration_train, self.iterations_list1)
-            m_a, v_a = calc_m_v_analyt (cin, self.conv6, 2000, 'conv6_clt/conv6', self.writer, self.iteration_train, self.iterations_list1)
-            compare_m_v (m_a, v_a, m_s, v_s, "compare_m_v_conv6/iteraion", self.writer, self.iteration_train, self.iterations_list1)
+            if self.collect_all_stats:            
+#                 layer_hist("sign6_p/sign6", p, self.writer, self.iteration_train, self.iterations_list)        
+                m_s, v_s = calc_m_v_sample (cin, self.conv6, 2000, 'conv6_clt/conv6', self.writer, self.iteration_train, self.iterations_list1)
+                m_a, v_a = calc_m_v_analyt (cin, self.conv6, 2000, 'conv6_clt/conv6', self.writer, self.iteration_train, self.iterations_list1)
+                compare_m_v (m_a, v_a, m_s, v_s, "compare_m_v_conv6/iteraion", self.writer, self.iteration_train, self.iterations_list1)
 
             self.tensorboard_train = False
             self.inner_iteration_test = self.inner_iteration_test + 1
@@ -2311,6 +2470,38 @@ class LRNet_CIFAR10_ver2_not_sample(nn.Module):
 
 
         x = self.fc1(x)  # 8192 -> 10 
+    
+#         # ###########################################################                
+#         if self.tensorboard_train and self.sign_prob6.collect_stats and not self.sign_prob6.test_forward and (self.writer is not None):   
+#             if self.inner_iteration_train in [0, 1, 5, 10, 200, 300, 350, 400, 450]:
+#                 #             W = self.fc1.weight[0, None]
+#                 my_p = torch.flatten(p, 1)
+#     #             print ("p[0] size:", my_p[0].size())
+#     #             print ("W size:", W[0].size())
+#         #         exit(1)
+
+#                 ip = my_p[0] 
+#                 iq = 1 - ip + 1e-10            
+#                 ip = ip + 1e-10            
+#                 entropy = (-1) * ((ip * torch.log(ip)) + (iq * torch.log(iq)))    
+#                 entropy = entropy.data.cpu().numpy()
+#     #             W = W.data.cpu().numpy()
+#     #             with open('entropy_calc/' + str('W_0') + '.npy', 'wb') as f:
+#     #                 np.save(f, W)     
+#                 with open('entropy_calc/' + str('entropy_fc1_') + str(self.iteration_train) + '.npy', 'wb') as f:
+#                     np.save(f, entropy)          
+
+#                 for i in range(0,10):
+#                     W = self.fc1.weight[i, None]
+#                     W = W.data.cpu().numpy()
+#                     name = 'W_' + str(i) + '_' + str(self.iteration_train)
+#                     with open('entropy_calc/' + name + '.npy', 'wb') as f:
+#                         np.save(f, W)  
+#             self.tensorboard_train = False
+#             self.inner_iteration_test = self.inner_iteration_test + 1
+#             self.inner_iteration_train = self.inner_iteration_train + 1                    
+#     #         exit(1)
+#         # ###########################################################    
 
 #             print("feature_map:", x[0])
 #             for idx, val in enumerate(x[0]):
@@ -2326,12 +2517,12 @@ class LRNet_CIFAR10_ver2_not_sample(nn.Module):
 #         print("predicted:", predicted[0])
 
 #         exit(1)
-#         return output
+        return output
 
-        if self.sign_prob6.test_forward:
-            return output
-        else:
-            return output, p       
+#         if self.sign_prob6.test_forward:
+#             return output
+#         else:
+#             return output, p       
         
 #         if self.sign_prob6.test_forward and self.sign_prob5.test_forward:
 #             return output            
@@ -2341,7 +2532,8 @@ class LRNet_CIFAR10_ver2_not_sample(nn.Module):
 #             return output, p, p5
 
     def train_mode_switch(self):
-        self.conv1.train_mode_switch()
+        if self.conv1_is_normal is not True:
+            self.conv1.train_mode_switch()
         self.conv2.train_mode_switch()
         self.conv3.train_mode_switch()
         self.conv4.train_mode_switch()
@@ -2359,10 +2551,18 @@ class LRNet_CIFAR10_ver2_not_sample(nn.Module):
             self.pool2.train_mode_switch()
             self.pool4.train_mode_switch()
             if not self.gumble_last_layer:
-                self.pool6.train_mode_switch()           
+                self.pool6.train_mode_switch()   
+        if self.lrgain:
+            self.gain1.train_mode_switch()
+            self.gain2.train_mode_switch()
+            self.gain3.train_mode_switch()
+            self.gain4.train_mode_switch()
+            self.gain5.train_mode_switch()
+            self.gain6.train_mode_switch()
 
     def test_mode_switch(self, options, tickets):
-        self.conv1.test_mode_switch(options, tickets)
+        if self.conv1_is_normal is not True:        
+            self.conv1.test_mode_switch(options, tickets)
         self.conv2.test_mode_switch(options, tickets)
         self.conv3.test_mode_switch(options, tickets)
         self.conv4.test_mode_switch(options, tickets)
@@ -2380,9 +2580,24 @@ class LRNet_CIFAR10_ver2_not_sample(nn.Module):
             self.pool2.test_mode_switch(options, tickets)
             self.pool4.test_mode_switch(options, tickets)
             if not self.gumble_last_layer:
-                self.pool6.test_mode_switch(options, tickets)             
+                self.pool6.test_mode_switch(options, tickets)  
+        if self.lrgain:
+            self.gain1.test_mode_switch(options, tickets)
+            self.gain2.test_mode_switch(options, tickets)
+            self.gain3.test_mode_switch(options, tickets)
+            self.gain4.test_mode_switch(options, tickets)
+            self.gain5.test_mode_switch(options, tickets)
+            self.gain6.test_mode_switch(options, tickets)  
 
-    def freeze_layer(self, conv_layer, sign_layer, next_layer, trials, net, criterion, device, trainloader, args, f=None, pool_layer=None):
+    def just_freeze_layer(self, conv_layer, sign_layer, next_layer):
+        print('==> Freezing...')        
+        sign_layer.test_mode_switch(1, 1)  
+        conv_layer.test_forward = True        
+        next_layer.sampled_input = True
+        for param in conv_layer.parameters():
+            param.requires_grad = False         
+                
+    def freeze_layer(self, conv_layer, sign_layer, next_layer, trials, net, criterion, device, trainloader, args, f=None, update_tau=False, gain_layer=None, pool_layer=None):
         print('==> Freezing...') 
         
 #         self.tau = 0.8 * self.tau
@@ -2392,6 +2607,12 @@ class LRNet_CIFAR10_ver2_not_sample(nn.Module):
 #         self.sign_prob4.tau = self.tau
 #         self.sign_prob5.tau = self.tau
 #         self.sign_prob6.tau = self.tau
+        
+        if update_tau is True:
+            sign_layer.tau = 0.1
+            
+        if gain_layer is not None:
+            gain_layer.test_mode_switch(1, 1)
         
         sign_layer.test_mode_switch(1, 1)
                 
@@ -2451,60 +2672,102 @@ class LRNet_CIFAR10_ver2_not_sample(nn.Module):
             
     def train_mode_freeze(self, freeze_mask):
         if freeze_mask[0] is not 0:
-            self.conv1.train_mode_switch()
-            self.sign_prob1.train_mode_switch()    
+            if self.conv1_is_normal is not True:
+                self.conv1.train_mode_switch()
+                self.sign_prob1.train_mode_switch()  
+                if self.lrgain:                
+                    self.gain1.train_mode_switch()                
         if freeze_mask[1] is not 0:
             self.conv2.train_mode_switch()
             self.sign_prob2.train_mode_switch()
+            if self.pool:
+                self.pool2.train_mode_switch()
+            if self.lrgain:                
+                self.gain2.train_mode_switch()                   
         if freeze_mask[2] is not 0:
             self.conv3.train_mode_switch()
             self.sign_prob3.train_mode_switch()
+            if self.lrgain:                
+                self.gain3.train_mode_switch()              
         if freeze_mask[3] is not 0:
             self.conv4.train_mode_switch()
             self.sign_prob4.train_mode_switch()
+            if self.pool:
+                self.pool4.train_mode_switch()
+            if self.lrgain:                
+                self.gain4.train_mode_switch()                    
         if freeze_mask[4] is not 0:
             self.conv5.train_mode_switch()
             self.sign_prob5.train_mode_switch()
+            if self.lrgain:                
+                self.gain5.train_mode_switch()                
         if freeze_mask[5] is not 0:
             self.conv6.train_mode_switch()        
             self.sign_prob6.train_mode_switch()   
+            if self.pool:
+                self.pool6.train_mode_switch()  
+            if self.lrgain:                
+                self.gain6.train_mode_switch()                    
         if not self.gumble_last_layer:
             self.fc1.train_mode_switch()        
-        if self.pool:
-            self.pool2.train_mode_switch()
-            self.pool4.train_mode_switch()
-            if not self.gumble_last_layer:
-                self.pool6.train_mode_switch()      
                 
     def test_mode_freeze(self, freeze_mask):
         if freeze_mask[0] is not 0:
-            self.conv1.test_mode_switch(1, 1)
-            self.sign_prob1.test_mode_switch(1, 1)    
+            if self.conv1_is_normal is not True:            
+                self.conv1.test_mode_switch(1, 1)
+                self.sign_prob1.test_mode_switch(1, 1)    
+                if self.lrgain:                
+                    self.gain1.test_mode_switch(1, 1)                    
         if freeze_mask[1] is not 0:
             self.conv2.test_mode_switch(1, 1)
             self.sign_prob2.test_mode_switch(1, 1)
+            if self.pool:
+                self.pool2.test_mode_switch(1, 1)       
+            if self.lrgain:                
+                self.gain2.test_mode_switch(1, 1)                    
         if freeze_mask[2] is not 0:
             self.conv3.test_mode_switch(1, 1)
             self.sign_prob3.test_mode_switch(1, 1)
+            if self.lrgain:                
+                self.gain3.test_mode_switch(1, 1)               
         if freeze_mask[3] is not 0:
             self.conv4.test_mode_switch(1, 1)
             self.sign_prob4.test_mode_switch(1, 1)
+            if self.pool:
+                self.pool4.test_mode_switch(1, 1)    
+            if self.lrgain:                
+                self.gain4.test_mode_switch(1, 1)                 
         if freeze_mask[4] is not 0:
             self.conv5.test_mode_switch(1, 1)
             self.sign_prob5.test_mode_switch(1, 1)
+            if self.lrgain:                
+                self.gain5.test_mode_switch(1, 1)             
         if freeze_mask[5] is not 0:
             self.conv6.test_mode_switch(1, 1)        
-            self.sign_prob6.test_mode_switch(1, 1)   
+            self.sign_prob6.test_mode_switch(1, 1)  
+            if self.pool:
+                self.pool6.test_mode_switch(1, 1) 
+            if self.lrgain:                
+                self.gain6.test_mode_switch(1, 1)                 
         if not self.gumble_last_layer:
             self.fc1.test_mode_switch(1, 1)     
-        if self.pool:
-            self.pool2.test_mode_switch(1, 1)
-            self.pool4.test_mode_switch(1, 1)
-            if not self.gumble_last_layer:
-                self.pool6.test_mode_switch(1, 1)  
+#         if self.pool:
+#             self.pool2.test_mode_switch(1, 1)
+#             self.pool4.test_mode_switch(1, 1)
+#             if not self.gumble_last_layer:
+#                 self.pool6.test_mode_switch(1, 1)  
 
-
-
+    def update_tau(self, sign_layer, new_tau, tau_factor=None, stop_epoch=None, stop_val=0.1):
+        if tau_factor is None:
+            print('==> updating tau...')         
+            sign_layer.tau = new_tau
+            sign_layer.hard = True
+        else:
+            new_val = tau_factor * sign_layer.tau
+            if new_val < stop_val:
+                sign_layer.tau = sign_layer.tau
+            else:
+                sign_layer.tau = new_val
 
 # here4
 class LRNet_CIFAR10_ver2_l1(nn.Module):

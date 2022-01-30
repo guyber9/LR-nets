@@ -42,7 +42,7 @@ def main_test():
     parser.add_argument('--wd', type=int, default=4, metavar='N', help='wd is 10**((-1)*wd)')
     parser.add_argument('--pd', type=int, default=11, metavar='N', help='pd is 10**((-1)*pd)')
     parser.add_argument('--binary-mode', action='store_true', default=False, help='binary mode bit')
-    parser.add_argument('--nohup', action='store_true', default=False, help='nohup mode')
+    parser.add_argument('--nohup', action='store_true', default=True, help='nohup mode')
     parser.add_argument('--dont-save', action='store_true', default=True, help='dont_save mode')
 
     parser.add_argument('--adam', action='store_true', default=False, help='run with adam')
@@ -52,7 +52,7 @@ def main_test():
     parser.add_argument('--options', type=int, default=10, metavar='N', help='num_of_options for rand')
     parser.add_argument('--tickets', type=int, default=1, metavar='N', help='num of tickets')
     parser.add_argument('--ver2', action='store_true', default=False, help='discretization for layer output')
-    parser.add_argument('--cudnn', action='store_true', default=False, help='using cudnn benchmark=True')
+    parser.add_argument('--cudnn', action='store_true', default=True, help='using cudnn benchmark=True')
 
     parser.add_argument('--train-mode', action='store_true', default=False, help='train_mode also for test (collect stats')
     parser.add_argument('--collect-stats', action='store_true', default=False, help='collect_stats for test')
@@ -183,8 +183,10 @@ def main_test():
 #     if not args.dont_load_model:
 #         net.load_state_dict(torch.load(load_model_name))
    
-    load_model_name = 'saved_models/cifar10_not_sample_not_gumbel_30_10_bn_last_layer_sz_cpu.pt'
-    net.load_state_dict(torch.load(load_model_name))    
+#     load_model_name = 'saved_models/cifar10_not_sample_not_gumbel_30_10_bn_last_layer_sz_cpu.pt'
+
+#     load_model_name = 'saved_models/cifar10_lrnet_ver2no_gumbel_tau_1_0_23_11.pt'
+#     net.load_state_dict(torch.load(load_model_name))    
     net.eval()
     net = net.to(device)
 
@@ -215,10 +217,11 @@ def main_test():
     print ("###################################")
     print ("test Data Set")
     net.tensorboard_train = True if args.writer else False
-    test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=True, dont_save=True)
+#     test(net, criterion, 0, device, testloader, args, 0, None, test_mode, None, eval_mode=True, dont_save=True)
     net.tensorboard_train = False
     print ("train Data Set")
     test(net, criterion, 0, device, trainloader, args, 0, None, test_mode, None, eval_mode=True, dont_save=True)
+    exit(1)
 
     if not args.full_prec:
         print ("###################################")

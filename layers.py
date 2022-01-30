@@ -12,8 +12,7 @@ from torch.nn.common_types import _size_1_t, _size_2_t, _size_3_t
 from torch.nn.parallel import DistributedDataParallel as DDP
 import torch.distributed as dist
 import os
-from utils import mean_over_channel, print_full_tensor, print_fullllll_tensor, print_neg_val
-
+from utils import mean_over_channel, print_full_tensor, print_fullllll_tensor, print_neg_val, compare_m_v, calc_m_v_sample, calc_m_v_analyt, calc_batch_m_v
 
 class LRnetConv2d(nn.Module):
 
@@ -53,8 +52,11 @@ class LRnetConv2d(nn.Module):
 
         self.alpha = torch.nn.Parameter(torch.empty([D_0, D_1, D_2, D_3, 1], dtype=self.tensor_dtype, device=self.device))
         self.betta = torch.nn.Parameter(torch.empty([D_0, D_1, D_2, D_3, 1], dtype=self.tensor_dtype, device=self.device))
-        self.test_weight = torch.empty([D_0, D_1, D_2, D_3], dtype=torch.float32, device=self.device)
+        self.test_weight = torch.nn.Parameter(torch.empty([D_0, D_1, D_2, D_3], dtype=self.tensor_dtype, device=self.device))
+        self.test_weight.requires_grad = False
+        
         self.bias = torch.nn.Parameter(torch.empty([out_channels], dtype=self.tensor_dtype, device=self.device))
+#         self.bias = None
         
 #         self.weight = torch.nn.Parameter(torch.ones([out_channels], dtype=self.tensor_dtype, device=self.device))
         
@@ -119,7 +121,10 @@ class LRnetConv2d(nn.Module):
             else:
                 values = sampled - 1
             # self.test_weight_arr.append(values)
-            self.test_weight = torch.tensor(values,dtype=self.tensor_dtype,device=self.device)
+            
+#             self.test_weight = torch.tensor(values,dtype=self.tensor_dtype,device=self.device)
+            test_weight = torch.tensor(values,dtype=self.tensor_dtype,device=self.device)
+            self.test_weight = torch.nn.Parameter(test_weight)
 
 
     def forward(self, input: Tensor) -> Tensor:
@@ -128,7 +133,10 @@ class LRnetConv2d(nn.Module):
                 y = F.conv2d(input, self.test_weight, None, self.stride, self.padding, self.dilation, self.groups)
 #                 return (y * self.gain[None, :, None, None]) + self.bias[None, :, None, None]
                 abs_gain = torch.abs(self.gain)
-                return (y * abs_gain[None, :, None, None]) + self.bias[None, :, None, None]
+                if self.bias is not None:
+                    return (y * abs_gain[None, :, None, None]) + self.bias[None, :, None, None]
+                else:
+                    return (y * abs_gain[None, :, None, None])                    
             else:           
                 # self.test_weight = torch.tensor(self.test_weight_arr[self.cntr],dtype=self.tensor_dtype,device=self.device)
                 return F.conv2d(input, self.test_weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
@@ -154,7 +162,10 @@ class LRnetConv2d(nn.Module):
                 m = F.conv2d(input, mean, None, self.stride, self.padding, self.dilation, self.groups)
 #                 m = m * self.gain[None, :, None, None] + self.bias[None, :, None, None]
                 abs_gain = torch.abs(self.gain)
-                m = m * abs_gain[None, :, None, None] + self.bias[None, :, None, None]    
+                if self.bias is not None:    
+                    m = m * abs_gain[None, :, None, None] + self.bias[None, :, None, None]    
+                else:
+                    m = m * abs_gain[None, :, None, None]                    
             else:
                 m = F.conv2d(input, mean, self.bias, self.stride, self.padding, self.dilation, self.groups)
 
@@ -941,7 +952,13 @@ class LRnetLinear(nn.Module):
         fan_in, _ = nn.init._calculate_fan_in_and_fan_out(self.weight)
         bound = 1 / math.sqrt(fan_in)
         nn.init.uniform_(self.bias, -bound, bound)  # bias init
-
+        
+    def reset_parameters(self) -> None:
+        nn.init.kaiming_normal_(self.weight, a=math.sqrt(5))  # weight init
+        fan_in, _ = nn.init._calculate_fan_in_and_fan_out(self.weight)
+        bound = 1 / math.sqrt(fan_in)
+        nn.init.uniform_(self.bias, -bound, bound)  # bias init
+    
     def train_mode_switch(self) -> None:
         self.test_forward = False
 
@@ -960,8 +977,8 @@ class LRnetLinear(nn.Module):
                 m, v = input
                 m_times_x = torch.mm(m, self.weight.t())
                 m1 = torch.add(m_times_x, self.bias)  # m times x + b
-                v1 = torch.sqrt(torch.mm(v*v, self.weight.t()*self.weight.t()) + self.eps)
-
+                v1 = torch.sqrt(torch.mm(v*v, self.weight.t()*self.weight.t()) + self.eps)                                              
+                
                 if self.output_sample:
                     epsilon = torch.normal(0, 1, size=m1.size(), dtype=self.tensor_dtype, requires_grad=False, device=self.device)
     #                 epsilon = torch.normal(0, 1, size=m1.size(), requires_grad=False, device=self.device)                
@@ -1202,7 +1219,7 @@ class LRnet_sign_probX(nn.Module):
         self.bn_layer = bn_layer
         
         if self.bn_layer:      
-            self.bn = LocalLRBatchNorm2d(output_chan, affine=False) # adding BN
+            self.bn = LocalLRBatchNorm2d(output_chan, affine=True) # adding BN
 #             self.bn = NewLocalLRBatchNorm2d(output_chan, affine=True) # adding BN
         
     def train_mode_switch(self) -> None:
@@ -1215,7 +1232,7 @@ class LRnet_sign_probX(nn.Module):
         if self.bn_layer:                      
             self.bn.test_forward = True  # adding BN
 
-    def forward(self, input: Tensor) -> Tensor:
+    def forward(self, input: Tensor, writer=None, iteration_train=0, iterations_list=[], name='') -> Tensor:
         if self.test_forward:
             if self.bn_layer:                          
                 return torch.sign(self.bn(input)) # adding BN
@@ -1234,6 +1251,19 @@ class LRnet_sign_probX(nn.Module):
             if self.bn_layer:                              
                 res = self.bn(input)  # adding BN
                 m, v = res
+                if writer is not None:
+                    print("LRnet_sign_probX iteration_train:", iteration_train)   
+                    print("bn input:")   
+                    m_in, v_in = input
+                    calc_batch_m_v(m_in, v_in, self.bn, 1, name+'_clt/'+name, iteration_train, iterations_list)
+                    print("bn output:")   
+                    calc_batch_m_v(m, v, self.bn, 1, name+'_clt/'+name, iteration_train, iterations_list)
+#                     m_s, v_s = calc_m_v_sample (input, self.bn, 2000, name+'_clt/'+name, writer, iteration_train, iterations_list, rand_input=True)
+                    m_a, v_a = calc_m_v_analyt (input, self.bn, 2000, name+'_clt/'+name, writer, iteration_train, iterations_list)
+                    print(name + "_" + str(iteration_train) + ": m calc is: ", m[0][0][0][0])
+                    print(name + "_" + str(iteration_train) + ": v calc is: ", v[0][0][0][0])    
+                    m_s, v_s = m[0][0][0][0], v[0][0][0][0]
+                    compare_m_v (m_a, v_a, m_s, v_s, "compare_m_v_"+name+"/iteraion", writer, iteration_train, iterations_list)                   
 #                 print("m:", m)
 #                 print("v:", v)
 
@@ -1242,6 +1272,9 @@ class LRnet_sign_probX(nn.Module):
                 p_1 = (1 - cdf_1)
                 cdf_m1 = 0.5 * (1 + torch.erf((-self.zero_act-m) / (v * np.sqrt(2) + self.eps)))
                 p_m1 = cdf_m1
+                m1 = 2 * p_1 - 1
+                v1 = 1*p_1 + 1*(1-p_m1)
+                p = p_1
             else:
                 # mean of input
                 cdf = 0.5 * (1 + torch.erf((-1) * m / (v * np.sqrt(2) + self.eps)))
@@ -1371,10 +1404,12 @@ class LRnet_sign_probX(nn.Module):
 
 class LocalLRBatchNorm2d(nn.BatchNorm2d):
     def __init__(self, num_features, eps=1e-10, momentum=0.1,
-                 affine=True, track_running_stats=True, test_forward = False):
+                 affine=True, track_running_stats=True, test_forward = False, act_norm=False, only_mean=False):
         super(LocalLRBatchNorm2d, self).__init__(
             num_features, eps, momentum, affine, track_running_stats)
         self.test_forward = test_forward
+        self.act_norm = act_norm
+        self.only_mean = only_mean
         if torch.cuda.is_available():
             self.device = 'cuda'
         else:
@@ -1382,9 +1417,14 @@ class LocalLRBatchNorm2d(nn.BatchNorm2d):
 
         self.tensor_dtype = torch.float32
         
-        self.weight = torch.nn.Parameter(torch.ones([num_features], dtype=self.tensor_dtype, device=self.device))
-        self.bias = torch.nn.Parameter(torch.zeros([num_features], dtype=self.tensor_dtype, device=self.device))
-        
+        if act_norm:
+            self.weight = torch.nn.Parameter(torch.zeros([num_features], dtype=self.tensor_dtype, device=self.device))
+            self.bias = torch.nn.Parameter(torch.zeros([num_features], dtype=self.tensor_dtype, device=self.device))            
+            self.div = torch.nn.Parameter(torch.ones([num_features], dtype=self.tensor_dtype, device=self.device))
+        else:
+            self.weight = torch.nn.Parameter(torch.ones([num_features], dtype=self.tensor_dtype, device=self.device))
+            self.bias = torch.nn.Parameter(torch.zeros([num_features], dtype=self.tensor_dtype, device=self.device))            
+
 #         self.use_batch_stats = True
 #         self.collect_stats = False
 
@@ -1405,68 +1445,89 @@ class LocalLRBatchNorm2d(nn.BatchNorm2d):
     def train_mode_switch(self) -> None:
         self.test_forward = False
 
-    def test_mode_switch(self) -> None:
+#     def test_mode_switch(self) -> None:
+    def test_mode_switch(self, num_of_options=1, tickets=1) -> None:
         self.test_forward = True
 
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
-            mean = input.mean([0, 2, 3])
-            var = input.var([0, 2, 3], unbiased=False)                
-#             var = input.std([0, 2, 3])                
-            output = (input - mean[None, :, None, None]) / (torch.sqrt(var[None, :, None, None] + self.eps))
-            if self.affine:
-                abs_w = torch.abs(self.weight)
-                output = output * abs_w[None, :, None, None] + self.bias[None, :, None, None]
-            return output
+            if self.only_mean:
+                mean = input.mean([0, 2, 3])
+                output = input - mean[None, :, None, None]                
+                if self.affine:
+                    abs_w = torch.abs(self.weight)
+                    output = output * abs_w[None, :, None, None] + self.bias[None, :, None, None]  
+                return output
+            elif self.act_norm:
+                output = (input - self.weight[None, :, None, None]) / (self.div[None, :, None, None] + self.eps)              
+                output = output + self.bias[None, :, None, None]   
+                return output                
+            else:
+                mean = input.mean([0, 2, 3])
+                var = input.var([0, 2, 3], unbiased=False)                
+    #             var = input.std([0, 2, 3])                
+                output = (input - mean[None, :, None, None]) / (torch.sqrt(var[None, :, None, None] + self.eps))                
+                if self.affine:
+                    abs_w = torch.abs(self.weight)
+                    output = output * abs_w[None, :, None, None] + self.bias[None, :, None, None]
+                return output
         else:
 #             if self.training: # TODO: add support in not training (but testing the continous case)
             if True:
         
-                m, v = input
+                if self.act_norm:
+                    m, v = input                
+                    norm_m = ((m - self.weight[None, :, None, None])/(self.div[None, :, None, None] + self.eps)) + self.bias[None, :, None, None]          
+                    abs_div = torch.abs(self.div)
+                    norm_v = v   / (abs_div[None, :, None, None] + self.eps)       
+                else:
+                    m, v = input
+                    mean = m.mean([0, 2, 3])
+    #                 print("mean:", mean)
+                    m_square = m * m 
+                    mean_square = m_square.mean([0, 2, 3])                
+    #                 print("mean_square:", mean_square)
+                    v_square = v * v 
+                    sigma_square = v_square.mean([0, 2, 3])                
+    #                 print("sigma_square:", sigma_square)
 
-                mean = m.mean([0, 2, 3])
-#                 print("mean:", mean)
-                m_square = m * m 
-                mean_square = m_square.mean([0, 2, 3])                
-#                 print("mean_square:", mean_square)
-                v_square = v * v 
-                sigma_square = v_square.mean([0, 2, 3])                
-#                 print("sigma_square:", sigma_square)
 
+                    variance = sigma_square + mean_square - (mean * mean) + self.eps
+    #                 variance = mean_square + (mean * mean) + self.eps
+                    std = torch.sqrt(variance)
 
-                variance = sigma_square + mean_square - (mean * mean) + self.eps
-#                 variance = mean_square + (mean * mean) + self.eps
-                std = torch.sqrt(variance)
+    #                 print("variance:", variance)                
+    #                 print("std:", std)                
+    #                 print(m.size())
+    #                 print(mean.size())
+    #                 print(std.size())
 
-#                 print("variance:", variance)                
-#                 print("std:", std)                
-#                 print(m.size())
-#                 print(mean.size())
-#                 print(std.size())
+    #                 norm_v = torch.sqrt((v*v) / std[None, :, None, None])
 
-#                 norm_v = torch.sqrt((v*v) / std[None, :, None, None])
-                
-#                 print("norm_m:", norm_m.mean())                
-#                 print("norm_v:", norm_v)                
+    #                 print("norm_m:", norm_m.mean())                
+    #                 print("norm_v:", norm_v)                
 
-#                 norm_m = ((m - mean) / std)
-#                 norm_v = (v / std)
+    #                 norm_m = ((m - mean) / std)
+    #                 norm_v = (v / std)
 
-#                 print("variance:", variance)                
-#                 print("std:", std)                
+    #                 print("variance:", variance)                
+    #                 print("std:", std)                
+                    if self.only_mean:
+                        norm_m = m - mean[None, :, None, None]            
+                        norm_v = v         
+                    else:
+                        norm_m = (m - mean[None, :, None, None]) / std[None, :, None, None]            
+                        norm_v = v / std[None, :, None, None]  
 
-                norm_m = (m - mean[None, :, None, None]) / std[None, :, None, None]            
-                norm_v = v / std[None, :, None, None]  
-                
-                if self.affine:
-#                     norm_m = (m - mean[None, :, None, None]) / std[None, :, None, None]            
-#                     norm_m = norm_m * self.weight[None, :, None, None] + self.bias[None, :, None, None]                
-#                     w_2 = self.weight * self.weight
-#                     norm_v = torch.sqrt(((v*v) * w_2[None, :, None, None]) / variance[None, :, None, None])    
-                    
-                    abs_w = torch.abs(self.weight)
-                    norm_m = norm_m * abs_w[None, :, None, None] + self.bias[None, :, None, None]
-                    norm_v = norm_v * abs_w[None, :, None, None] 
+                    if self.affine:
+    #                     norm_m = (m - mean[None, :, None, None]) / std[None, :, None, None]            
+    #                     norm_m = norm_m * self.weight[None, :, None, None] + self.bias[None, :, None, None]                
+    #                     w_2 = self.weight * self.weight
+    #                     norm_v = torch.sqrt(((v*v) * w_2[None, :, None, None]) / variance[None, :, None, None])    
+
+                        abs_w = torch.abs(self.weight)
+                        norm_m = norm_m * abs_w[None, :, None, None] + self.bias[None, :, None, None]
+                        norm_v = norm_v * abs_w[None, :, None, None] 
   
                     
                 return norm_m, norm_v
@@ -1602,17 +1663,71 @@ class LRnetAvgPool2d(nn.Module):
             
     def forward(self, input: Tensor) -> Tensor:
         if self.test_forward:
-            return F.max_pool2d(input, 2)
+            return F.avg_pool2d(input, 2)
         else:                             
             m, v = input
-            m = F.max_pool2d(m, 2)
+            m = F.avg_pool2d(m, 2)
             v = v*v
-            v = F.max_pool2d(v, 2) / 4
+            v = F.avg_pool2d(v, 2) / 4
             v = torch.sqrt(v)            
             return m, v
 
         
+class LRgain(nn.Module):
+
+    def __init__(
+        self,
+        num_features: int = 64,        
+        test_forward: bool = False
+    ):
+        super(LRgain, self).__init__()
+
+        if torch.cuda.is_available():
+            self.device = 'cuda'
+        else:
+            self.device = 'cpu'
+
+        self.tensor_dtype = torch.float32
         
+        self.test_forward = test_forward
+        self.weight = torch.nn.Parameter(torch.ones([num_features], dtype=self.tensor_dtype, device=self.device))
+        self.bias = torch.nn.Parameter(torch.zeros([num_features], dtype=self.tensor_dtype, device=self.device))           
+        
+    def train_mode_switch(self) -> None:
+        self.test_forward = False
+
+    def test_mode_switch(self, num_of_options, tickets=1) -> None:
+        self.test_forward = True
+            
+    def forward(self, input: Tensor) -> Tensor:
+        if self.test_forward:
+            w2_sqrt = torch.sqrt(self.weight * self.weight)                       
+            mean = input.mean([0, 2, 3])
+            output = ((input - mean[None, :, None, None]) * w2_sqrt[None, :, None, None]) + self.bias[None, :, None, None]    
+            return output            
+        else:                             
+            m, v = input
+            w2_sqrt = torch.sqrt(self.weight * self.weight)                       
+            m_mean = m.mean([0, 2, 3])
+            norm_m = ((m - m_mean[None, :, None, None]) * w2_sqrt[None, :, None, None]) + self.bias[None, :, None, None]
+            norm_v = v * w2_sqrt[None, :, None, None]
+            return norm_m, norm_v
+        
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
             
             

@@ -11,9 +11,39 @@ from torch.nn import init
 import numpy as np    
 import string
 import random
+from torch.autograd import Variable
+
+def mixup_data(x, y, alpha=1.0, use_cuda=True):
+    '''Returns mixed inputs, pairs of targets, and lambda'''
+    if alpha > 0:
+        lam = np.random.beta(alpha, alpha)
+    else:
+        lam = 1
+
+    batch_size = x.size()[0]
+    if use_cuda:
+        index = torch.randperm(batch_size).cuda()
+    else:
+        index = torch.randperm(batch_size)
+
+    mixed_x = lam * x + (1 - lam) * x[index, :]
+    y_a, y_b = y, y[index]
+    return mixed_x, y_a, y_b, lam
+
+
+def mixup_criterion(criterion, pred, y_a, y_b, lam):
+    return lam * criterion(pred, y_a) + (1 - lam) * criterion(pred, y_b)
+
+
+class SVM_Loss(nn.modules.Module):    
+    def __init__(self):
+        super(SVM_Loss,self).__init__()
+    def forward(self, outputs, labels):
+        batch_size = outputs.size()[0]
+        return torch.sum(torch.clamp(1 - outputs.t()*labels, min=0))/batch_size
 
 # Training
-def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, writer=None, warmup=False, entropy_level=None):
+def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, writer=None, warmup=False, entropy_level=None, l6_conv=False):
     print('\nEpoch: %d' % epoch)
     net.train()
     train_loss = 0
@@ -27,10 +57,18 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, w
         curre_lr = g['lr']
         
     epoch_level = 200
+    
+    if args.svm:    
+        svm_loss_criteria = SVM_Loss()
         
     for batch_idx, (inputs, targets) in enumerate(trainloader):
         # print("batch_idx: " + str(batch_idx))
         inputs, targets = inputs.to(device), targets.to(device)
+
+        if (args.dup_train > 1) and l6_conv:
+            inputs = torch.cat([inputs]* args.dup_train)
+            targets = torch.cat([targets]* args.dup_train)
+            
         optimizer.zero_grad()
         
         if warmup:            
@@ -40,9 +78,25 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, w
                 print ("g:", g['lr'])
             print ("warmup_factor:", warmup_factor)
 
-        outputs = net(inputs)
-        loss = criterion(outputs, targets)
-        entropy_level = None
+        if args.mixup:
+            use_cuda=True
+            inputs, targets_a, targets_b, lam = mixup_data(inputs, targets,
+                                                           args.alpha, use_cuda)
+#             print("*********************************************************")        
+#             print("targets_a:",targets_a)
+#             print("targets_b:",targets_b)
+#             print("lam:",lam)
+            inputs, targets_a, targets_b = map(Variable, (inputs,
+                                                          targets_a, targets_b))
+            outputs = net(inputs)
+            loss = mixup_criterion(criterion, outputs, targets_a, targets_b, lam)            
+        else:
+            outputs = net(inputs)
+            if args.svm:
+                loss = svm_loss_criteria(outputs, targets)                    
+            else:
+                loss = criterion(outputs, targets)
+            entropy_level = None
 
 #         if net.sign_prob6.test_forward:
 #             outputs = net(inputs)
@@ -118,7 +172,20 @@ def train(net, criterion, epoch, device, trainloader, optimizer, args, f=None, w
         train_loss += loss.item()
         _, predicted = outputs.max(1)
         total += targets.size(0)
-        correct += predicted.eq(targets).sum().item()
+
+        if args.mixup:    
+#             print("predicted:",predicted)
+#             print("predicted.eq(targets_a.data):",predicted.eq(targets_a.data))
+#             print("predicted.eq(targets_b.data):",predicted.eq(targets_b.data))            
+#             print("predicted.eq(targets_a.data).sum():",predicted.eq(targets_a.data).sum().float())
+#             print("predicted.eq(targets_b.data).sum():",predicted.eq(targets_b.data).sum().float())
+#             print("correct temp:",(lam * predicted.eq(targets_a.data).sum().float()
+#                                 + (1 - lam) * predicted.eq(targets_b.data).sum().float()))            
+#             print("*********************************************************")           
+            correct += (lam * predicted.eq(targets_a.data).sum().float()
+                                + (1 - lam) * predicted.eq(targets_b.data).sum().float())        
+        else:
+            correct += predicted.eq(targets).sum().item()
 
         if args.nohup:
             if batch_idx % args.log_interval == 0:
@@ -162,6 +229,8 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
     test_loss = 0
     correct = 0
     total = 0
+    if args.svm:    
+        svm_loss_criteria = SVM_Loss()    
     with torch.no_grad():
         for batch_idx, (inputs, targets) in enumerate(testloader):
             inputs, targets = inputs.to(device), targets.to(device)
@@ -179,8 +248,10 @@ def test(net, criterion, epoch, device, testloader, args, best_acc, best_epoch, 
 #                 outputs, p6 = net(inputs)       
 #             else:
 #                 outputs, p6, p5 = net(inputs)
-
-            loss = criterion(outputs, targets)
+            if args.svm:
+                loss = svm_loss_criteria(outputs, targets)  
+            else:
+                loss = criterion(outputs, targets)
             test_loss += loss.item()
             _, predicted = outputs.max(1)
             total += targets.size(0)
@@ -651,7 +722,7 @@ def get_x (x, sign_layer):
     return x
 
  
-def calc_m_v_sample (x, layer, N, name, writer, iteration, iter_list):
+def calc_m_v_sample (x, layer, N, name, writer, iteration, iter_list, rand_input=False):
     if iteration in iter_list:
         test_samples = []
         with torch.no_grad():
@@ -662,6 +733,10 @@ def calc_m_v_sample (x, layer, N, name, writer, iteration, iter_list):
 #                 print("compare_m_v", i)
                 # rand weight
                 layer.test_mode_switch(1,1)
+                # rand input
+                if rand_input:
+                    epsilon = torch.normal(0, 1, size=m.size())
+                    x = m + epsilon * v
                 # calc output
                 y = layer(x)
 #                 test_samples.append(torch.unsqueeze(y[0][0][0][0],0))
@@ -716,6 +791,29 @@ def calc_m_v_analyt (x, layer, N, name, writer, iteration, iter_list):
     else:
         return None, None
 
+def calc_batch_m_v (m, v, layer, N, name, iteration, iter_list):
+    if iteration in iter_list:
+        samples = []
+        with torch.no_grad():
+            for i in range(N):
+                print(i)
+                epsilon = torch.normal(0, 1, size=m.size(), device='cuda')
+                r = m + epsilon * v
+#                 samples.append(r.data.cpu().numpy())
+                samples = r
+
+#             samples = np.array(samples)
+            m = samples.mean([0, 2, 3])
+            v = samples.std([0, 2, 3])
+            print(str(name) + "_" + str(iteration) + ": m(chan) batch is: ", m)
+            print(str(name) + "_" + str(iteration) + ": v(chan) batch is: ", v)
+            print(str(name) + "_" + str(iteration) + ": mean(m) batch is: ", m.mean())
+            print(str(name) + "_" + str(iteration) + ": mean(v) batch is: ", v.mean())            
+            layer.train_mode_switch()
+            return m, v
+    else:
+        return None, None
+    
 def compare_m_v (m_a, v_a, m_s, v_s, name, writer, iteration, iter_list):
     if iteration in iter_list:    
         m_ratio = m_a / m_s
@@ -756,7 +854,26 @@ def calc_average_entropy (p, eps=1e-10):
     p = p + eps
     entropy = (-1) * ((p * torch.log(p)) + (q * torch.log(q)))
     avg_entropy = torch.mean(entropy)    
-    return avg_entropy       
+    return avg_entropy   
+
+# def calc_weight_norm_vs_entropy (m, v, weights eps=1e-10):
+
+#     W = weight[0, None]
+#     Wx = torch.mm(m, W.t())
+#     print("Wx:",Wx[0])
+
+#     W = self.weight[1, None]
+#     Wx = torch.mm(m, W.t())
+#     print("Wx:",Wx[0])
+
+#     print ("p[0] size:", p[0].size())
+#     print ("W size:", W[0].size())
+
+#     ip = p[0]
+#     iq = 1 - ip + 1e-10            
+#     ip = ip + 1e-10            
+#     entropy = (-1) * ((ip * torch.log(ip)) + (iq * torch.log(iq)))                                
+#     plt.scatter(entropy.data.cpu().numpy(),torch.abs(W[0]).data.cpu().numpy())
   
         
         
