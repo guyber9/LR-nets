@@ -2149,7 +2149,7 @@ class LRNet_CIFAR10_ver2_not_sample(nn.Module):
         
         self.bn_s = False
         self.gumbel = True
-        self.gumble_last_layer = False # True if not self.sampled_last_layer else False
+        self.gumble_last_layer = True # True if not self.sampled_last_layer else False
         self.bn_last_layer = True or self.bn_s # True if not self.sampled_last_layer else False
         self.gain = True
         
