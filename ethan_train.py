@@ -9,8 +9,6 @@ import torchvision
 import torchvision.transforms as transforms
 from torchvision import datasets, transforms
 import os
-import resnet
-import resnet1
 
 from ethan_models import *
 from utils import find_sigm_weights, train, test, print_summary, copy_net2net
@@ -24,16 +22,16 @@ def main_train():
     parser.add_argument('--cifar10', action='store_true', default=False, help='cifar10 flag')
     parser.add_argument('--resume', '-r', action='store_true',help='resume from checkpoint')
     parser.add_argument('--batch-size', type=int, default=256, metavar='N',help='input batch size for training (default: 64)')
-    parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',help='input batch size for testing (default: 1000)')
-    parser.add_argument('--epochs', type=int, default=1, metavar='N',help='number of epochs to train (default: 1)')
+    parser.add_argument('--test-batch-size', type=int, default=512, metavar='N',help='input batch size for testing (default: 1000)')
+    parser.add_argument('--epochs', type=int, default=300, metavar='N',help='number of epochs to train (default: 1)')
     parser.add_argument('--lr', type=float, default=0.01, metavar='LR',help='learning rate (default: 0.01)')
     parser.add_argument('--gamma', type=float, default=0.1, metavar='M', help='Learning rate step gamma (default: 0.1)')
-    parser.add_argument('--step-size', type=int, default=100, metavar='M',help='Step size for scheduler (default: 100)')
+    parser.add_argument('--step-size', type=int, default=170, metavar='M',help='Step size for scheduler (default: 100)')
     parser.add_argument('--no-cuda', action='store_true', default=False,help='disables CUDA training')
     parser.add_argument('--dry-run', action='store_true', default=False, help='quickly check a single pass')
     parser.add_argument('--seed', type=int, default=1, metavar='S',help='random seed (default: 1)')
     parser.add_argument('--log-interval', type=int, default=10, metavar='N',help='how many batches to wait before logging training status')
-    parser.add_argument('--save-model', action='store_true', default=True, help='For Saving the current Model')
+    parser.add_argument('--save-model', action='store_true', default=False, help='For Saving the current Model')
     parser.add_argument('--full-prec', action='store_true', default=False, help='For Training Full Precision Model')
     parser.add_argument('--load-pre-trained', action='store_true', default=False,help='For Loading Params from Trained Full Precision Model')
     parser.add_argument('--debug-mode', action='store_true', default=False, help='For Debug Mode')
@@ -68,9 +66,9 @@ def main_train():
     parser.add_argument('--freeze', action='store_true', default=False, help='freeze layers')
 
     parser.add_argument('--lnum', type=int, default=6, metavar='N', help='num of layers')
-    parser.add_argument('--step', type=int, default=35, metavar='N', help='step size in freezeing')
-    parser.add_argument('--start', type=int, default=50, metavar='N', help='starting point in freezeing')
-    parser.add_argument('--trials', type=int, default=15, metavar='N', help='num of trials in freezeing')
+    parser.add_argument('--step', type=int, default=40, metavar='N', help='step size in freezeing')
+    parser.add_argument('--start', type=int, default=200, metavar='N', help='starting point in freezeing')
+    parser.add_argument('--trials', type=int, default=30, metavar='N', help='num of trials in freezeing')
 
     parser.add_argument('--only-1-fc', action='store_true', default=True, help='only_1_fc layer in classifier')
     
@@ -82,10 +80,7 @@ def main_train():
     parser.add_argument('--writer', action='store_true', default=False, help='not_sample')
 
     args = parser.parse_args()
-    
-    # TODO: chec no issue
-    args.save_file = str('mnist' if args.mnist else 'cifar10') + args.suffix
-    
+        
     torch.manual_seed(args.seed)
     use_cuda = torch.cuda.is_available()
     device = 'cuda' if use_cuda else 'cpu'
@@ -263,6 +258,7 @@ def main_train():
     entropy_level = 0.69
 
     cas = False
+    warmup = False
        
     for epoch in range(start_epoch, start_epoch+args.epochs):
         if args.freeze:
